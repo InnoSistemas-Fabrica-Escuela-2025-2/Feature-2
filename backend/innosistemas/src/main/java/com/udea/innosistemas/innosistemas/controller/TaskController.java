@@ -4,18 +4,17 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.service.TaskService;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/task")
@@ -24,7 +23,7 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-    @PostMapping("/saveTask")
+    @PostMapping("/save")
     public ResponseEntity<Task> saveTask(@RequestBody Task task) {
         try {
             Task saved = taskService.saveTask(task);
@@ -34,18 +33,18 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/listAllTasks")
+    @GetMapping("/listAll")
     public ResponseEntity<List<Task>> listAllTasks() {
         return ResponseEntity.ok(taskService.listAllTasks());
     }
 
-    @DeleteMapping("/deleteTask/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("updatedTask")
+    @PutMapping("update")
     public ResponseEntity<Task> updatedTask(@RequestBody Task task) {
         try {
             Task updated = taskService.saveTask(task);
