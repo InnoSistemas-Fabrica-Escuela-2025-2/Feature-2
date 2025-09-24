@@ -1,6 +1,7 @@
 package com.udea.innosistemas.innosistemas.service.Impl;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,12 @@ public class TaskServiceImpl implements TaskService{
 
     @Override
     public void deleteTask(long id) {
-        taskRepository.deleteById(id);
+        if(taskRepository.existsById(id)){
+            taskRepository.deleteById(id);
+        } else {
+            throw new NoSuchElementException("El usuario no existe.");
+        }
+        
     }
 
     @Override

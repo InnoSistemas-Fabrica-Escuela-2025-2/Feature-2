@@ -44,7 +44,7 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("update")
+    @PutMapping("/update")
     public ResponseEntity<Task> updatedTask(@RequestBody Task task) {
         try {
             Task updated = taskService.saveTask(task);
