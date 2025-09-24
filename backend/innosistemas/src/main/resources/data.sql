@@ -1,4 +1,4 @@
-INSERT INTO team (name) VALUES
+INSERT INTO equipos (nombre) VALUES
 ('primer grupo'),
 ('segundo grupo'),
 ('tercer grupo'),

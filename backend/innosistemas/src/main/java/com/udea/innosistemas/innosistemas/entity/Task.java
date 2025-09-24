@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="task")
+@Table(name="tareas")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,17 +29,17 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name="title", nullable = false )
+    @Column(name="titulo", nullable = false )
     private String title;
 
-    @Column(name="description", nullable = false )
+    @Column(name="descripcion", nullable = false )
     private String description;
 
-    @Column(name="deadline", nullable = false )
+    @Column(name="fecha_entrega", nullable = false )
     private Timestamp deadline;
 
     @ManyToOne
-    @JoinColumn(name="project_id", nullable=false)
+    @JoinColumn(name="id_proyecto", nullable=false)
     @JsonBackReference
     private Project project;
 

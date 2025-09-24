@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="team")
+@Table(name="equipos")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +23,6 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name="name", nullable = false )
+    @Column(name="nombre", nullable = false )
     private String name;
 }

@@ -12,17 +12,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
 
 @Entity
-@Table(name="project")
+@Table(name="proyectos")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,13 +33,13 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name="name", nullable = false )
+    @Column(name="nombre_proyecto", nullable = false )
     private String name;
 
-    @Column(name="description", nullable = false )
+    @Column(name="descripcion", nullable = false )
     private String description;
 
-    @Column(name="deadline", nullable = false )
+    @Column(name="fecha_final", nullable = false )
     private Timestamp deadline;
     
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -47,6 +47,6 @@ public class Project {
     private List<Task> tasks = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name="team_id", nullable=false)
+    @JoinColumn(name="id_equipo", nullable=false)
     private Team team;
 }
