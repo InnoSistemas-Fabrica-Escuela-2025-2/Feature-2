@@ -1,0 +1,47 @@
+POST http://localhost:8080/project/save 
+Content-Type: application/json
+
+{
+    "name":"Proyecto 1",
+    "description": "Proyecto 1 - descripción",
+    "deadline": "2025-12-10",
+    "team": {
+        "id": 1
+    }
+}
+
+###
+POST http://localhost:8080/task/save
+Content-Type: application/json
+
+{
+    "title":"Tarea 1",
+    "description": "Prueba",
+    "deadline":"2025-12-10",
+    "project": {
+        "id": 1
+    }
+}
+
+###
+
+GET http://localhost:8080/task/listAll
+
+###
+
+GET http://localhost:8080/project/listAll
+###
+
+DELETE http://localhost:8080/task/delete/1
+
+###
+
+PUT http://localhost:8080/task/update
+Content-Type: application/json
+
+{
+    "id": 2,
+    "title":"Tarea 1",
+    "description": "Prueba final",
+    "deadline":"2025-12-10"
+}
