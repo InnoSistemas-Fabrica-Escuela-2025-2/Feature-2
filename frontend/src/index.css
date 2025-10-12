@@ -2,114 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Sistema de diseño para gestión de proyectos - Profesional y limpio */
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
 
 @layer base {
   :root {
-    /* Colores de fondo y texto principal */
-    --background: 210 40% 98%;
-    --foreground: 210 11% 15%;
+    /* Institutional academic colors */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
 
-    /* Cards y superficies */
     --card: 0 0% 100%;
-    --card-foreground: 210 11% 15%;
+    --card-foreground: 222 47% 11%;
 
-    /* Popovers y overlays */
     --popover: 0 0% 100%;
-    --popover-foreground: 210 11% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Colores primarios - Azul profesional */
-    --primary: 214 84% 56%;
+    /* Primary: Institutional indigo/blue */
+    --primary: 231 48% 48%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 214 84% 50%;
+    --primary-hover: 231 48% 42%;
 
-    /* Colores secundarios - Gris suave */
-    --secondary: 210 20% 92%;
-    --secondary-foreground: 210 11% 15%;
+    /* Secondary: Lighter institutional */
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
 
-    /* Estados y variaciones */
-    --muted: 210 20% 96%;
-    --muted-foreground: 210 11% 50%;
+    /* Muted: Neutral grays */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Accent - Verde para acciones positivas */
-    --accent: 142 76% 45%;
+    /* Accent: Institutional highlight */
+    --accent: 231 48% 48%;
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 142 76% 40%;
 
-    /* Estados de error */
+    /* Success: Green for completed tasks */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 71% 96%;
+
+    /* Warning: Yellow for alerts */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --warning-light: 38 92% 95%;
+
+    /* Destructive: Red for errors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Estados de advertencia */
-    --warning: 45 93% 58%;
-    --warning-foreground: 0 0% 100%;
+    /* In Progress: Blue for active tasks */
+    --in-progress: 217 91% 60%;
+    --in-progress-foreground: 0 0% 100%;
+    --in-progress-light: 217 91% 95%;
 
-    /* Bordes e inputs */
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 214 84% 56%;
+    /* Pending: Gray for pending tasks */
+    --pending: 215 16% 47%;
+    --pending-foreground: 0 0% 100%;
+    --pending-light: 215 16% 95%;
 
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 231 48% 48%;
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Focus visible for accessibility */
+    --focus-ring: 231 48% 48%;
+    --focus-ring-offset: 0 0% 100%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Sidebar */
+    --sidebar-background: 231 48% 48%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 231 48% 48%;
+    --sidebar-accent: 231 48% 42%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 231 48% 42%;
+    --sidebar-ring: 0 0% 100%;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Animations */
+    --transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    /* Modo oscuro profesional */
-    --background: 210 11% 8%;
-    --foreground: 210 20% 95%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 210 11% 10%;
-    --card-foreground: 210 20% 95%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 210 11% 10%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 214 84% 60%;
+    --primary: 231 48% 55%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 214 84% 65%;
+    --primary-hover: 231 48% 48%;
 
-    --secondary: 210 11% 15%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 11% 12%;
-    --muted-foreground: 210 11% 60%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 142 76% 50%;
+    --accent: 231 48% 55%;
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 142 76% 55%;
 
-    --destructive: 0 84% 65%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 71% 15%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --warning-light: 38 92% 15%;
+
+    --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 45 93% 63%;
-    --warning-foreground: 0 0% 100%;
+    --in-progress: 217 91% 60%;
+    --in-progress-foreground: 0 0% 100%;
+    --in-progress-light: 217 91% 15%;
 
-    --border: 210 11% 18%;
-    --input: 210 11% 18%;
-    --ring: 214 84% 60%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --pending: 215 16% 47%;
+    --pending-foreground: 0 0% 100%;
+    --pending-light: 215 16% 15%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 231 48% 55%;
+
+    --focus-ring: 231 48% 55%;
+    --focus-ring-offset: 222 47% 11%;
+
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 231 48% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 231 48% 55%;
   }
 }
 
@@ -120,5 +150,53 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Skip to main content link for accessibility */
+  .skip-link {
+    @apply absolute left-0 top-0 -translate-y-full bg-primary text-primary-foreground px-4 py-2 z-50 focus:translate-y-0 transition-transform;
+  }
+
+  /* Focus visible styles for accessibility (WCAG AA) */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    * {
+      border-width: 2px;
+    }
+  }
+}
+
+@layer components {
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors;
+  }
+
+  .status-pending {
+    @apply bg-pending-light text-pending border border-pending/20;
+  }
+
+  .status-in-progress {
+    @apply bg-in-progress-light text-in-progress border border-in-progress/20;
+  }
+
+  .status-completed {
+    @apply bg-success-light text-success border border-success/20;
   }
 }
