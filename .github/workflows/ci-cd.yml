@@ -6,7 +6,9 @@ on:
   workflow_dispatch:
 
 env:
-  DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
   build:
@@ -32,11 +34,52 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
-  deploy:
-    name: Deploy to Vercel
+  Deploy-Dev:
+    name: Deploy to Vercel (Development)
     needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Pull Vercel Environment Variables
+        working-directory: ./frontend
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        
       - name: Trigger Vercel Deployment
-        run: |
-          curl -X POST "${{ secrets.DEPLOY_HOOK_URL }}"
+        working-directory: ./frontend
+        run: vercel deploy --no-wait --token=${{ secrets.VERCEL_TOKEN }}
+
+  Deploy-Production:
+    name: Deploy to Vercel (Production)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Pull Vercel Environment Variables
+        working-directory: ./frontend
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Trigger Vercel Deployment
+        working-directory: ./frontend
+        run: vercel deploy --prod --no-wait --token=${{ secrets.VERCEL_TOKEN }}
