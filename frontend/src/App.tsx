@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Proyectos from "./pages/Proyectos";
 import Tareas from "./pages/Tareas";
+import Notificaciones from "./pages/Notificaciones";
+import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,26 @@ const App = () => (
                 <ProtectedRoute>
                   <AppLayout>
                     <Tareas />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notificaciones"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Notificaciones />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/perfil"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Perfil />
                   </AppLayout>
                 </ProtectedRoute>
               }
