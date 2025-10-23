@@ -6,7 +6,7 @@ Content-Type: application/json
     "description": "Proyecto 1 - descripción",
     "deadline": "2025-12-10",
     "team": {
-        "id": 1
+        "id": 224
     }
 }
 
@@ -15,11 +15,24 @@ POST http://localhost:8080/task/save
 Content-Type: application/json
 
 {
-    "title":"Tarea 1",
-    "description": "Prueba",
+    "title":"Valora",
+    "description": "Valorar la vida",
     "deadline":"2025-12-10",
+    "responsible":"Karen",
     "project": {
-        "id": 3
+        "id": 15
+    }
+}
+
+###
+
+POST http://localhost:8080/objective/save 
+Content-Type: application/json
+
+{
+    "description":"vivir la vida",
+    "project": {
+        "id": 15
     }
 }
 
@@ -32,7 +45,7 @@ GET http://localhost:8080/task/listAll
 GET http://localhost:8080/project/listAll
 ###
 
-DELETE http://localhost:8080/task/delete/2
+DELETE http://localhost:8080/task/delete/27
 
 ###
 
@@ -40,11 +53,12 @@ PUT http://localhost:8080/task/update
 Content-Type: application/json
 
 {
-    "id": 3,
+    "id": 29,
     "title":"Tarea 1",
     "description": "Prueba final",
     "deadline":"2025-12-10",
+    "responsible": "Camila",
     "project": {
-        "id": 3
+        "id": 15
     }
 }

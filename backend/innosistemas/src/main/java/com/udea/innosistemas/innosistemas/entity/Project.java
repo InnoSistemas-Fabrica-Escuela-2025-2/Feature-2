@@ -31,7 +31,7 @@ public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name="nombre_proyecto", nullable = false )
     private String name;
@@ -42,11 +42,16 @@ public class Project {
     @Column(name="fecha_final", nullable = false )
     private Timestamp deadline;
     
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.MERGE, orphanRemoval = false)
     @JsonManagedReference
     private List<Task> tasks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @JsonManagedReference
+    private List<Objective> objectives = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name="id_equipo", nullable=false)
     private Team team;
+
 }
