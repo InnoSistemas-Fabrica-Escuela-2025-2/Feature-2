@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="objetivos")
+@Table(name="objectives")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -27,11 +27,11 @@ public class Objective {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (name="descripcion")
+    @Column (name=" description", nullable=false)
     private String description;
 
     @ManyToOne
-    @JoinColumn(name="id_proyecto", nullable=false)
+    @JoinColumn(name="id_proyect", nullable=false)
     @JsonBackReference
     private Project project;
 }

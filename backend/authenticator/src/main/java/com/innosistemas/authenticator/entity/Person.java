@@ -1,4 +1,4 @@
-package com.udea.innosistemas.innosistemas.entity;
+package com.innosistemas.authenticator.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,17 +12,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="teams")
+@Table(name = "persons")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Team {
+public class Person{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(name="name", nullable = false )
-    private String name;
+    @Column(name = "name", nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Column(name = "role", nullable = false)
+    private String role;
 }
+
