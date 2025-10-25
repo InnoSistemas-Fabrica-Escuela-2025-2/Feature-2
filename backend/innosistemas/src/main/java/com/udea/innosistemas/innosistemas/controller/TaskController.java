@@ -54,7 +54,11 @@ public class TaskController {
         }
     }
     
-    
+    @PutMapping("updateState/{id_task}/{id_state}")
+    public ResponseEntity<Void> updateState(@PathVariable Long id_task, @PathVariable Long id_state) {
+        taskService.updateState(id_task, id_state);
+        return ResponseEntity.noContent().build();
+    }
 
 
     

@@ -46,4 +46,8 @@ public class Task {
     @JsonBackReference
     private Project project;
 
+    @ManyToOne
+    @JoinColumn(name="id_state")
+    private State state;
+
 }
