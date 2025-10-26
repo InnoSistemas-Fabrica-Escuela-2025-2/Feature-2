@@ -2,6 +2,8 @@ package com.udea.innosistemas.innosistemas.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,8 @@ import com.udea.innosistemas.innosistemas.repository.TeamRepository;
 @RequestMapping("/project")
 public class ProjectController {
     
+    private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
+    
     @Autowired
     private ProjectService projectService;
     
@@ -29,6 +33,11 @@ public class ProjectController {
     @PostMapping("/save")
     public ResponseEntity<Project> saveProject(@RequestBody Project project) {
        try {
+            logger.info("🔵 INTENTANDO CREAR PROYECTO: '{}' - Timestamp: {}", 
+                       project.getName(), System.currentTimeMillis());
+            logger.info("🔵 INTENTANDO CREAR PROYECTO: '{}' - Timestamp: {}", 
+                       project.getName(), System.currentTimeMillis());
+            
             // Si no tiene team asignado, asignar el primero disponible
             if (project.getTeam() == null) {
                 List<Team> teams = teamRepository.findAll();
@@ -40,6 +49,8 @@ public class ProjectController {
             }
             
             Project saved = projectService.saveProject(project);
+            logger.info("✅ PROYECTO CREADO EXITOSAMENTE: ID={}, Nombre='{}', Timestamp: {}", 
+                       saved.getId(), saved.getName(), System.currentTimeMillis());
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             e.printStackTrace();
