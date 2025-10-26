@@ -1,6 +1,0 @@
-# Render ignora estos archivos durante el build
-.git
-.gitignore
-README.md
-target/
-*.log
