@@ -1,6 +1,6 @@
 # Feature-2: Project and Task Management System
 
-Feature 2. Gestión de Proyectos y Tareas - Permite a los equipos gestionar los proyectos asignados, organizando tareas, asignando responsables, estableciendo fechas de entrega y controlando el progreso.
+Sistema de gestión de proyectos y tareas que permite a los equipos gestionar proyectos asignados, organizando tareas, asignando responsables, estableciendo fechas de entrega y controlando el progreso.
 
 ## 🚀 Quick Start
 
