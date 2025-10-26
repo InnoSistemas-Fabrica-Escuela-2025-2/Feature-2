@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Project } from '@/types';
+import api from '@/lib/api';
 import {
   Dialog,
   DialogContent,
@@ -121,26 +122,27 @@ const CreateProjectDialog = ({
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Crear el proyecto en el backend
+      const projectData = {
+        name: nombre.trim(),
+        description: descripcion.trim(),
+        deadline: new Date(fechaEntrega).toISOString(),
+      };
 
-    const newProject: Project = {
-      id: `p${Date.now()}`,
-      nombre: nombre.trim(),
-      descripcion: descripcion.trim(),
-      objetivos: objetivos.trim(),
-      fechaEntrega: new Date(fechaEntrega),
-      fechaCreacion: new Date(),
-      creadorId: user?.id || '',
-      miembros: [user?.id || ''],
-      progreso: 0,
-    };
-
-    onProjectCreated(newProject);
-    toast.success('Proyecto creado exitosamente');
-    onOpenChange(false);
-    resetForm();
-    setIsSubmitting(false);
+      const response = await api.post('/project/save', projectData);
+      
+      onProjectCreated(response.data);
+      toast.success('Proyecto creado exitosamente');
+      onOpenChange(false);
+      resetForm();
+    } catch (error: any) {
+      console.error('Error al crear proyecto:', error);
+      setError(error.response?.data?.message || 'Error al crear el proyecto. Intenta de nuevo.');
+      toast.error('Error al crear el proyecto');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

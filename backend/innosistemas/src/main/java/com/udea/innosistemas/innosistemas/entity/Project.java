@@ -51,7 +51,7 @@ public class Project {
     private List<Objective> objectives = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name="id_team", nullable=false)
+    @JoinColumn(name="id_team", nullable=true)
     private Team team;
 
 }
