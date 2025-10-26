@@ -20,7 +20,7 @@ Content-Type: application/json
     "deadline":"2025-12-10",
     "responsible":"Karen",
     "project": {
-        "id": 1
+        "id": 7
     }
 }
 
@@ -32,7 +32,7 @@ Content-Type: application/json
 {
     "description":"aprender mucho sobre esquemas",
     "project": {
-        "id": 1
+        "id": 7
     }
 }
 
@@ -53,8 +53,8 @@ PUT http://localhost:8082/task/update
 Content-Type: application/json
 
 {
-    "id": 1,
-    "title":"Esquemitas",
+    "id": 2,
+    "title":"hola",
     "description": "Prueba final",
     "deadline":"2025-12-10",
     "responsible": "Karen",
@@ -65,4 +65,4 @@ Content-Type: application/json
 
 ###
 
-PUT http://localhost:8082/task/updateState/1/3
+PUT http://localhost:8082/task/updateState/2/2
