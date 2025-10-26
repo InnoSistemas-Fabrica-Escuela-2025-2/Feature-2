@@ -35,8 +35,6 @@ public class ProjectController {
        try {
             logger.info("🔵 INTENTANDO CREAR PROYECTO: '{}' - Timestamp: {}", 
                        project.getName(), System.currentTimeMillis());
-            logger.info("🔵 INTENTANDO CREAR PROYECTO: '{}' - Timestamp: {}", 
-                       project.getName(), System.currentTimeMillis());
             
             // Si no tiene team asignado, asignar el primero disponible
             if (project.getTeam() == null) {
