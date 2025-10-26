@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configuración base de Axios
 const api = axios.create({
-  baseURL: 'http://localhost:8082', // URL del backend
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8082', // URL del backend desde variable de entorno
   headers: {
     'Content-Type': 'application/json',
   },
