@@ -1,9 +1,9 @@
-POST http://localhost:8080/project/save 
+POST http://localhost:8082/project/save 
 Content-Type: application/json
 
 {
     "name":"Proyecto 1",
-    "description": "Proyecto 1 - descripción",
+    "description": "Proyecto bases de datos",
     "deadline": "2025-12-10",
     "team": {
         "id": 1
@@ -11,40 +11,58 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8080/task/save
+POST http://localhost:8082/task/save
 Content-Type: application/json
 
 {
-    "title":"Tarea 1",
-    "description": "Prueba",
+    "title":"Esquemas",
+    "description": "Probando diferentes esquemas",
     "deadline":"2025-12-10",
+    "responsible":"Karen",
     "project": {
-        "id": 3
+        "id": 1
     }
 }
 
 ###
 
-GET http://localhost:8080/task/listAll
-
-###
-
-GET http://localhost:8080/project/listAll
-###
-
-DELETE http://localhost:8080/task/delete/2
-
-###
-
-PUT http://localhost:8080/task/update
+POST http://localhost:8082/objective/save 
 Content-Type: application/json
 
 {
-    "id": 3,
-    "title":"Tarea 1",
+    "description":"aprender mucho sobre esquemas",
+    "project": {
+        "id": 1
+    }
+}
+
+###
+
+GET http://localhost:8082/task/listAll
+
+###
+
+GET http://localhost:8082/project/listAll
+###
+
+DELETE http://localhost:8082/task/delete/27
+
+###
+
+PUT http://localhost:8082/task/update
+Content-Type: application/json
+
+{
+    "id": 1,
+    "title":"Esquemitas",
     "description": "Prueba final",
     "deadline":"2025-12-10",
+    "responsible": "Karen",
     "project": {
-        "id": 3
+        "id": 1
     }
 }
+
+###
+
+PUT http://localhost:8082/task/updateState/1/3

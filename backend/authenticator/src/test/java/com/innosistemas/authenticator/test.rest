@@ -1,0 +1,7 @@
+POST http://localhost:8081/person/authenticate
+Content-Type: application/json
+
+{
+    "email": "karen@udea.edu.co",
+    "password": "karen"
+}

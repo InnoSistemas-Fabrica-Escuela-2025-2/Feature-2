@@ -11,18 +11,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Entity
-@Table(name="teams")
+@Table(name="states")
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class Team {
+@NoArgsConstructor
+public class State {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name="name", nullable = false )
+    @Column (name="name")
     private String name;
+
 }

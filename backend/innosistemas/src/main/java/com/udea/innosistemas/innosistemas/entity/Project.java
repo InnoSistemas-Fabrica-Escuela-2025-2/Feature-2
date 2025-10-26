@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="proyectos")
+@Table(name="projects")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,22 +31,27 @@ public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(name="nombre_proyecto", nullable = false )
+    @Column(name="project_name", nullable = false )
     private String name;
 
-    @Column(name="descripcion", nullable = false )
+    @Column(name="description", nullable = false )
     private String description;
 
-    @Column(name="fecha_final", nullable = false )
+    @Column(name="deadline", nullable = false )
     private Timestamp deadline;
     
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.MERGE, orphanRemoval = false)
     @JsonManagedReference
     private List<Task> tasks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "project", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @JsonManagedReference
+    private List<Objective> objectives = new ArrayList<>();
+
     @ManyToOne
-    @JoinColumn(name="id_equipo", nullable=false)
+    @JoinColumn(name="id_team", nullable=false)
     private Team team;
+
 }

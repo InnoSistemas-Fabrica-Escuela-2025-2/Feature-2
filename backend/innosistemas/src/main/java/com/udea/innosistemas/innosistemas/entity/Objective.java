@@ -1,7 +1,5 @@
 package com.udea.innosistemas.innosistemas.entity;
 
-import java.sql.Timestamp;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
@@ -18,36 +16,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="tasks")
+@Table(name="objectives")
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class Task {
+@NoArgsConstructor
+public class Objective {
     
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="tittle", nullable = false )
-    private String title;
-
-    @Column(name="description", nullable = false )
+    @Column (name=" description", nullable=false)
     private String description;
 
-    @Column(name="deadline", nullable = false )
-    private Timestamp deadline;
-
-    @Column(name="responsible", nullable = false)
-    private String responsible;
-
     @ManyToOne
-    @JoinColumn(name="id_project", nullable=false)
+    @JoinColumn(name="id_proyect", nullable=false)
     @JsonBackReference
     private Project project;
-
-    @ManyToOne
-    @JoinColumn(name="id_state")
-    private State state;
-
 }
