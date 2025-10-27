@@ -12,6 +12,6 @@ import lombok.Setter;
 public class AuthenticatorResponse {
     private String token;
     private String email;
- 
+    private String role;
 }
 

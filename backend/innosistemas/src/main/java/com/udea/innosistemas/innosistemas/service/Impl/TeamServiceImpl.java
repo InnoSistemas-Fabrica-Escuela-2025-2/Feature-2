@@ -14,27 +14,23 @@ public class TeamServiceImpl implements TeamService{
     @Autowired
     private TeamRepository teamRepository;
 
-    // @Override
-    // public List<Person> teamMembers(Long id_student) {
-    //     List<person> teamMember = teamRepository.findAll(id_student)
-    //     throw new UnsupportedOperationException("Unimplemented method 'teamMembers'");
-    // }
-
     @Override
-    public Long idTeam(Long id_student) {
+    public String nameTeam(Long id_student) {
         try{
-            return teamRepository.findIdByIdStudent(id_student);
+            return teamRepository.findNameByIdStudent(id_student);
         } catch (Exception e){
             throw new UnsupportedOperationException("No fue posible encontrar el equipo.");
         }
     }
 
     @Override
-    public List<Long> teamMembersId(Long id_team) {
+    public List<String> getStudentsNameById(Long id_student) {
         try{
-            return teamRepository.findIdStudentById(id_team);
+            String teamName = nameTeam(id_student);
+            return teamRepository.getStudentsNameById(teamName);
         } catch (Exception e){
-            throw new UnsupportedOperationException("Unimplemented method 'teamMembersId'");
+            throw new UnsupportedOperationException("No existe el estudiante.");
         }
-    }   
+        
+    }
 }

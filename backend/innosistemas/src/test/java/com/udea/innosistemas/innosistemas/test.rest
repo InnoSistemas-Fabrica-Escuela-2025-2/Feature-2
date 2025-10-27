@@ -66,3 +66,7 @@ Content-Type: application/json
 ###
 
 PUT http://localhost:8082/task/updateState/2/2
+
+### 
+
+GET http://localhost:8082/team/getStudentsName/1

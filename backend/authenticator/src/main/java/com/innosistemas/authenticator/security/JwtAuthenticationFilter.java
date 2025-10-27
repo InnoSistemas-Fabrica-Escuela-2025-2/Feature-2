@@ -49,8 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 List<SimpleGrantedAuthority> authorities;
                 if (role != null && role.equals("profesor")) {
                     authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_PROFESOR"),
-                            new SimpleGrantedAuthority("ROLE_STUDENT"));
+                            new SimpleGrantedAuthority("ROLE_PROFESOR"));
                 } else {
                     authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT"));
                 }

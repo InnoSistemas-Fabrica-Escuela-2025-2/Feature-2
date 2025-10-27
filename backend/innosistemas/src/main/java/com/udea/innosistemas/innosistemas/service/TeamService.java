@@ -4,7 +4,6 @@ import java.util.List;
 
 public interface TeamService {
     
-    Long idTeam(Long id_student);
-    List<Long> teamMembersId(Long id_team);
-    //List<Person> teamMembers(Long id_student); 
+    String nameTeam(Long id_student);
+    List<String> getStudentsNameById(Long id_student);
 }
