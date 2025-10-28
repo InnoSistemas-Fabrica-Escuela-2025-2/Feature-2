@@ -1,4 +1,23 @@
+POST http://localhost:8080/authenticator/person/authenticate 
+Content-Type: application/json
+
+{
+    "email": "samuel@udea.edu.co",
+    "password": "samuel"
+}
+###
+GET http://localhost:8080/project/project/listAll
+###
+POST http://localhost:8080/authenticator/person/authenticate 
+Content-Type: application/json
+
+{
+    "email": "geraldin@udea.edu.co",
+    "password": "geraldin"
+}
+###
 POST http://localhost:8080/project/project/save
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTY3ODQ0OCwiZXhwIjoxNzYxNjc5MzQ4fQ.siItJz6fvHKvxJ3dR7jVnhA895dnaXB8xxG-OVxn2UA
 Content-Type: application/json
 
 {
@@ -9,33 +28,9 @@ Content-Type: application/json
         "id": 1
     }
 }
-
 ###
-
-POST http://localhost:8080/authenticator/person/authenticate 
-Content-Type: application/json
-
-{
-    "email": "samuel@udea.edu.co",
-    "password": "samuel"
-}
-
-###
-GET http://localhost:8080/project/project/listAll
-
-###
-
-POST http://localhost:8080/authenticator/person/authenticate 
-Content-Type: application/json
-
-{
-    "email": "geraldin@udea.edu.co",
-    "password": "geraldin"
-}
-
-###
-
 POST http://localhost:8080/project/project/save
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTY2NzMwOCwiZXhwIjoxNzYxNjY4MjA4fQ.UjCXh89Bl5zWPHoW5M6QMzP2b_zWSl5wvLROHTuSNLI
 Content-Type: application/json
 
 {
@@ -46,7 +41,5 @@ Content-Type: application/json
         "id": 6
     }
 }
-
 ###
-
 GET http://localhost:8080/project/project/message

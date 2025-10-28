@@ -25,11 +25,11 @@ public class SecurityConfig {
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers("/authenticator/person/authenticate", "/authenticator/person/message").permitAll()
+                .pathMatchers("/project/project/listAll").hasAuthority("profesor")
                 .pathMatchers("/project/project/**").hasAuthority("estudiante")
-                .pathMatchers("/project/project/listAll").hasRole("PROFESOR")
-                .pathMatchers("/project/objective/**").hasRole("STUDENT")
-                .pathMatchers("/project/task/**").hasRole("STUDENT")
-                .pathMatchers("/project/state/**").hasRole("STUDENT")
+                .pathMatchers("/project/objective/**").hasAuthority("estudiante")
+                .pathMatchers("/project/task/**").hasAuthority("estudiante")
+                .pathMatchers("/project/state/**").hasAuthority("estudiante")
                 .anyExchange().authenticated()
             )
             .build();
