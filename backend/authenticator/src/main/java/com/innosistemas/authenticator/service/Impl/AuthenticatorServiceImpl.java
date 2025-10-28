@@ -6,7 +6,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.innosistemas.authenticator.dto.AuthenticatorRequest;
 import com.innosistemas.authenticator.dto.AuthenticatorResponse;
+import com.innosistemas.authenticator.entity.ActiveSession;
 import com.innosistemas.authenticator.entity.Person;
+import com.innosistemas.authenticator.repository.ActiveSessionRepository;
 import com.innosistemas.authenticator.repository.PersonRepository;
 import com.innosistemas.authenticator.security.JwtUtil;
 import com.innosistemas.authenticator.service.ActiveSessionService;
@@ -23,6 +25,9 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
     private PersonRepository personRepository;
 
     @Autowired
+    private ActiveSessionRepository activeSessionRepository;
+
+    @Autowired
     private LoginAttemptService loginAttemptService;
 
     @Autowired
@@ -36,11 +41,23 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
             Person person = present.get();
 
             if (loginAttemptService.isBlocked(person)){
+                System.out.println("Usuario bloqueado por múltiples intentos fallidos: " + person.getEmail());
                 throw new RuntimeException("Usuario bloqueado por múltiples intentos fallidos");
             }
 
-            if (activeSessionService.isSessionActive(person)) {
-            throw new RuntimeException("El usuario ya tiene una sesión activa.");
+            Optional<ActiveSession> session = activeSessionRepository.findByPerson(person);
+            if (session.isPresent()) {
+                ActiveSession existingSession = session.get();
+                System.out.println("Verificando sesión activa para: " + person.getEmail());
+                
+                if (jwtUtil.validateToken(existingSession.getToken())) {
+                    System.out.println("El usuario ya tiene una sesión activa y válida: " + person.getEmail());
+                    throw new RuntimeException("El usuario ya tiene una sesión activa.");
+                } else {
+                    System.out.println("Token expirado, se eliminará la sesión anterior: " + person.getEmail());
+                    activeSessionService.invalidateSession(existingSession);
+                    activeSessionRepository.flush(); 
+                }
             }
 
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();

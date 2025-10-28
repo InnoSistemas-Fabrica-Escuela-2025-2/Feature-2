@@ -1,5 +1,7 @@
 package com.innosistemas.authenticator.entity;
 
+import java.sql.Timestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,4 +33,7 @@ public class ActiveSession {
     @OneToOne
     @JoinColumn(name = "person_id", referencedColumnName = "id", unique = true)
     private Person person;
+
+    @Column(name = "expires_at")
+    private Timestamp expiresAt;
 }

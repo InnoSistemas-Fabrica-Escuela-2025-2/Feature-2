@@ -1,5 +1,7 @@
 package com.innosistemas.authenticator.entity;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,4 +39,7 @@ public class LoginAttempt {
     @OneToOne
     @JoinColumn(name = "person_id", referencedColumnName = "id", unique = true)
     private Person person;
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
 }
