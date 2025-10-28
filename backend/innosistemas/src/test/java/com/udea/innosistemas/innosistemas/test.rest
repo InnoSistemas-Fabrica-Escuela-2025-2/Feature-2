@@ -1,4 +1,4 @@
-POST http://localhost:8082/project/save 
+POST http://localhost:8082/project/project/save 
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8082/task/save
+POST http://localhost:8082/project/task/save
 Content-Type: application/json
 
 {
@@ -26,7 +26,7 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:8082/objective/save 
+POST http://localhost:8082/project/objective/save 
 Content-Type: application/json
 
 {
@@ -38,18 +38,18 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:8082/task/listAll
+GET http://localhost:8082/project/task/listAll
 
 ###
 
-GET http://localhost:8082/project/listAll
+GET http://localhost:8082/project/project/listAll
 ###
 
-DELETE http://localhost:8082/task/delete/27
+DELETE http://localhost:8082/project/task/delete/27
 
 ###
 
-PUT http://localhost:8082/task/update
+PUT http://localhost:8082/project/task/update
 Content-Type: application/json
 
 {
@@ -65,8 +65,8 @@ Content-Type: application/json
 
 ###
 
-PUT http://localhost:8082/task/updateState/2/2
+PUT http://localhost:8082/project/task/updateState/2/2
 
 ### 
 
-GET http://localhost:8082/team/getStudentsName/1
+GET http://localhost:8082/project/team/getStudentsName/1

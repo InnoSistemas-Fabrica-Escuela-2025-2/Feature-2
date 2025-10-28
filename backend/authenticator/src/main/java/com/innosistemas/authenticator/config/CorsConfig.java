@@ -20,7 +20,7 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         
         // Permitir peticiones desde el frontend (puerto 5173 es el default de Vite)
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:8080"));
         
         // Permitir todos los headers
         config.addAllowedHeader("*");

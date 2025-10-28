@@ -21,9 +21,14 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                    //requestMatchers("/person/authenticate").permitAll()
-                    .requestMatchers("/proyect/save").hasAnyRole("ROLE STUDENT")
-                    .anyRequest().permitAll())
+                    .requestMatchers("/project/project/**").hasRole("STUDENT")
+                    .requestMatchers("/project/project/listAll").hasRole("PROFESOR")
+                    .requestMatchers("project/objective/**").hasRole("STUDENT")
+                    .requestMatchers("project/task/**").hasRole("STUDENT")
+                    .requestMatchers("project/state/**").hasRole("STUDENT")
+                    .requestMatchers("authenticator/person/authenticate").permitAll()
+                    .requestMatchers("authenticator/person/message").permitAll()
+                    )
                     
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();

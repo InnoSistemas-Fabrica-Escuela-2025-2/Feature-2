@@ -1,12 +1,12 @@
 package com.udea.innosistemas.innosistemas.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import java.util.Arrays;
 
 @Configuration
 public class CorsConfig {
@@ -20,7 +20,7 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         
         // Permitir peticiones desde el frontend (puerto 5173 es el default de Vite)
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:8080"));
         
         // Permitir todos los headers
         config.addAllowedHeader("*");

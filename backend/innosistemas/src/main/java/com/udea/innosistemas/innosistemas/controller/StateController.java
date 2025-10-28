@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
-@RequestMapping("/state")
+@RequestMapping("/project/state")
 public class StateController {
     
     @Autowired

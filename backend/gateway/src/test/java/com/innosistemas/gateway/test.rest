@@ -1,0 +1,52 @@
+POST http://localhost:8080/project/project/save
+Content-Type: application/json
+
+{
+    "name":"Proyecto 3",
+    "description": "Proyecto bases de datos",
+    "deadline": "2025-12-10",
+    "team": {
+        "id": 1
+    }
+}
+
+###
+
+POST http://localhost:8080/authenticator/person/authenticate 
+Content-Type: application/json
+
+{
+    "email": "samuel@udea.edu.co",
+    "password": "samuel"
+}
+
+###
+GET http://localhost:8080/project/project/listAll
+
+###
+
+POST http://localhost:8080/authenticator/person/authenticate 
+Content-Type: application/json
+
+{
+    "email": "geraldin@udea.edu.co",
+    "password": "geraldin"
+}
+
+###
+
+POST http://localhost:8080/project/project/save
+Content-Type: application/json
+
+{
+    "name":"Proyecto 3",
+    "description": "Proyecto bases de datos",
+    "deadline": "2025-12-10",
+    "team": {
+        "id": 6
+    }
+}
+
+###
+
+GET http://localhost:8080/project/project/message

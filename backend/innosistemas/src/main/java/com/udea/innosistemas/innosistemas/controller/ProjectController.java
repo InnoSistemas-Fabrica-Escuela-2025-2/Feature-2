@@ -15,11 +15,16 @@ import com.udea.innosistemas.innosistemas.service.ProjectService;
 
 
 @RestController
-@RequestMapping("/project")
+@RequestMapping("/project/project")
 public class ProjectController {
     
     @Autowired
     private ProjectService projectService;
+
+    @GetMapping("/message")
+    public ResponseEntity<String> showMesagge() {
+        return ResponseEntity.ok("servicio 2 funcionando");
+    }
 
     @PostMapping("/save")
     public ResponseEntity<Project> saveProject(@RequestBody Project project) {

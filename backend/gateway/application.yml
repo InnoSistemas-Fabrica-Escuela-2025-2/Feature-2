@@ -1,0 +1,16 @@
+server:
+    port: 8080
+spring:
+    session:
+      store-type: none
+    cloud:
+        gateway:
+            routes:
+            - id: authenticator
+              uri: http://localhost:8081/
+              Predicates:
+              - Path=/project/**
+            - id: innosistemas
+              uri: http://localhost:8082/
+              Predicates:
+              - Path=/authenticator/**

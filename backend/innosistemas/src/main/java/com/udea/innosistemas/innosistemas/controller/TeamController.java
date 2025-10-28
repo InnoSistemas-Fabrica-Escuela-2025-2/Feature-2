@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
-@RequestMapping("/team")
+@RequestMapping("/project/team")
 public class TeamController {
     
     @Autowired
