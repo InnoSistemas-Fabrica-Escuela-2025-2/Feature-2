@@ -16,10 +16,10 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}") // Default value for development, should be overridden in production
+    @Value("${jwt.secret}") 
     private String secretKey;
 
-    @Value("${jwt.expiration}") // 30 seconds in milliseconds
+    @Value("${jwt.expiration}") 
     private Long jwtExpiration;
 
     private SecretKey getSigningKey() {
@@ -55,7 +55,7 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    private Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
