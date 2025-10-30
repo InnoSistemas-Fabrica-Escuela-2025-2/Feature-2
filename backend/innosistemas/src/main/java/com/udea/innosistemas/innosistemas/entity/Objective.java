@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="objectives")
+@Table(name="objectives", schema="project")
 @Getter
 @Setter
 @AllArgsConstructor
