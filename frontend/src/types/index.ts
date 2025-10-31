@@ -12,6 +12,12 @@ export interface User {
   fechaRegistro: Date;
 }
 
+export interface Team {
+  id: string;
+  nombre: string;
+  miembros: string[]; // Array of user IDs
+}
+
 export interface Project {
   id: string;
   nombre: string;
@@ -20,6 +26,7 @@ export interface Project {
   fechaEntrega: Date;
   fechaCreacion: Date;
   creadorId: string;
+  equipoId?: string; // Team assigned to project
   miembros: string[]; // Array of user IDs
   progreso: number; // 0-100
 }

@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Project } from '@/types';
-import api from '@/lib/api';
+import { mockTeams } from '@/data/mockData';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,6 +45,7 @@ const CreateProjectDialog = ({
   const [descripcion, setDescripcion] = useState('');
   const [objetivos, setObjetivos] = useState('');
   const [fechaEntrega, setFechaEntrega] = useState('');
+  const [equipoId, setEquipoId] = useState('');
   const [error, setError] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,11 +55,12 @@ const CreateProjectDialog = ({
     setDescripcion('');
     setObjetivos('');
     setFechaEntrega('');
+    setEquipoId('');
     setError('');
   };
 
   const handleCancel = () => {
-    if (nombre || descripcion || objetivos || fechaEntrega) {
+    if (nombre || descripcion || objetivos || fechaEntrega || equipoId) {
       setShowCancelDialog(true);
     } else {
       onOpenChange(false);
@@ -92,6 +95,11 @@ const CreateProjectDialog = ({
       return false;
     }
 
+    if (!equipoId) {
+      setError('Debes seleccionar un equipo para el proyecto');
+      return false;
+    }
+
     // Validate date format
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(fechaEntrega)) {
@@ -122,27 +130,29 @@ const CreateProjectDialog = ({
 
     setIsSubmitting(true);
 
-    try {
-      // Crear el proyecto en el backend
-      const projectData = {
-        name: nombre.trim(),
-        description: descripcion.trim(),
-        deadline: new Date(fechaEntrega).toISOString(),
-      };
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      const response = await api.post('/project/save', projectData);
-      
-      onProjectCreated(response.data);
-      toast.success('Proyecto creado exitosamente');
-      onOpenChange(false);
-      resetForm();
-    } catch (error: any) {
-      console.error('Error al crear proyecto:', error);
-      setError(error.response?.data?.message || 'Error al crear el proyecto. Intenta de nuevo.');
-      toast.error('Error al crear el proyecto');
-    } finally {
-      setIsSubmitting(false);
-    }
+    const selectedTeam = mockTeams.find(t => t.id === equipoId);
+    
+    const newProject: Project = {
+      id: `p${Date.now()}`,
+      nombre: nombre.trim(),
+      descripcion: descripcion.trim(),
+      objetivos: objetivos.trim(),
+      fechaEntrega: new Date(fechaEntrega),
+      fechaCreacion: new Date(),
+      creadorId: user?.id || '',
+      equipoId,
+      miembros: selectedTeam?.miembros || [user?.id || ''],
+      progreso: 0,
+    };
+
+    onProjectCreated(newProject);
+    toast.success('Proyecto creado exitosamente');
+    onOpenChange(false);
+    resetForm();
+    setIsSubmitting(false);
   };
 
   return (
@@ -236,6 +246,32 @@ const CreateProjectDialog = ({
                 disabled={isSubmitting}
                 min={new Date().toISOString().split('T')[0]}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="equipo">
+                Equipo
+                <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
+              </Label>
+              <Select value={equipoId} onValueChange={setEquipoId} disabled={isSubmitting}>
+                <SelectTrigger 
+                  id="equipo"
+                  aria-required="true"
+                  aria-invalid={error && !equipoId ? 'true' : 'false'}
+                >
+                  <SelectValue placeholder="Selecciona un equipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockTeams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Los miembros del equipo serán asignados automáticamente al proyecto
+              </p>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">

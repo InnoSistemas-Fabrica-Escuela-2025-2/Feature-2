@@ -25,7 +25,12 @@ const Login = () => {
 
     // Client-side validation
     if (!correo || !contrasena) {
-      setError('Por favor, completa todos los campos');
+      setError('Por favor, completa todos los campos obligatorios');
+      return;
+    }
+
+    if (!correo.trim()) {
+      setError('El correo electrónico no puede estar vacío');
       return;
     }
 
@@ -34,17 +39,22 @@ const Login = () => {
       return;
     }
 
+    if (!contrasena.trim()) {
+      setError('La contraseña no puede estar vacía');
+      return;
+    }
+
     if (contrasena.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
-    const success = await login(correo, contrasena);
+    const result = await login(correo, contrasena);
 
-    if (success) {
+    if (result.success) {
       navigate('/dashboard');
     } else {
-      setError('Credenciales incorrectas. Verifica tu correo y contraseña.');
+      setError(result.error || 'Error al iniciar sesión. Intenta de nuevo.');
     }
   };
 
@@ -73,9 +83,14 @@ const Login = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {error && (
-              <Alert variant="destructive" role="alert" aria-live="polite">
+              <Alert 
+                variant="destructive" 
+                role="alert" 
+                aria-live="assertive"
+                aria-atomic="true"
+              >
                 <AlertCircle className="h-4 w-4" aria-hidden="true" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription id="login-error">{error}</AlertDescription>
               </Alert>
             )}
 
@@ -99,6 +114,7 @@ const Login = () => {
                   required
                   aria-required="true"
                   aria-invalid={error && !correo ? 'true' : 'false'}
+                  aria-describedby={error ? "login-error" : undefined}
                   autoComplete="email"
                   disabled={isLoading}
                 />
@@ -125,6 +141,7 @@ const Login = () => {
                   required
                   aria-required="true"
                   aria-invalid={error && !contrasena ? 'true' : 'false'}
+                  aria-describedby={error ? "login-error" : undefined}
                   autoComplete="current-password"
                   disabled={isLoading}
                   minLength={6}
