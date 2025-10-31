@@ -2,8 +2,8 @@ POST http://localhost:8080/authenticator/person/authenticate
 Content-Type: application/json
 
 {
-    "email": "samuel@udea.edu.co",
-    "password": "samuel"
+    "email": "julio@udea.edu.co",
+    "password": "julio"
 }
 
 ###
