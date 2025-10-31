@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.udea.innosistemas.innosistemas.entity.Project;
 import com.udea.innosistemas.innosistemas.service.ProjectService;
+
 
 
 @RestController
@@ -37,8 +39,13 @@ public class ProjectController {
     }
 
     @GetMapping("/listAll")
-    public ResponseEntity<List<Project>> listAllTasks() {
+    public ResponseEntity<List<Project>> listAllProjects() {
         return ResponseEntity.ok(projectService.listAllProjects());
+    }
+
+    @GetMapping("/listAllById/{id}")
+    public ResponseEntity<List<Project>> listAllProjectsById(@PathVariable Long id) {
+        return ResponseEntity.ok(projectService.listAllById(id));
     }
     
 }
