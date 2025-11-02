@@ -94,6 +94,7 @@ jobs:
           args:
             -Dsonar.projectKey=InnoSistemas-Fabrica-Escuela-2025-2_Feature-2
             -Dsonar.organization=innosistemas-fabrica-escuela-2025-2-1
+            -Dsonar.java.binaries=backend/authenticator/target/classes,backend/gateway/target/classes,backend/innosistemas/target/classes
             -Dsonar.coverage.jacoco.xmlReportPaths=qa/reports/backend/authenticator/jacoco.xml,qa/reports/backend/gateway/jacoco.xml,qa/reports/backend/innosistemas/jacoco.xml
             -Dsonar.javascript.lcov.reportPaths=qa/reports/frontend/lcov.info
           projectBaseDir: .
