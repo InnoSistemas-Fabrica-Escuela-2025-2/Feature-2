@@ -1,0 +1,103 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
+
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+  },
+}));
+
+import { toast } from "sonner";
+import TaskCard from "../TaskCard";
+import type { Project, Task } from "@/types";
+
+const toastSuccessMock = toast.success as unknown as ReturnType<typeof vi.fn>;
+
+const baseTask: Task = {
+  id: "task-1",
+  proyectoId: "project-1",
+  titulo: "Configurar entorno de despliegue",
+  descripcion: "Documentar y preparar pipelines para despliegue continuo.",
+  fechaCreacion: new Date("2025-01-01"),
+  fechaEntrega: new Date("2025-11-01"),
+  responsableId: "user-1",
+  estado: "en-progreso",
+  prioridad: "alta",
+};
+
+const mockProject: Project = {
+  id: "project-1",
+  nombre: "Portal Académico",
+  descripcion: "Gestión de cursos y entregables.",
+  objetivos: "Digitalizar la gestión académica.",
+  fechaCreacion: new Date("2025-01-01"),
+  fechaEntrega: new Date("2025-12-01"),
+  creadorId: "user-1",
+  equipoId: "team-1",
+  miembros: ["user-1", "user-2"],
+  progreso: 40,
+};
+
+describe("TaskCard", () => {
+  beforeEach(() => {
+    toastSuccessMock.mockReset();
+  });
+
+  it("expone controles accesibles para editar y eliminar", async () => {
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+
+    render(<TaskCard task={baseTask} project={mockProject} onEdit={onEdit} onDelete={onDelete} />);
+
+    expect(
+      screen.getByRole("article", {
+        name: /tarea: configurar entorno de despliegue/i,
+      })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("status", {
+        name: /estado de la tarea: en-progreso/i,
+      })
+    ).toBeInTheDocument();
+
+    const editButton = screen.getByRole("button", {
+      name: /editar tarea: configurar entorno de despliegue/i,
+    });
+
+    await userEvent.click(editButton);
+    expect(onEdit).toHaveBeenCalledTimes(1);
+
+    const deleteButton = screen.getByRole("button", {
+      name: /eliminar tarea: configurar entorno de despliegue/i,
+    });
+
+    expect(deleteButton).toBeInTheDocument();
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it("solicita confirmación antes de eliminar una tarea", async () => {
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+
+    render(<TaskCard task={baseTask} project={mockProject} onEdit={onEdit} onDelete={onDelete} />);
+
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: /eliminar tarea: configurar entorno de despliegue/i,
+      })
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: /¿eliminar tarea\?/i })
+    ).toBeInTheDocument();
+
+    const confirmButton = await screen.findByRole("button", { name: /^eliminar$/i });
+    await userEvent.click(confirmButton);
+
+  expect(onDelete).toHaveBeenCalledWith("task-1");
+  expect(toastSuccessMock).toHaveBeenCalledWith("Tarea eliminada correctamente");
+    expect(onEdit).not.toHaveBeenCalled();
+  });
+});
