@@ -73,6 +73,12 @@ jobs:
           mkdir -p qa/reports/backend qa/reports/frontend
 
       - name: Backend coverage (Maven)
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD: ""
+          SPRING_DATASOURCE_DRIVERCLASSNAME: org.h2.Driver
         run: |
           set -euo pipefail
           modules=(authenticator gateway innosistemas)
