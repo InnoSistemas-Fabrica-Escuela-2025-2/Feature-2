@@ -39,40 +39,40 @@ api.interceptors.response.use(
 // ==================== PROJECTS ====================
 export const projectsApi = {
   // Obtener todos los proyectos
-  getAll: () => api.get('/api/projects'),
+  getAll: () => api.get('/project/project/listAll'),
   
   // Obtener un proyecto por ID
-  getById: (id: number) => api.get(`/api/projects/${id}`),
+  getById: (id: number) => api.get(`/project/project/${id}`),
   
   // Crear un nuevo proyecto
-  create: (projectData: any) => api.post('/api/projects', projectData),
+  create: (projectData: any) => api.post('/project/project/save', projectData),
   
   // Actualizar un proyecto
-  update: (id: number, projectData: any) => api.put(`/api/projects/${id}`, projectData),
+  update: (id: number, projectData: any) => api.put(`/project/project/update`, projectData),
   
   // Eliminar un proyecto
-  delete: (id: number) => api.delete(`/api/projects/${id}`),
+  delete: (id: number) => api.delete(`/project/project/delete/${id}`),
 };
 
 // ==================== TASKS ====================
 export const tasksApi = {
   // Obtener todas las tareas
-  getAll: () => api.get('/api/tasks'),
+  getAll: () => api.get('/project/task/listAll'),
   
   // Obtener una tarea por ID
-  getById: (id: number) => api.get(`/api/tasks/${id}`),
+  getById: (id: number) => api.get(`/project/task/${id}`),
   
   // Obtener tareas por proyecto
-  getByProject: (projectId: number) => api.get(`/api/tasks/project/${projectId}`),
+  getByProject: (projectId: number) => api.get(`/project/task/project/${projectId}`),
   
   // Crear una nueva tarea
-  create: (taskData: any) => api.post('/api/tasks', taskData),
+  create: (taskData: any) => api.post('/project/task/save', taskData),
   
   // Actualizar una tarea
-  update: (id: number, taskData: any) => api.put(`/api/tasks/${id}`, taskData),
+  update: (id: number, taskData: any) => api.put(`/project/task/update`, taskData),
   
   // Eliminar una tarea
-  delete: (id: number) => api.delete(`/api/tasks/${id}`),
+  delete: (id: number) => api.delete(`/project/task/delete/${id}`),
 };
 
 export default api;
