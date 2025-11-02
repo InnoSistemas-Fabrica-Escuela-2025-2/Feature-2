@@ -1,1 +1,6 @@
-backend/.env
+# Environment and secrets
+*.env
+**/.env
+
+# Generated coverage reports
+qa/reports/
