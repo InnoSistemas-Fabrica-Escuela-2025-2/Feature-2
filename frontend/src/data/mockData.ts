@@ -1,4 +1,4 @@
-import { User, Project, Task, Notification } from '@/types';
+import { User, Project, Task, Notification, Team } from '@/types';
 
 // Mock users for authentication
 export const mockUsers: User[] = [
@@ -32,6 +32,30 @@ export const mockUsers: User[] = [
   },
 ];
 
+// Mock teams
+export const mockTeams: Team[] = [
+  {
+    id: 'team1',
+    nombre: 'Equipo Alpha',
+    miembros: ['1', '3'],
+  },
+  {
+    id: 'team2',
+    nombre: 'Equipo Beta',
+    miembros: ['1', '4'],
+  },
+  {
+    id: 'team3',
+    nombre: 'Equipo Gamma',
+    miembros: ['3', '4'],
+  },
+  {
+    id: 'team4',
+    nombre: 'Equipo Delta',
+    miembros: ['1', '3', '4'],
+  },
+];
+
 // Mock projects
 export const mockProjects: Project[] = [
   {
@@ -42,6 +66,7 @@ export const mockProjects: Project[] = [
     fechaEntrega: new Date('2025-12-15'),
     fechaCreacion: new Date('2025-09-01'),
     creadorId: '1',
+    equipoId: 'team4',
     miembros: ['1', '3', '4'],
     progreso: 45,
   },
@@ -53,6 +78,7 @@ export const mockProjects: Project[] = [
     fechaEntrega: new Date('2025-11-30'),
     fechaCreacion: new Date('2025-08-15'),
     creadorId: '3',
+    equipoId: 'team1',
     miembros: ['1', '3'],
     progreso: 60,
   },
