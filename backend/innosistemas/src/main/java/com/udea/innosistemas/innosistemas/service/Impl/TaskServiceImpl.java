@@ -33,6 +33,11 @@ public class TaskServiceImpl implements TaskService{
     @Override
     public Task saveTask(Task task) {
         try {
+            if (task.getState() == null){
+                State newState = new State();
+                newState.setId(3L);
+                task.setState(newState);
+            }
             return taskRepository.save(task);
         } catch (Exception e){
             throw new NoSuchElementException("No fue posible guardar la tarea.");
