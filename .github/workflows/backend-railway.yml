@@ -25,8 +25,13 @@ jobs:
           cache: maven
           
       - name: Run tests
-        working-directory: ./backend/innosistemas
-        run: chmod +x ./mvnw && ./mvnw test -B
+        working-directory: .
+        run: |
+          set -euo pipefail
+          modules=(authenticator gateway innosistemas)
+          for module in "${modules[@]}"; do
+            mvn -B -f "backend/${module}/pom.xml" test
+          done
 
   deploy-railway:
     name: Deploy to Railway
