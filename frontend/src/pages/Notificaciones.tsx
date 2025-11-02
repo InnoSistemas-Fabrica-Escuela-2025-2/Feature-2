@@ -59,7 +59,7 @@ export default function Notificaciones() {
             <Bell className="h-8 w-8" aria-hidden="true" />
             Notificaciones
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1" role="status" aria-live="polite" aria-atomic="true">
             {unreadCount > 0
               ? `Tienes ${unreadCount} notificación${unreadCount !== 1 ? 'es' : ''} sin leer`
               : 'No tienes notificaciones sin leer'}
@@ -79,16 +79,16 @@ export default function Notificaciones() {
       </div>
 
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
-          <TabsTrigger value="all" className="gap-2">
+        <TabsList className="grid w-full grid-cols-3 mb-6" role="tablist" aria-label="Filtros de notificaciones">
+          <TabsTrigger value="all" className="gap-2" role="tab" aria-label="Ver todas las notificaciones">
             <Filter className="h-4 w-4" aria-hidden="true" />
-            Todas ({notifications.length})
+            <span>Todas ({notifications.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="unread" className="gap-2">
-            Sin leer ({unreadCount})
+          <TabsTrigger value="unread" className="gap-2" role="tab" aria-label="Ver notificaciones sin leer">
+            <span>Sin leer ({unreadCount})</span>
           </TabsTrigger>
-          <TabsTrigger value="read" className="gap-2">
-            Leídas ({notifications.length - unreadCount})
+          <TabsTrigger value="read" className="gap-2" role="tab" aria-label="Ver notificaciones leídas">
+            <span>Leídas ({notifications.length - unreadCount})</span>
           </TabsTrigger>
         </TabsList>
 
@@ -108,6 +108,9 @@ export default function Notificaciones() {
                   className={`transition-all ${
                     !notification.leida ? 'border-l-4 border-l-primary bg-accent/5' : ''
                   }`}
+                  role="article"
+                  aria-label={`Notificación: ${notification.mensaje}`}
+                  aria-live={!notification.leida ? 'polite' : 'off'}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4">
@@ -118,12 +121,17 @@ export default function Notificaciones() {
                         <div className="flex-1">
                           <CardTitle className="text-lg">
                             {notification.mensaje}
+                            {!notification.leida && (
+                              <span className="sr-only"> (sin leer)</span>
+                            )}
                           </CardTitle>
                           <CardDescription className="mt-1">
-                            {formatDistanceToNow(notification.fecha, {
-                              addSuffix: true,
-                              locale: es,
-                            })}
+                            <time dateTime={notification.fecha.toISOString()}>
+                              {formatDistanceToNow(notification.fecha, {
+                                addSuffix: true,
+                                locale: es,
+                              })}
+                            </time>
                           </CardDescription>
                         </div>
                       </div>
@@ -133,18 +141,20 @@ export default function Notificaciones() {
                             size="sm"
                             variant="ghost"
                             onClick={() => markAsRead(notification.id)}
-                            aria-label="Marcar como leída"
+                            aria-label={`Marcar como leída: ${notification.mensaje}`}
                           >
                             <Check className="h-4 w-4" aria-hidden="true" />
+                            <span className="sr-only">Marcar como leída</span>
                           </Button>
                         )}
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => deleteNotification(notification.id)}
-                          aria-label="Eliminar notificación"
+                          aria-label={`Eliminar notificación: ${notification.mensaje}`}
                         >
                           <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          <span className="sr-only">Eliminar</span>
                         </Button>
                       </div>
                     </div>

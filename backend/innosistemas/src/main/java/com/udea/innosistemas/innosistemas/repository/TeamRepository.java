@@ -1,15 +1,20 @@
 package com.udea.innosistemas.innosistemas.repository;
 
+<<<<<<< HEAD
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+=======
+import org.springframework.data.jpa.repository.JpaRepository;
+>>>>>>> origin/frontend-actualizado
 import org.springframework.stereotype.Repository;
 
 import com.udea.innosistemas.innosistemas.entity.Team;
 
 @Repository
+<<<<<<< HEAD
 public interface TeamRepository extends JpaRepository<Team,Long>{
     
     @Query(value = "SELECT t.name FROM teams t WHERE t.id_student = :id_student", nativeQuery=true)
@@ -17,4 +22,8 @@ public interface TeamRepository extends JpaRepository<Team,Long>{
     
     @Query(value = "SELECT * FROM getstudentsnamebyid(:teamName)", nativeQuery=true)
     List<String> getStudentsNameById(@Param("teamName") String teamName);
+=======
+public interface TeamRepository extends JpaRepository<Team, Long> {
+    
+>>>>>>> origin/frontend-actualizado
 }

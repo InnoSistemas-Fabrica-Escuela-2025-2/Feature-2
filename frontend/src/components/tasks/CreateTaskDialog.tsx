@@ -76,23 +76,49 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" role="alert" aria-live="assertive" aria-atomic="true">
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              <AlertDescription id="create-task-error">{error}</AlertDescription>
             </Alert>
           )}
           <div className="space-y-2">
-            <Label htmlFor="titulo">Título *</Label>
-            <Input id="titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} required />
+            <Label htmlFor="titulo">
+              Título
+              <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
+            </Label>
+            <Input
+              id="titulo"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              required
+              aria-required="true"
+              aria-invalid={error && !titulo.trim() ? 'true' : 'false'}
+              aria-describedby={error ? "create-task-error" : undefined}
+            />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción *</Label>
-            <Textarea id="descripcion" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required />
+            <Label htmlFor="descripcion">
+              Descripción
+              <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
+            </Label>
+            <Textarea
+              id="descripcion"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              required
+              aria-required="true"
+              aria-invalid={error && !descripcion.trim() ? 'true' : 'false'}
+              aria-describedby={error ? "create-task-error" : undefined}
+              rows={4}
+            />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="proyecto">Proyecto *</Label>
+            <Label htmlFor="proyecto">
+              Proyecto
+              <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
+            </Label>
             <Select value={proyectoId} onValueChange={setProyectoId} required>
-              <SelectTrigger>
+              <SelectTrigger id="proyecto" aria-required="true">
                 <SelectValue placeholder="Selecciona un proyecto" />
               </SelectTrigger>
               <SelectContent>
@@ -103,8 +129,21 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="fecha">Fecha de Entrega *</Label>
-            <Input id="fecha" type="date" value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} min={new Date().toISOString().split('T')[0]} required />
+            <Label htmlFor="fecha">
+              Fecha de Entrega
+              <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
+            </Label>
+            <Input
+              id="fecha"
+              type="date"
+              value={fechaEntrega}
+              onChange={(e) => setFechaEntrega(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              required
+              aria-required="true"
+              aria-invalid={error && !fechaEntrega ? 'true' : 'false'}
+              aria-describedby={error ? "create-task-error" : undefined}
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
