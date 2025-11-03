@@ -11,6 +11,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    private static final String role = "estudiante";
     private final JwtAuthFilter jwtAuthFilter;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter){
@@ -26,10 +27,10 @@ public class SecurityConfig {
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers("/authenticator/person/authenticate", "/authenticator/person/message").permitAll()
                 .pathMatchers("/project/project/listAll").hasAuthority("profesor")
-                .pathMatchers("/project/project/**").hasAuthority("estudiante")
-                .pathMatchers("/project/objective/**").hasAuthority("estudiante")
-                .pathMatchers("/project/task/**").hasAuthority("estudiante")
-                .pathMatchers("/project/state/**").hasAuthority("estudiante")
+                .pathMatchers("/project/project/**").hasAuthority(role)
+                .pathMatchers("/project/objective/**").hasAuthority(role)
+                .pathMatchers("/project/task/**").hasAuthority(role)
+                .pathMatchers("/project/state/**").hasAuthority(role)
                 .anyExchange().authenticated()
             )
             .build();
