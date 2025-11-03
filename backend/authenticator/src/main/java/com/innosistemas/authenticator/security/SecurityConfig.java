@@ -13,6 +13,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final String role = "STUDENT";
+
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -21,11 +23,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                    .requestMatchers("/project/project/**").hasRole("STUDENT")
+                    .requestMatchers("/project/project/**").hasRole(role)
                     .requestMatchers("/project/project/listAll").hasRole("PROFESOR")
-                    .requestMatchers("project/objective/**").hasRole("STUDENT")
-                    .requestMatchers("project/task/**").hasRole("STUDENT")
-                    .requestMatchers("project/state/**").hasRole("STUDENT")
+                    .requestMatchers("project/objective/**").hasRole(role)
+                    .requestMatchers("project/task/**").hasRole(role)
+                    .requestMatchers("project/state/**").hasRole(role)
                     .requestMatchers("authenticator/person/authenticate").permitAll()
                     .requestMatchers("authenticator/person/message").permitAll()
                     )
