@@ -13,7 +13,7 @@ import lombok.Setter;
 
 
 @Entity
-@Table(name="states")
+@Table(name="states", schema="project")
 @Getter
 @Setter
 @AllArgsConstructor

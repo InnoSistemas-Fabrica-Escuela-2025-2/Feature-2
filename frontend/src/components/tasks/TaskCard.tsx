@@ -29,11 +29,15 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="hover:shadow-lg transition-shadow" role="article" aria-label={`Tarea: ${task.titulo}`}>
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base line-clamp-2">{task.titulo}</CardTitle>
-          <span className={`status-badge status-${task.estado} shrink-0`}>
+          <span 
+            className={`status-badge status-${task.estado} shrink-0`}
+            role="status"
+            aria-label={`Estado de la tarea: ${task.estado}`}
+          >
             {task.estado}
           </span>
         </div>
@@ -55,15 +59,26 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button variant="outline" size="sm" onClick={onEdit} className="flex-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onEdit} 
+            className="flex-1"
+            aria-label={`Editar tarea: ${task.titulo}`}
+          >
             <Edit className="h-3 w-3 mr-1" aria-hidden="true" />
-            Editar
+            <span>Editar</span>
           </Button>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
+              <Button 
+                variant="destructive" 
+                size="sm"
+                aria-label={`Eliminar tarea: ${task.titulo}`}
+              >
                 <Trash2 className="h-3 w-3" aria-hidden="true" />
+                <span className="sr-only">Eliminar</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>

@@ -17,7 +17,7 @@ import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.service.TaskService;
 
 @RestController
-@RequestMapping("/task")
+@RequestMapping("/project/task")
 public class TaskController {
 
     @Autowired

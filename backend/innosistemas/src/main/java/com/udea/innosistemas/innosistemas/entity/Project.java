@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="projects")
+@Table(name="projects", schema="project")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -51,7 +51,7 @@ public class Project {
     private List<Objective> objectives = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name="id_team", nullable=true)
+    @JoinColumn(name="id_team", nullable=false)
     private Team team;
 
 }

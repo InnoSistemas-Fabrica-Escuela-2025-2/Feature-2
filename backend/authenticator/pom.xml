@@ -30,6 +30,13 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
+
+		<dependency>
+			<groupId>net.n2oapp.framework.security</groupId>
+			<artifactId>security-userinfo-starter</artifactId>
+			<version>8.0.5</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jdbc</artifactId>
@@ -50,10 +57,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session-jdbc</artifactId>
-		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -87,20 +91,25 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-		<version>0.11.5</version>
+		<version>0.12.6</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.11.5</version>
+			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
-			<version>0.11.5</version>
+			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
@@ -133,5 +142,40 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>coverage</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>0.8.12</version>
+						<executions>
+							<execution>
+								<id>prepare-agent</id>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>report</id>
+								<goals>
+									<goal>report</goal>
+								</goals>
+								<configuration>
+									<formats>
+										<format>XML</format>
+									</formats>
+									<outputDirectory>${project.basedir}/../../qa/reports/backend/authenticator</outputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

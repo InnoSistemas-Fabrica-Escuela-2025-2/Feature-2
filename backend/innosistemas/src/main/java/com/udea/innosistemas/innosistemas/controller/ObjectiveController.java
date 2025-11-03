@@ -12,7 +12,7 @@ import com.udea.innosistemas.innosistemas.service.ObjectiveService;
 
 
 @RestController
-@RequestMapping("/objective")
+@RequestMapping("/project/objective")
 public class ObjectiveController {
 
     @Autowired

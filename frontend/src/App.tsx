@@ -14,9 +14,6 @@ import Notificaciones from "./pages/Notificaciones";
 import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
 
-// 🧪 PRUEBA DE CONEXIÓN - Comenta esta línea después de probar
-import './lib/testConnection';
-
 const queryClient = new QueryClient();
 
 const App = () => (

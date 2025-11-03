@@ -1,7 +1,8 @@
-POST http://localhost:8081/person/authenticate
+
+POST http://localhost:8081/authenticator/person/authenticate
 Content-Type: application/json
 
 {
-    "email": "karen@udea.edu.co",
-    "password": "karen"
-}
+    "email": "camilo@udea.edu.co",
+    "password": "camilo"
+} 

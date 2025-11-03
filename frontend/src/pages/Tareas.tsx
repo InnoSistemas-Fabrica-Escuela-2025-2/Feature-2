@@ -53,24 +53,30 @@ const Tareas = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 border rounded-lg p-1">
+          <div 
+            className="flex items-center gap-1 border rounded-lg p-1"
+            role="group"
+            aria-label="Selector de vista"
+          >
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              aria-label="Vista de lista"
+              aria-label="Cambiar a vista de lista"
               aria-pressed={viewMode === 'list'}
             >
               <LayoutList className="h-4 w-4" aria-hidden="true" />
+              <span className="sr-only">Vista de lista</span>
             </Button>
             <Button
               variant={viewMode === 'kanban' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('kanban')}
-              aria-label="Vista Kanban"
+              aria-label="Cambiar a vista Kanban"
               aria-pressed={viewMode === 'kanban'}
             >
               <Columns className="h-4 w-4" aria-hidden="true" />
+              <span className="sr-only">Vista Kanban</span>
             </Button>
           </div>
           <Button
