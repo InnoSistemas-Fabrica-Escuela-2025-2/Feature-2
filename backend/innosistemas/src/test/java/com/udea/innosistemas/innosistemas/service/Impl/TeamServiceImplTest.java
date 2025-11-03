@@ -19,6 +19,10 @@ import com.udea.innosistemas.innosistemas.repository.TeamRepository;
 @ExtendWith(MockitoExtension.class)
 class TeamServiceImplTest {
 
+    private static final String REPOSITORY_FAILURE = "fallo";
+    private static final String TEAM_NOT_FOUND_MESSAGE = "No fue posible encontrar el equipo.";
+    private static final String STUDENT_NOT_FOUND_MESSAGE = "No existe el estudiante.";
+
     @Mock
     private TeamRepository teamRepository;
 
@@ -37,11 +41,11 @@ class TeamServiceImplTest {
 
     @Test
     void nameTeam_wrapsRepositoryException() {
-        when(teamRepository.findNameByIdStudent(3L)).thenThrow(new RuntimeException("fallo"));
+    when(teamRepository.findNameByIdStudent(3L)).thenThrow(new RuntimeException(REPOSITORY_FAILURE));
 
         UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> teamService.nameTeam(3L));
 
-        assertEquals("No fue posible encontrar el equipo.", exception.getMessage());
+    assertEquals(TEAM_NOT_FOUND_MESSAGE, exception.getMessage());
     }
 
     @Test
@@ -59,10 +63,10 @@ class TeamServiceImplTest {
     @Test
     void getStudentsNameById_wrapsErrorsFromRepository() {
         when(teamRepository.findNameByIdStudent(11L)).thenReturn("Equipo Beta");
-        when(teamRepository.getStudentsNameById("Equipo Beta")).thenThrow(new RuntimeException("fallo"));
+    when(teamRepository.getStudentsNameById("Equipo Beta")).thenThrow(new RuntimeException(REPOSITORY_FAILURE));
 
         UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> teamService.getStudentsNameById(11L));
 
-        assertEquals("No existe el estudiante.", exception.getMessage());
+    assertEquals(STUDENT_NOT_FOUND_MESSAGE, exception.getMessage());
     }
 }

@@ -10,6 +10,11 @@ const { toastSuccessMock, toastErrorMock, toastInfoMock } = vi.hoisted(() => ({
   toastInfoMock: vi.fn(),
 }));
 
+const VALID_EMAIL = "maria.garcia@universidad.edu";
+const VALID_PASSWORD = "123456";
+const BLOCKED_EMAIL = "juan.perez@universidad.edu";
+const BLOCKED_PASSWORD = "0000";
+
 vi.mock("sonner", () => ({
   toast: {
     success: toastSuccessMock,
@@ -44,7 +49,7 @@ describe("AuthProvider login flows", () => {
 
     let loginResult: { success: boolean; error?: string } | undefined;
     await act(async () => {
-      const promise = result.current.login("maria.garcia@universidad.edu", "123456");
+  const promise = result.current.login(VALID_EMAIL, VALID_PASSWORD);
       await vi.advanceTimersByTimeAsync(800);
       loginResult = await promise;
     });
@@ -54,7 +59,7 @@ describe("AuthProvider login flows", () => {
     const storedUser = localStorage.getItem("currentUser");
     expect(storedUser).not.toBeNull();
     if (storedUser) {
-      expect(JSON.parse(storedUser).correo).toBe("maria.garcia@universidad.edu");
+  expect(JSON.parse(storedUser).correo).toBe(VALID_EMAIL);
     }
 
     expect(toastSuccessMock).toHaveBeenCalledWith(expect.stringContaining("María"));
@@ -97,7 +102,7 @@ describe("AuthProvider login flows", () => {
     let lastResult: { success: boolean; error?: string } | undefined;
     for (let attempt = 0; attempt < 5; attempt += 1) {
       await act(async () => {
-        const promise = result.current.login("juan.perez@universidad.edu", "0000");
+  const promise = result.current.login(BLOCKED_EMAIL, BLOCKED_PASSWORD);
         await vi.advanceTimersByTimeAsync(800);
         lastResult = await promise;
       });
@@ -108,7 +113,7 @@ describe("AuthProvider login flows", () => {
     expect(lastResult?.error).toContain("Cuenta bloqueada");
 
     await act(async () => {
-      const promise = result.current.login("juan.perez@universidad.edu", "0000");
+  const promise = result.current.login(BLOCKED_EMAIL, BLOCKED_PASSWORD);
       await vi.advanceTimersByTimeAsync(10);
       lastResult = await promise;
     });
@@ -118,7 +123,7 @@ describe("AuthProvider login flows", () => {
     vi.setSystemTime(new Date("2025-01-01T12:16:00Z"));
 
     await act(async () => {
-      const promise = result.current.login("juan.perez@universidad.edu", "123456");
+  const promise = result.current.login(BLOCKED_EMAIL, VALID_PASSWORD);
       await vi.advanceTimersByTimeAsync(800);
       lastResult = await promise;
     });
@@ -127,7 +132,7 @@ describe("AuthProvider login flows", () => {
     const storedLogin = localStorage.getItem("currentUser");
     expect(storedLogin).not.toBeNull();
     if (storedLogin) {
-      expect(JSON.parse(storedLogin).correo).toBe("juan.perez@universidad.edu");
+  expect(JSON.parse(storedLogin).correo).toBe(BLOCKED_EMAIL);
     }
     expect(toastSuccessMock).toHaveBeenCalledWith(expect.stringContaining("Juan"));
   });
