@@ -1,78 +1,326 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
-// Configuración base de Axios
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8082', // URL del backend desde variable de entorno
+// ==================== CONFIGURACIÓN DE CLIENTES API ====================
+
+/**
+ * Cliente principal - API Gateway (Spring Cloud Gateway)
+ * Puerto: 8080
+ * Enruta las peticiones a los microservicios
+ */
+const apiGateway = axios.create({
+  baseURL: import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
-  withCredentials: true, // Permite enviar cookies si es necesario
+  withCredentials: true,
+  timeout: Number.parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
 });
 
-// Interceptor para agregar el token de autenticación si existe
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+/**
+ * Cliente para el microservicio de Autenticación
+ * Puerto: 8081
+ * Gestiona autenticación y autorización
+ */
+const authenticatorClient = axios.create({
+  baseURL: import.meta.env.VITE_AUTHENTICATOR_URL || 'http://localhost:8081',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  withCredentials: true,
+  timeout: Number.parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
+});
 
-// Interceptor para manejar errores de respuesta
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Si el token expiró o no es válido, redirigir al login
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+/**
+ * Cliente para el microservicio de InnoSistemas
+ * Puerto: 8082
+ * Gestiona proyectos, tareas, equipos y estados
+ */
+const innosistemasClient = axios.create({
+  baseURL: import.meta.env.VITE_INNOSISTEMAS_URL || 'http://localhost:8082',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+  withCredentials: true,
+  timeout: Number.parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
+});
+
+// ==================== INTERCEPTORES ====================
+
+/**
+ * Interceptor de Request - Agrega token JWT a todas las peticiones
+ */
+const requestInterceptor = (config: any) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
+  // Log para debugging (solo en desarrollo)
+  if (import.meta.env.DEV) {
+    console.log(`🔵 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.data || '');
+  }
+  
+  return config;
+};
+
+/**
+ * Interceptor de Response - Maneja respuestas exitosas y errores
+ */
+const responseInterceptor = (response: any) => {
+  // Log para debugging (solo en desarrollo)
+  if (import.meta.env.DEV) {
+    console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
+  }
+  return response;
+};
+
+/**
+ * Interceptor de Error - Maneja errores de autenticación y red
+ */
+const errorInterceptor = async (error: AxiosError) => {
+  const originalRequest = error.config as any;
+
+  // Manejo de error 401 (no autorizado)
+  if (error.response?.status === 401 && !originalRequest._retry) {
+    originalRequest._retry = true;
+    
+    // Limpiar token y redirigir a login
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    globalThis.location.href = '/login';
+    throw error;
+  }
+
+  // Manejo de errores de red
+  if (!error.response) {
+    console.error('❌ Error de red - Backend no disponible:', error.message);
+    let serviceName = 'Backend';
+    if (error.config?.baseURL?.includes('8080')) {
+      serviceName = 'Gateway';
+    } else if (error.config?.baseURL?.includes('8081')) {
+      serviceName = 'Authenticator';
+    } else if (error.config?.baseURL?.includes('8082')) {
+      serviceName = 'InnoSistemas';
     }
-    return Promise.reject(error);
+    throw new Error(`No se pudo conectar con el servicio ${serviceName}. Verifica que esté ejecutándose.`);
   }
-);
 
-// ==================== PROJECTS ====================
+  // Log de errores (solo en desarrollo)
+  if (import.meta.env.DEV) {
+    console.error(`❌ ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+      status: error.response?.status,
+      data: error.response?.data
+    });
+  }
+
+  throw error;
+};
+
+// Aplicar interceptores a todos los clientes
+const clients = [apiGateway, authenticatorClient, innosistemasClient];
+for (const client of clients) {
+  client.interceptors.request.use(requestInterceptor, (error) => { throw error; });
+  client.interceptors.response.use(responseInterceptor, errorInterceptor);
+}
+
+// ==================== API DE AUTENTICACIÓN ====================
+// Usa el microservicio de Authenticator (puerto 8081) a través del Gateway
+
+export const authApi = {
+  /**
+   * Autenticar usuario
+   * POST /authenticator/person/authenticate
+   */
+  login: (credentials: { email: string; password: string }) => 
+    apiGateway.post('/authenticator/person/authenticate', credentials),
+  
+  /**
+   * Verificar estado del servicio de autenticación
+   * GET /authenticator/person/message
+   */
+  checkService: () => 
+    apiGateway.get('/authenticator/person/message'),
+};
+
+// ==================== API DE PROYECTOS ====================
+// Usa el microservicio de InnoSistemas (puerto 8082) a través del Gateway
+
 export const projectsApi = {
-  // Obtener todos los proyectos
-  getAll: () => api.get('/project/project/listAll'),
+  /**
+   * Obtener todos los proyectos
+   * GET /project/project/listAll
+   */
+  getAll: () => 
+    apiGateway.get('/project/project/listAll'),
   
-  // Obtener un proyecto por ID
-  getById: (id: number) => api.get(`/project/project/${id}`),
+  /**
+   * Obtener proyectos por ID de equipo
+   * GET /project/project/listAllById/{id}
+   */
+  getByTeamId: (teamId: number) => 
+    apiGateway.get(`/project/project/listAllById/${teamId}`),
   
-  // Crear un nuevo proyecto
-  create: (projectData: any) => api.post('/project/project/save', projectData),
+  /**
+   * Crear un nuevo proyecto
+   * POST /project/project/save
+   */
+  create: (projectData: any) => 
+    apiGateway.post('/project/project/save', projectData),
   
-  // Actualizar un proyecto
-  update: (id: number, projectData: any) => api.put(`/project/project/update`, projectData),
+  /**
+   * Actualizar un proyecto (usa PUT pero no recibe ID en la URL)
+   * PUT /project/project/update
+   */
+  update: (projectData: any) => 
+    apiGateway.put('/project/project/update', projectData),
   
-  // Eliminar un proyecto
-  delete: (id: number) => api.delete(`/project/project/delete/${id}`),
+  /**
+   * Eliminar un proyecto
+   * DELETE /project/project/delete/{id}
+   */
+  delete: (id: number) => 
+    apiGateway.delete(`/project/project/delete/${id}`),
+  
+  /**
+   * Verificar estado del servicio
+   * GET /project/project/message
+   */
+  checkService: () => 
+    apiGateway.get('/project/project/message'),
 };
 
-// ==================== TASKS ====================
+// ==================== API DE TAREAS ====================
+// Usa el microservicio de InnoSistemas (puerto 8082) a través del Gateway
+
 export const tasksApi = {
-  // Obtener todas las tareas
-  getAll: () => api.get('/project/task/listAll'),
+  /**
+   * Obtener todas las tareas
+   * GET /project/task/listAll
+   */
+  getAll: () => 
+    apiGateway.get('/project/task/listAll'),
   
-  // Obtener una tarea por ID
-  getById: (id: number) => api.get(`/project/task/${id}`),
+  /**
+   * Crear una nueva tarea
+   * POST /project/task/save
+   */
+  create: (taskData: any) => 
+    apiGateway.post('/project/task/save', taskData),
   
-  // Obtener tareas por proyecto
-  getByProject: (projectId: number) => api.get(`/project/task/project/${projectId}`),
+  /**
+   * Actualizar una tarea
+   * PUT /project/task/update
+   */
+  update: (taskData: any) => 
+    apiGateway.put('/project/task/update', taskData),
   
-  // Crear una nueva tarea
-  create: (taskData: any) => api.post('/project/task/save', taskData),
+  /**
+   * Eliminar una tarea
+   * DELETE /project/task/delete/{id}
+   */
+  delete: (id: number) => 
+    apiGateway.delete(`/project/task/delete/${id}`),
   
-  // Actualizar una tarea
-  update: (id: number, taskData: any) => api.put(`/project/task/update`, taskData),
-  
-  // Eliminar una tarea
-  delete: (id: number) => api.delete(`/project/task/delete/${id}`),
+  /**
+   * Actualizar estado de una tarea
+   * PUT /project/task/updateState/{id_task}/{id_state}
+   */
+  updateState: (taskId: number, stateId: number) => 
+    apiGateway.put(`/project/task/updateState/${taskId}/${stateId}`),
 };
 
-export default api;
+// ==================== API DE EQUIPOS ====================
+// Usa el microservicio de InnoSistemas (puerto 8082) a través del Gateway
+
+export const teamsApi = {
+  /**
+   * Obtener nombres de estudiantes por ID de equipo
+   * GET /project/team/getStudentsName/{id}
+   */
+  getStudentsNames: (teamId: number) => 
+    apiGateway.get(`/project/team/getStudentsName/${teamId}`),
+};
+
+// ==================== API DE ESTADOS ====================
+// Usa el microservicio de InnoSistemas (puerto 8082) a través del Gateway
+
+export const statesApi = {
+  /**
+   * Obtener todos los estados
+   * GET /project/state/listAll
+   */
+  getAll: () => 
+    apiGateway.get('/project/state/listAll'),
+};
+
+// ==================== FUNCIONES DE UTILIDAD ====================
+
+/**
+ * Verifica la conectividad con todos los microservicios
+ */
+export const checkAllServices = async () => {
+  const results = {
+    gateway: false,
+    authenticator: false,
+    innosistemas: false,
+  };
+
+  try {
+    // Verificar Gateway
+    await apiGateway.get('/actuator/health').catch(() => {
+      console.warn('⚠️ Gateway health endpoint no disponible');
+    });
+    results.gateway = true;
+    console.log('✅ Gateway (8080) - Conectado');
+  } catch (error: unknown) {
+    console.error('❌ Gateway (8080) - No disponible', error);
+  }
+
+  try {
+    // Verificar Authenticator a través del Gateway
+    await authApi.checkService();
+    results.authenticator = true;
+    console.log('✅ Authenticator (8081) - Conectado');
+  } catch (error: unknown) {
+    console.error('❌ Authenticator (8081) - No disponible', error);
+  }
+
+  try {
+    // Verificar InnoSistemas a través del Gateway
+    await projectsApi.checkService();
+    results.innosistemas = true;
+    console.log('✅ InnoSistemas (8082) - Conectado');
+  } catch (error: unknown) {
+    console.error('❌ InnoSistemas (8082) - No disponible', error);
+  }
+
+  return results;
+};
+
+/**
+ * Guarda el token en localStorage
+ */
+export const saveToken = (token: string) => {
+  localStorage.setItem('token', token);
+};
+
+/**
+ * Obtiene el token de localStorage
+ */
+export const getToken = () => {
+  return localStorage.getItem('token');
+};
+
+/**
+ * Elimina el token de localStorage
+ */
+export const removeToken = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+// Exportar cliente principal por defecto (Gateway)
+export default apiGateway;
