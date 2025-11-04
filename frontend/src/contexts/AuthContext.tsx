@@ -21,6 +21,34 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const deriveDisplayName = (data: any): string => {
+  if (!data) {
+    return 'Usuario';
+  }
+
+  const explicitName = data.fullName || data.nombre || data.name;
+  if (explicitName && typeof explicitName === 'string') {
+    return explicitName;
+  }
+
+  const email: string | undefined = data.email;
+  if (typeof email === 'string' && email.includes('@')) {
+    const localPart = email.split('@')[0] ?? '';
+    const formatted = localPart
+      .replace(/[._-]+/g, ' ')
+      .split(' ')
+      .map((segment) => segment.trim())
+      .filter(Boolean)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ')
+      .replace(/\bDe\b/g, 'de');
+
+    return formatted || 'Usuario';
+  }
+
+  return 'Usuario';
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,29 +113,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (correo: string, contrasena: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-    
+
     const now = Date.now();
 
-    // Check if account is permanently blocked
-    if (loginAttempts.permanentlyBlocked) {
-      setIsLoading(false);
-      return {
-        success: false,
-        error: 'Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.'
-      };
+    const preCheckResult = handlePreLoginChecks(now);
+    if (preCheckResult) {
+      return preCheckResult;
     }
 
-    // Check if account is temporarily blocked
+    syncUnblockedState(now);
+
+    const apiResult = await attemptAuthentication(correo, contrasena);
+    if (apiResult.success) {
+      return apiResult;
+    }
+
+    return handleFailedLogin(now, apiResult.errorMessage);
+  };
+
+  const handlePreLoginChecks = (now: number) => {
+    if (loginAttempts.permanentlyBlocked) {
+      setIsLoading(false);
+      return buildFailure('Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.');
+    }
+
     if (loginAttempts.blockedUntil && now < loginAttempts.blockedUntil) {
       const remainingTime = Math.ceil((loginAttempts.blockedUntil - now) / 60000);
       setIsLoading(false);
-      return {
-        success: false,
-        error: `Cuenta bloqueada. Intenta de nuevo en ${remainingTime} minuto${remainingTime > 1 ? 's' : ''}.`
-      };
+      return buildFailure(`Cuenta bloqueada. Intenta de nuevo en ${remainingTime} minuto${remainingTime > 1 ? 's' : ''}.`);
     }
 
-    // If block time has passed, clear it
+    return null;
+  };
+
+  const syncUnblockedState = (now: number) => {
     if (loginAttempts.blockedUntil && now >= loginAttempts.blockedUntil) {
       const updatedAttempts = {
         ...loginAttempts,
@@ -118,92 +157,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoginAttempts(updatedAttempts);
       localStorage.setItem('loginAttempts', JSON.stringify(updatedAttempts));
     }
+  };
 
-    // Real API call to backend
+  const attemptAuthentication = async (correo: string, contrasena: string) => {
     try {
       const response = await authApi.login({ email: correo, password: contrasena });
-      
-      // Save JWT token to localStorage
       const token = response.data.token;
       localStorage.setItem('token', token);
-      
-      // Transform backend response to match our User type
+
+      const displayName = deriveDisplayName(response.data);
       const loggedInUser: User = {
-        id: response.data.email, // Using email as ID for now
-        nombre: response.data.email.split('@')[0], // Extract name from email
+        id: response.data.id ? String(response.data.id) : response.data.email,
+        nombre: displayName,
         correo: response.data.email,
         rol: response.data.role as 'estudiante' | 'profesor',
         fechaRegistro: new Date()
       };
-      
-      // Successful login - reset attempts
-      setUser(loggedInUser);
-      localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-      const resetAttempts = { 
-        count: 0, 
-        lastAttempt: 0, 
-        blockedUntil: null, 
-        permanentlyBlocked: false,
-        firstBlockPassed: false,
-      };
-      setLoginAttempts(resetAttempts);
-      localStorage.setItem('loginAttempts', JSON.stringify(resetAttempts));
-      toast.success(`Bienvenido, ${loggedInUser.nombre}`);
-      setIsLoading(false);
-      return { success: true };
+
+      persistSuccessfulLogin(loggedInUser);
+  setIsLoading(false);
+  return { success: true as const };
     } catch (error: any) {
-      // Login failed - handle error from backend
       console.error('Login error:', error);
-      
-      // Failed login - increment attempts
-      const newAttempts: LoginAttempt = {
-        ...loginAttempts,
-        count: loginAttempts.count + 1,
-        lastAttempt: now,
-        blockedUntil: null,
+      return {
+        success: false as const,
+        error,
+        errorMessage: error.response?.data?.message || error.message || 'Credenciales incorrectas'
       };
-
-      // Determine max attempts based on whether first block has passed
-      const maxAttempts = loginAttempts.firstBlockPassed ? 2 : 5;
-
-      // Check if should block or permanently block
-      if (newAttempts.count >= maxAttempts) {
-        if (loginAttempts.firstBlockPassed) {
-          // After second chance, block permanently
-          newAttempts.permanentlyBlocked = true;
-          newAttempts.count = 0;
-          setLoginAttempts(newAttempts);
-          localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
-          setIsLoading(false);
-          return { 
-            success: false, 
-            error: 'Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.' 
-          };
-        } else {
-          // First block: 15 minutes
-          newAttempts.blockedUntil = now + (15 * 60 * 1000);
-          newAttempts.count = 0;
-          setLoginAttempts(newAttempts);
-          localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
-          setIsLoading(false);
-          return { 
-            success: false, 
-            error: 'Has superado el límite de intentos. Cuenta bloqueada por 15 minutos.' 
-          };
-        }
-      }
-
-      setLoginAttempts(newAttempts);
-      localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
-      
-      setIsLoading(false);
-      
-      const remainingAttempts = maxAttempts - newAttempts.count;
-      const backendError = error.response?.data?.message || error.message || 'Credenciales incorrectas';
-      const errorMessage = `${backendError}. Te quedan ${remainingAttempts} intento${remainingAttempts > 1 ? 's' : ''}.`;
-      
-      return { success: false, error: errorMessage };
     }
+  };
+
+  const persistSuccessfulLogin = (loggedInUser: User) => {
+    setUser(loggedInUser);
+    localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+
+    const resetAttempts = {
+      count: 0,
+      lastAttempt: 0,
+      blockedUntil: null,
+      permanentlyBlocked: false,
+      firstBlockPassed: false,
+    };
+
+    setLoginAttempts(resetAttempts);
+    localStorage.setItem('loginAttempts', JSON.stringify(resetAttempts));
+    toast.success(`Bienvenido, ${loggedInUser.nombre}`);
+  };
+
+  const handleFailedLogin = (now: number, errorMessage: string) => {
+    const newAttempts: LoginAttempt = {
+      ...loginAttempts,
+      count: loginAttempts.count + 1,
+      lastAttempt: now,
+      blockedUntil: null,
+    };
+
+    const maxAttempts = loginAttempts.firstBlockPassed ? 2 : 5;
+
+    const blockOutcome = maybeBlockAccount(newAttempts, maxAttempts, now);
+    if (blockOutcome) {
+      return blockOutcome;
+    }
+
+    setLoginAttempts(newAttempts);
+    localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
+    setIsLoading(false);
+
+    const remainingAttempts = maxAttempts - newAttempts.count;
+    const description = `${errorMessage}. Te quedan ${remainingAttempts} intento${remainingAttempts > 1 ? 's' : ''}.`;
+
+  return buildFailure(description);
+  };
+
+  const maybeBlockAccount = (attempts: LoginAttempt, maxAttempts: number, now: number) => {
+    if (attempts.count < maxAttempts) {
+      return null;
+    }
+
+    attempts.count = 0;
+
+    if (loginAttempts.firstBlockPassed) {
+      attempts.permanentlyBlocked = true;
+      setLoginAttempts(attempts);
+      localStorage.setItem('loginAttempts', JSON.stringify(attempts));
+      setIsLoading(false);
+      return buildFailure('Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.');
+    }
+
+    attempts.blockedUntil = now + 15 * 60 * 1000;
+    setLoginAttempts(attempts);
+    localStorage.setItem('loginAttempts', JSON.stringify(attempts));
+    setIsLoading(false);
+    return buildFailure('Has superado el límite de intentos. Cuenta bloqueada por 15 minutos.');
+  };
+
+  const buildFailure = (error: string) => {
+    setIsLoading(false);
+    return { success: false as const, error };
   };
 
   const resetLoginAttempts = () => {

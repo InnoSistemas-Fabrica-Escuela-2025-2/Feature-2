@@ -9,9 +9,10 @@ import TaskCard from '@/components/tasks/TaskCard';
 import CreateTaskDialog from '@/components/tasks/CreateTaskDialog';
 import EditTaskDialog from '@/components/tasks/EditTaskDialog';
 import { TaskKanban } from '@/components/tasks/TaskKanban';
+import { tasksApi } from '@/lib/api';
 
 const Tareas = () => {
-  const { tasks, projects, isLoading, refreshData } = useData();
+  const { tasks, projects, isLoading, refreshData, states } = useData();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
@@ -24,16 +25,67 @@ const Tareas = () => {
     return myTasks.filter(t => t.estado === status);
   };
 
-  const handleTaskCreated = (newTask: Task) => {
-    refreshData();
+  const handleTaskCreated = (_newTask: Task) => {
+    void refreshData();
   };
 
-  const handleTaskUpdated = (updatedTask: Task) => {
-    refreshData();
+  const handleTaskUpdated = async (updatedTask: Task) => {
+    const parseNumeric = (value: string | number): number | null => {
+      if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+      }
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const taskId = parseNumeric(updatedTask.id);
+    const projectId = parseNumeric(updatedTask.proyectoId);
+
+    if (taskId === null || projectId === null) {
+      throw new Error('Los identificadores de la tarea o del proyecto no son válidos.');
+    }
+
+    const normalizedStatus = updatedTask.estado.toLowerCase();
+    const matchingState = states.find((state) =>
+      (state.name || state.nombre || '').toLowerCase() === normalizedStatus
+    );
+
+    const stateId = matchingState?.id ?? updatedTask.estadoId;
+
+    if (!stateId) {
+      throw new Error('No se encontró un estado válido para actualizar la tarea.');
+    }
+
+    const deadlineDate = updatedTask.fechaEntrega instanceof Date
+      ? updatedTask.fechaEntrega
+      : new Date(updatedTask.fechaEntrega);
+
+    if (Number.isNaN(deadlineDate.getTime())) {
+      throw new Error('La fecha de entrega proporcionada no es válida.');
+    }
+
+    const payload = {
+      id: taskId,
+      title: updatedTask.titulo,
+      description: updatedTask.descripcion,
+      deadline: deadlineDate.toISOString(),
+      responsible: updatedTask.responsable || updatedTask.responsableId || 'Sin asignar',
+      project: { id: projectId },
+      state: { id: stateId },
+    };
+
+    try {
+      await tasksApi.update(payload);
+      await refreshData();
+    } catch (error: any) {
+      console.error('Error actualizando la tarea:', error);
+      const message = error?.response?.data?.message || error?.message || 'Error al actualizar la tarea.';
+      throw new Error(message);
+    }
   };
 
-  const handleTaskDeleted = (taskId: string) => {
-    refreshData();
+  const handleTaskDeleted = (_taskId: string) => {
+    void refreshData();
   };
 
   const pendingTasks = filterTasksByStatus('pendiente');

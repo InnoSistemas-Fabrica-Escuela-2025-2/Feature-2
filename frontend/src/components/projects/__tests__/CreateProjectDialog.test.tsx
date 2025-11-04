@@ -7,6 +7,9 @@ import CreateProjectDialog from "../CreateProjectDialog";
 
 const mockUseAuth = vi.fn();
 const mockToastSuccess = vi.fn();
+const mockToastError = vi.fn();
+const mockTeamsGetAll = vi.fn();
+const mockProjectsCreate = vi.fn();
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => mockUseAuth(),
@@ -16,6 +19,16 @@ vi.mock("@/contexts/AuthContext", () => ({
 vi.mock("sonner", () => ({
   toast: {
     success: (message: string) => mockToastSuccess(message),
+    error: (message: string) => mockToastError(message),
+  },
+}));
+
+vi.mock("@/lib/api", () => ({
+  teamsApi: {
+    getAll: () => mockTeamsGetAll(),
+  },
+  projectsApi: {
+    create: (payload: unknown) => mockProjectsCreate(payload),
   },
 }));
 
@@ -58,6 +71,23 @@ describe("CreateProjectDialog", () => {
       },
     });
     mockToastSuccess.mockReset();
+    mockToastError.mockReset();
+    mockTeamsGetAll.mockResolvedValue({
+      data: [
+        { id: 1, name: "Equipo Alpha" },
+        { id: 2, name: "Equipo Beta" },
+      ],
+    });
+    mockProjectsCreate.mockResolvedValue({
+      data: {
+        name: "Nuevo Proyecto Inclusivo",
+        description: "Descripción del proyecto",
+        objectives: [
+          { description: "Mejorar accesibilidad" },
+        ],
+        deadline: new Date("2030-12-01").toISOString(),
+      },
+    });
   });
 
   afterEach(() => {
@@ -93,12 +123,12 @@ describe("CreateProjectDialog", () => {
   await userEvent.type(screen.getByLabelText(/descripción/i), "Descripción del proyecto");
     await userEvent.type(screen.getByLabelText(/objetivos/i), "Mejorar accesibilidad");
 
-  const dateInput = screen.getByLabelText(/fecha de entrega/i);
-  fireEvent.input(dateInput, { target: { value: "2030-12-01" } });
+    const dateInput = screen.getByLabelText(/fecha de entrega/i);
+    fireEvent.input(dateInput, { target: { value: "2030-12-01" } });
 
-  const teamTrigger = screen.getByLabelText(/equipo/i);
-  await userEvent.click(teamTrigger);
-  await userEvent.click(await screen.findByRole("option", { name: /equipo alpha/i }));
+    const teamTrigger = screen.getByLabelText(/equipo/i);
+    await userEvent.click(teamTrigger);
+    await userEvent.click(await screen.findByRole("option", { name: /equipo alpha/i }));
 
     await userEvent.click(screen.getByRole("button", { name: /^crear proyecto$/i }));
 
@@ -110,12 +140,13 @@ describe("CreateProjectDialog", () => {
     expect(createdProject).toMatchObject({
       id: `p${fixedNow}`,
       nombre: "Nuevo Proyecto Inclusivo",
-      equipoId: "team1",
+      equipoId: "1",
       progreso: 0,
     });
     expect(createdProject.miembros.length).toBeGreaterThan(0);
 
-    expect(mockToastSuccess).toHaveBeenCalledWith("Proyecto creado exitosamente");
+  expect(mockToastSuccess).toHaveBeenCalledWith("Proyecto creado exitosamente");
+  expect(mockToastError).not.toHaveBeenCalled();
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
