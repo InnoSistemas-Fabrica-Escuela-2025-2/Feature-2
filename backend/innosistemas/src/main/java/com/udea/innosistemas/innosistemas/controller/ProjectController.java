@@ -29,11 +29,6 @@ public class ProjectController {
         return ResponseEntity.ok("servicio 2 funcionando");
     }
 
-    @GetMapping("/message")
-    public ResponseEntity<String> showMesagge() {
-        return ResponseEntity.ok("servicio 2 funcionando");
-    }
-
     @PostMapping("/save")
     public ResponseEntity<Project> saveProject(@RequestBody Project project) {
        try {
