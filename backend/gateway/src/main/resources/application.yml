@@ -1,0 +1,36 @@
+server:
+    port: ${PORT:8080}
+
+spring:
+    session:
+      store-type: none
+    cloud:
+        gateway:
+            routes:
+            - id: authenticator
+              uri: ${AUTHENTICATOR_URL:http://localhost:8081}
+              predicates:
+              - Path=/authenticator/**
+              filters:
+              - StripPrefix=1
+            - id: innosistemas
+              uri: ${INNOSISTEMAS_URL:http://localhost:8082}
+              predicates:
+              - Path=/project/**
+            globalcors:
+                corsConfigurations:
+                    '[/**]':
+                        allowedOrigins: 
+                            - ${FRONTEND_URL:http://localhost:5173}
+                            - "https://*.vercel.app"
+                        allowedMethods:
+                            - GET
+                            - POST
+                            - PUT
+                            - DELETE
+                            - OPTIONS
+                        allowedHeaders: "*"
+                        allowCredentials: true
+
+jwt:
+    secret: ${JWT_SECRET:b7XfP9aQ2rL0sZ8wV3nC6mJ1yT4dE5kR}
