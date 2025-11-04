@@ -22,6 +22,7 @@ spring:
                     '[/**]':
                         allowedOrigins: 
                             - ${FRONTEND_URL:http://localhost:5173}
+                            - "https://feature-2.vercel.app"
                             - "https://*.vercel.app"
                         allowedMethods:
                             - GET
