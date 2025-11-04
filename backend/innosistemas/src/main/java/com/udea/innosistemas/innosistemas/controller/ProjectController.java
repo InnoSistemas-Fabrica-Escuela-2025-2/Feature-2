@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.udea.innosistemas.innosistemas.entity.Project;
 import com.udea.innosistemas.innosistemas.service.ProjectService;
-import com.udea.innosistemas.innosistemas.service.TeamService;
 
 
 
@@ -29,9 +28,6 @@ public class ProjectController {
     
     @Autowired
     private ProjectService projectService;
-
-    @Autowired
-    private TeamService teamService;
 
     @GetMapping("/message")
     public ResponseEntity<String> showMesagge() {
@@ -63,19 +59,14 @@ public class ProjectController {
                 return ResponseEntity.ok(projectService.listAllProjects());
             }
             
-            // Si es estudiante y tenemos su ID, buscar su equipo y filtrar proyectos
+            // Si es estudiante y tenemos su ID, filtrar por sus proyectos usando listAllById
+            // Esta función ya consulta la BD y devuelve solo los proyectos del equipo del estudiante
             if ("estudiante".equalsIgnoreCase(role) && userId != null) {
                 try {
                     Long studentId = Long.parseLong(userId);
-                    log.info("Usuario es estudiante con ID: {}, buscando su equipo", studentId);
-                    
-                    // Obtener el team_id del estudiante
-                    Long teamId = teamService.getTeamIdByStudent(studentId);
-                    log.info("Estudiante pertenece al equipo ID: {}", teamId);
-                    
-                    // Filtrar proyectos por team_id
-                    List<Project> projects = projectService.listAllByTeamId(teamId);
-                    log.info("Devolviendo {} proyectos para el equipo {}", projects.size(), teamId);
+                    log.info("Usuario es estudiante con ID: {}, obteniendo sus proyectos", studentId);
+                    List<Project> projects = projectService.listAllById(studentId);
+                    log.info("Devolviendo {} proyectos para el estudiante {}", projects.size(), studentId);
                     return ResponseEntity.ok(projects);
                 } catch (NumberFormatException e) {
                     log.error("Error parseando userId: {}", userId, e);
