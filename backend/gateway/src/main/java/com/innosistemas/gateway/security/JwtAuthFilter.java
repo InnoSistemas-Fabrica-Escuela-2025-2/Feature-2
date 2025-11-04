@@ -55,13 +55,14 @@ public class JwtAuthFilter implements WebFilter{
                 .getPayload();
 
             String role = String.valueOf(claims.get("role"));
+            String userId = String.valueOf(claims.get("id"));
             String normalizedRole = role == null ? "" : role.trim().toLowerCase();
             Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(normalizedRole));
 
             UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(claims.getSubject(), null, authorities);
 
-            log.debug("JWT: token válido. subject={}, role={} (normalized={})", claims.getSubject(), role, normalizedRole);
+            log.debug("JWT: token válido. subject={}, role={} (normalized={}), userId={}", claims.getSubject(), role, normalizedRole, userId);
 
             ServerWebExchange mutatedExchange = new ServerWebExchangeDecorator(exchange) {
                 @Override
@@ -69,6 +70,7 @@ public class JwtAuthFilter implements WebFilter{
                     return exchange.getRequest().mutate()
                             .header("Email", claims.getSubject())
                             .header("Role", normalizedRole)
+                            .header("User-Id", userId)
                             .build();
                 }
             };

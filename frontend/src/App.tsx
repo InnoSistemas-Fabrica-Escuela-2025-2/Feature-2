@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Proyectos from "./pages/Proyectos";
 import ProjectDetail from "./pages/ProjectDetail";
 import Tareas from "./pages/Tareas";
+import TaskDetail from "./pages/TaskDetail";
 import Notificaciones from "./pages/Notificaciones";
 import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
@@ -67,6 +68,16 @@ const App = () => (
                 <ProtectedRoute>
                   <AppLayout>
                     <Tareas />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tareas/:taskId"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <TaskDetail />
                   </AppLayout>
                 </ProtectedRoute>
               }
