@@ -11,6 +11,30 @@ interface LoginAttempt {
   firstBlockPassed: boolean;
 }
 
+type LoginAttemptsStore = Record<string, LoginAttempt>;
+
+interface LoginAttemptBlockOutcome {
+  record: LoginAttempt;
+  message: string;
+}
+
+const createInitialLoginAttempt = (): LoginAttempt => ({
+  count: 0,
+  lastAttempt: 0,
+  blockedUntil: null,
+  permanentlyBlocked: false,
+  firstBlockPassed: false,
+});
+
+const normalizeEmail = (correo: string) => correo.trim().toLowerCase();
+
+const shouldPersistAttempt = (attempt: LoginAttempt) =>
+  attempt.count > 0 ||
+  attempt.blockedUntil !== null ||
+  attempt.permanentlyBlocked ||
+  attempt.firstBlockPassed ||
+  attempt.lastAttempt !== 0;
+
 interface AuthContextType extends AuthState {
   login: (correo: string, contrasena: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -52,13 +76,8 @@ const deriveDisplayName = (data: any): string => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [loginAttempts, setLoginAttempts] = useState<LoginAttempt>({
-    count: 0,
-    lastAttempt: 0,
-    blockedUntil: null,
-    permanentlyBlocked: false,
-    firstBlockPassed: false,
-  });
+  const [attemptsStore, setAttemptsStore] = useState<LoginAttemptsStore>({});
+  const [loginAttempts, setLoginAttempts] = useState<LoginAttempt>(createInitialLoginAttempt());
 
   useEffect(() => {
     // Check for existing session
@@ -67,14 +86,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(JSON.parse(storedUser));
     }
 
-    // Check for stored login attempts
+    // Check for stored login attempts (per email)
     const storedAttempts = localStorage.getItem('loginAttempts');
     if (storedAttempts) {
-      setLoginAttempts(JSON.parse(storedAttempts));
+      try {
+        const parsed = JSON.parse(storedAttempts);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          if ('count' in parsed) {
+            // Legacy structure (single record) – drop so new schema starts clean per user
+            localStorage.removeItem('loginAttempts');
+          } else {
+            setAttemptsStore(parsed as LoginAttemptsStore);
+          }
+        }
+      } catch (error) {
+        console.error('Error reading stored login attempts:', error);
+        localStorage.removeItem('loginAttempts');
+      }
     }
 
     setIsLoading(false);
   }, []);
+
+  const persistAttemptsStore = (store: LoginAttemptsStore) => {
+    if (Object.keys(store).length === 0) {
+      localStorage.removeItem('loginAttempts');
+    } else {
+      localStorage.setItem('loginAttempts', JSON.stringify(store));
+    }
+  };
+
+  const updateAttemptsForEmail = (emailKey: string, nextAttempt: LoginAttempt) => {
+    setAttemptsStore((prev) => {
+      const updated = { ...prev };
+      const attemptClone = { ...nextAttempt };
+
+      if (shouldPersistAttempt(attemptClone)) {
+        updated[emailKey] = attemptClone;
+      } else {
+        delete updated[emailKey];
+      }
+
+      persistAttemptsStore(updated);
+      return updated;
+    });
+  };
+
+  const resetAttemptsForEmail = (emailKey: string) => {
+    setAttemptsStore((prev) => {
+      if (!(emailKey in prev)) {
+        return prev;
+      }
+
+      const updated = { ...prev };
+      delete updated[emailKey];
+      persistAttemptsStore(updated);
+      return updated;
+    });
+  };
 
   // Session inactivity timeout (15 minutes)
   useEffect(() => {
@@ -114,52 +183,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (correo: string, contrasena: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
 
+    const emailKey = normalizeEmail(correo);
+    const baseAttempts = attemptsStore[emailKey]
+      ? { ...attemptsStore[emailKey] }
+      : createInitialLoginAttempt();
+
+    setLoginAttempts(baseAttempts);
+
     const now = Date.now();
 
-    const preCheckResult = handlePreLoginChecks(now);
+    const preCheckResult = handlePreLoginChecks(baseAttempts, now);
     if (preCheckResult) {
       return preCheckResult;
     }
 
-    syncUnblockedState(now);
+    const refreshedAttempts = syncUnblockedState(baseAttempts, emailKey, now);
+    setLoginAttempts(refreshedAttempts);
 
-    const apiResult = await attemptAuthentication(correo, contrasena);
+    const apiResult = await attemptAuthentication(correo, contrasena, emailKey);
     if (apiResult.success) {
       return apiResult;
     }
 
-    return handleFailedLogin(now, apiResult.errorMessage);
+    return handleFailedLogin(emailKey, refreshedAttempts, now, apiResult.errorMessage);
   };
 
-  const handlePreLoginChecks = (now: number) => {
-    if (loginAttempts.permanentlyBlocked) {
-      setIsLoading(false);
+  const handlePreLoginChecks = (attemptRecord: LoginAttempt, now: number) => {
+    if (attemptRecord.permanentlyBlocked) {
       return buildFailure('Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.');
     }
 
-    if (loginAttempts.blockedUntil && now < loginAttempts.blockedUntil) {
-      const remainingTime = Math.ceil((loginAttempts.blockedUntil - now) / 60000);
-      setIsLoading(false);
+    if (attemptRecord.blockedUntil && now < attemptRecord.blockedUntil) {
+      const remainingTime = Math.ceil((attemptRecord.blockedUntil - now) / 60000);
       return buildFailure(`Cuenta bloqueada. Intenta de nuevo en ${remainingTime} minuto${remainingTime > 1 ? 's' : ''}.`);
     }
 
     return null;
   };
 
-  const syncUnblockedState = (now: number) => {
-    if (loginAttempts.blockedUntil && now >= loginAttempts.blockedUntil) {
-      const updatedAttempts = {
-        ...loginAttempts,
+  const syncUnblockedState = (attemptRecord: LoginAttempt, emailKey: string, now: number): LoginAttempt => {
+    if (attemptRecord.blockedUntil && now >= attemptRecord.blockedUntil) {
+      const updatedAttempts: LoginAttempt = {
+        ...attemptRecord,
         blockedUntil: null,
         count: 0,
         firstBlockPassed: true,
       };
-      setLoginAttempts(updatedAttempts);
-      localStorage.setItem('loginAttempts', JSON.stringify(updatedAttempts));
+      updateAttemptsForEmail(emailKey, updatedAttempts);
+      return updatedAttempts;
     }
+
+    return attemptRecord;
   };
 
-  const attemptAuthentication = async (correo: string, contrasena: string) => {
+  const attemptAuthentication = async (correo: string, contrasena: string, emailKey: string) => {
     try {
       const response = await authApi.login({ email: correo, password: contrasena });
       const token = response.data.token;
@@ -174,9 +251,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fechaRegistro: new Date()
       };
 
-      persistSuccessfulLogin(loggedInUser);
-  setIsLoading(false);
-  return { success: true as const };
+      persistSuccessfulLogin(loggedInUser, emailKey);
+      setIsLoading(false);
+      return { success: true as const };
     } catch (error: any) {
       console.error('Login error:', error);
       return {
@@ -187,68 +264,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const persistSuccessfulLogin = (loggedInUser: User) => {
+  const persistSuccessfulLogin = (loggedInUser: User, emailKey: string) => {
     setUser(loggedInUser);
     localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
 
-    const resetAttempts = {
-      count: 0,
-      lastAttempt: 0,
-      blockedUntil: null,
-      permanentlyBlocked: false,
-      firstBlockPassed: false,
-    };
+    const resetAttempts = createInitialLoginAttempt();
 
     setLoginAttempts(resetAttempts);
-    localStorage.setItem('loginAttempts', JSON.stringify(resetAttempts));
+    resetAttemptsForEmail(emailKey);
     toast.success(`Bienvenido, ${loggedInUser.nombre}`);
   };
 
-  const handleFailedLogin = (now: number, errorMessage: string) => {
-    const newAttempts: LoginAttempt = {
-      ...loginAttempts,
-      count: loginAttempts.count + 1,
+  const handleFailedLogin = (
+    emailKey: string,
+    currentAttempts: LoginAttempt,
+    now: number,
+    errorMessage: string,
+  ) => {
+    const updatedAttempts: LoginAttempt = {
+      ...currentAttempts,
+      count: currentAttempts.count + 1,
       lastAttempt: now,
       blockedUntil: null,
     };
 
-    const maxAttempts = loginAttempts.firstBlockPassed ? 2 : 5;
+    const maxAttempts = currentAttempts.firstBlockPassed ? 2 : 5;
 
-    const blockOutcome = maybeBlockAccount(newAttempts, maxAttempts, now);
+    const blockOutcome = maybeBlockAccount(emailKey, updatedAttempts, maxAttempts, now);
     if (blockOutcome) {
-      return blockOutcome;
+      setLoginAttempts(blockOutcome.record);
+      return buildFailure(blockOutcome.message);
     }
 
-    setLoginAttempts(newAttempts);
-    localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
-    setIsLoading(false);
+    updateAttemptsForEmail(emailKey, updatedAttempts);
+    setLoginAttempts(updatedAttempts);
 
-    const remainingAttempts = maxAttempts - newAttempts.count;
-    const description = `${errorMessage}. Te quedan ${remainingAttempts} intento${remainingAttempts > 1 ? 's' : ''}.`;
+    const remainingAttempts = maxAttempts - updatedAttempts.count;
+    const description = `${errorMessage || 'Credenciales incorrectas'}. Te quedan ${remainingAttempts} intento${remainingAttempts > 1 ? 's' : ''}.`;
 
-  return buildFailure(description);
+    return buildFailure(description);
   };
 
-  const maybeBlockAccount = (attempts: LoginAttempt, maxAttempts: number, now: number) => {
+  const maybeBlockAccount = (
+    emailKey: string,
+    attempts: LoginAttempt,
+    maxAttempts: number,
+    now: number,
+  ): LoginAttemptBlockOutcome | null => {
     if (attempts.count < maxAttempts) {
       return null;
     }
 
-    attempts.count = 0;
+    const resetCount: LoginAttempt = {
+      ...attempts,
+      count: 0,
+    };
 
-    if (loginAttempts.firstBlockPassed) {
-      attempts.permanentlyBlocked = true;
-      setLoginAttempts(attempts);
-      localStorage.setItem('loginAttempts', JSON.stringify(attempts));
-      setIsLoading(false);
-      return buildFailure('Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.');
+    if (attempts.firstBlockPassed) {
+      const permanentlyBlocked: LoginAttempt = {
+        ...resetCount,
+        permanentlyBlocked: true,
+      };
+      updateAttemptsForEmail(emailKey, permanentlyBlocked);
+      return {
+        record: permanentlyBlocked,
+        message: 'Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.',
+      };
     }
 
-    attempts.blockedUntil = now + 15 * 60 * 1000;
-    setLoginAttempts(attempts);
-    localStorage.setItem('loginAttempts', JSON.stringify(attempts));
-    setIsLoading(false);
-    return buildFailure('Has superado el límite de intentos. Cuenta bloqueada por 15 minutos.');
+    const blockedAttempts: LoginAttempt = {
+      ...resetCount,
+      blockedUntil: now + 15 * 60 * 1000,
+    };
+    updateAttemptsForEmail(emailKey, blockedAttempts);
+    return {
+      record: blockedAttempts,
+      message: 'Has superado el límite de intentos. Cuenta bloqueada por 15 minutos.',
+    };
   };
 
   const buildFailure = (error: string) => {
@@ -257,15 +349,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resetLoginAttempts = () => {
-    const resetAttempts = { 
-      count: 0, 
-      lastAttempt: 0, 
-      blockedUntil: null, 
-      permanentlyBlocked: false,
-      firstBlockPassed: false,
-    };
-    setLoginAttempts(resetAttempts);
-    localStorage.setItem('loginAttempts', JSON.stringify(resetAttempts));
+    setAttemptsStore({});
+    persistAttemptsStore({});
+    setLoginAttempts(createInitialLoginAttempt());
   };
 
   const logout = () => {
