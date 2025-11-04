@@ -36,7 +36,7 @@ class TeamControllerTest {
     }
 
     @Test
-    void getStudentsName_returnsTeamMembers() throws Exception {
+    void getStudentsNameReturnsTeamMembers() throws Exception {
         when(teamService.getStudentsNameById(10L)).thenReturn(List.of("María", "Juan"));
 
         mockMvc.perform(get("/project/team/getStudentsName/{id}", 10L))

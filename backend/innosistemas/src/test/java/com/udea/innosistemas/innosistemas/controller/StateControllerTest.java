@@ -37,7 +37,7 @@ class StateControllerTest {
     }
 
     @Test
-    void listAllStates_returnsStates() throws Exception {
+    void listAllStatesReturnsStates() throws Exception {
         State state = new State();
         state.setId(3L);
         state.setName("Completada");

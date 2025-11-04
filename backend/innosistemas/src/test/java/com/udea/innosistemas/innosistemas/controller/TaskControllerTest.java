@@ -46,7 +46,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void saveTask_returnsPersistedPayload() throws Exception {
+    void saveTaskReturnsPersistedPayload() throws Exception {
         Task saved = new Task();
         saved.setId(99L);
         saved.setTitle("Nueva tarea accesible");
@@ -66,7 +66,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void saveTask_returnsErrorWhenServiceFails() throws Exception {
+    void saveTaskReturnsErrorWhenServiceFails() throws Exception {
         when(taskService.saveTask(any(Task.class))).thenThrow(new RuntimeException("fallo"));
 
         mockMvc.perform(post("/project/task/save")
@@ -76,7 +76,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void listAllTasks_delegatesToService() throws Exception {
+    void listAllTasksDelegatesToService() throws Exception {
         Task task = new Task();
         task.setId(5L);
         when(taskService.listAllTasks()).thenReturn(List.of(task));
@@ -87,7 +87,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void deleteTask_returnsNoContent() throws Exception {
+    void deleteTaskReturnsNoContent() throws Exception {
         mockMvc.perform(delete("/project/task/delete/{id}", 7L))
             .andExpect(status().isNoContent());
 
@@ -95,7 +95,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void deleteTask_propagatesServiceException() throws Exception {
+    void deleteTaskPropagatesServiceException() throws Exception {
         doThrow(new UnsupportedOperationException("sin permiso")).when(taskService).deleteTask(8L);
 
         ServletException exception = org.junit.jupiter.api.Assertions.assertThrows(ServletException.class, () ->
@@ -106,7 +106,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void updateTask_returnsPayloadWhenServiceSucceeds() throws Exception {
+    void updateTaskReturnsPayloadWhenServiceSucceeds() throws Exception {
         Task updated = new Task();
         updated.setId(11L);
         updated.setTitle("Título actualizado");
@@ -120,7 +120,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void updateTask_returnsErrorWhenServiceThrows() throws Exception {
+    void updateTaskReturnsErrorWhenServiceThrows() throws Exception {
         when(taskService.saveTask(any(Task.class))).thenThrow(new RuntimeException("fallo"));
 
         mockMvc.perform(put("/project/task/update")
@@ -130,7 +130,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void updateState_returnsNoContent() throws Exception {
+    void updateStateReturnsNoContent() throws Exception {
         mockMvc.perform(put("/project/task/updateState/{taskId}/{stateId}", 15L, 3L))
             .andExpect(status().isNoContent());
 

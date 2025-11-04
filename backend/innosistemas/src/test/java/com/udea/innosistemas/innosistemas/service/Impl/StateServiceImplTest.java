@@ -27,7 +27,7 @@ class StateServiceImplTest {
     private StateServiceImpl stateService;
 
     @Test
-    void allStates_returnsRepositoryData() {
+    void allStatesReturnsRepositoryData() {
         State state = new State();
         List<State> states = List.of(state);
         when(stateRepository.findAll()).thenReturn(states);
@@ -39,7 +39,7 @@ class StateServiceImplTest {
     }
 
     @Test
-    void allStates_wrapsRepositoryException() {
+    void allStatesWrapsRepositoryException() {
         when(stateRepository.findAll()).thenThrow(new RuntimeException("fallo"));
 
         UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, stateService::allStates);

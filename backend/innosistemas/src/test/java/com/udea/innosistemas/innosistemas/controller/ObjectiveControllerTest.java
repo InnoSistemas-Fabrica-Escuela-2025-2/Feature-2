@@ -36,7 +36,7 @@ class ObjectiveControllerTest {
     }
 
     @Test
-    void saveObjective_returnsSavedEntity() throws Exception {
+    void saveObjectiveReturnsSavedEntity() throws Exception {
         Objective objective = new Objective();
         objective.setId(3L);
         objective.setDescription("Accesibilidad mejorada");
@@ -52,7 +52,7 @@ class ObjectiveControllerTest {
     }
 
     @Test
-    void saveObjective_returnsErrorWhenServiceFails() throws Exception {
+    void saveObjectiveReturnsErrorWhenServiceFails() throws Exception {
         when(objectiveService.saveObjective(any(Objective.class))).thenThrow(new RuntimeException("fallo"));
 
         mockMvc.perform(post("/project/objective/save")

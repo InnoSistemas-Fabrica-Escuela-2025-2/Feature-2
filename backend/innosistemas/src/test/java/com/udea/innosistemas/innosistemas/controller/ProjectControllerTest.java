@@ -41,14 +41,14 @@ class ProjectControllerTest {
     }
 
     @Test
-    void messageEndpoint_returnsHealthMessage() throws Exception {
+    void messageEndpointReturnsHealthMessage() throws Exception {
         mockMvc.perform(get("/project/project/message"))
             .andExpect(status().isOk())
             .andExpect(content().string("servicio 2 funcionando"));
     }
 
     @Test
-    void saveProject_returnsPersistedInstance() throws Exception {
+    void saveProjectReturnsPersistedInstance() throws Exception {
         Project project = new Project();
         project.setId(77L);
     project.setName("Proyecto Accesible");
@@ -66,7 +66,7 @@ class ProjectControllerTest {
     }
 
     @Test
-    void saveProject_returnsErrorOnServiceFailure() throws Exception {
+    void saveProjectReturnsErrorOnServiceFailure() throws Exception {
         when(projectService.saveProject(any(Project.class))).thenThrow(new RuntimeException("fallo"));
 
         mockMvc.perform(post("/project/project/save")
@@ -76,7 +76,7 @@ class ProjectControllerTest {
     }
 
     @Test
-    void listAllProjects_returnsRepositoryData() throws Exception {
+    void listAllProjectsReturnsRepositoryData() throws Exception {
         Project project = new Project();
         project.setId(12L);
         when(projectService.listAllProjects()).thenReturn(List.of(project));
@@ -87,7 +87,7 @@ class ProjectControllerTest {
     }
 
     @Test
-    void listAllProjectsById_returnsStudentProjects() throws Exception {
+    void listAllProjectsByIdReturnsStudentProjects() throws Exception {
         Project project = new Project();
         project.setId(21L);
         when(projectService.listAllById(4L)).thenReturn(List.of(project));

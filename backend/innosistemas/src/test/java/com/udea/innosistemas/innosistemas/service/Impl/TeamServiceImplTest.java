@@ -31,7 +31,7 @@ class TeamServiceImplTest {
     private TeamServiceImpl teamService;
 
     @Test
-    void nameTeam_returnsTeamName() {
+    void nameTeamReturnsTeamName() {
         when(teamRepository.findNameByIdStudent(9L)).thenReturn("Equipo Gamma");
 
         String result = teamService.nameTeam(9L);
@@ -41,7 +41,7 @@ class TeamServiceImplTest {
     }
 
     @Test
-    void nameTeam_wrapsRepositoryException() {
+    void nameTeamWrapsRepositoryException() {
     when(teamRepository.findNameByIdStudent(3L)).thenThrow(new RuntimeException(REPOSITORY_FAILURE));
 
         UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> teamService.nameTeam(3L));
@@ -50,7 +50,7 @@ class TeamServiceImplTest {
     }
 
     @Test
-    void getStudentsNameById_returnsMembers() {
+    void getStudentsNameByIdReturnsMembers() {
     when(teamRepository.findNameByIdStudent(4L)).thenReturn(TEAM_DELTA_NAME);
         List<String> members = List.of("Ana", "Luis");
     when(teamRepository.getStudentsNameById(TEAM_DELTA_NAME)).thenReturn(members);
@@ -62,7 +62,7 @@ class TeamServiceImplTest {
     }
 
     @Test
-    void getStudentsNameById_wrapsErrorsFromRepository() {
+    void getStudentsNameByIdWrapsErrorsFromRepository() {
         when(teamRepository.findNameByIdStudent(11L)).thenReturn("Equipo Beta");
     when(teamRepository.getStudentsNameById("Equipo Beta")).thenThrow(new RuntimeException(REPOSITORY_FAILURE));
 

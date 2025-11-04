@@ -29,7 +29,7 @@ class ProjectServiceImplTest {
     private ProjectServiceImpl projectService;
 
     @Test
-    void saveProject_returnsPersistedEntity() {
+    void saveProjectReturnsPersistedEntity() {
         Project project = new Project();
         when(projectRepository.save(project)).thenReturn(project);
 
@@ -40,7 +40,7 @@ class ProjectServiceImplTest {
     }
 
     @Test
-    void listAllProjects_returnsRepositoryData() {
+    void listAllProjectsReturnsRepositoryData() {
         Project project = new Project();
         List<Project> projects = Collections.singletonList(project);
         when(projectRepository.findAll()).thenReturn(projects);
@@ -52,7 +52,7 @@ class ProjectServiceImplTest {
     }
 
     @Test
-    void getProjectsById_propagatesRepositoryValues() {
+    void getProjectsByIdPropagatesRepositoryValues() {
         List<Long> projectIds = List.of(1L, 2L);
         when(projectRepository.getProjectsById(7L)).thenReturn(projectIds);
 
@@ -63,7 +63,7 @@ class ProjectServiceImplTest {
     }
 
     @Test
-    void getProjectsById_wrapsRepositoryErrors() {
+    void getProjectsByIdWrapsRepositoryErrors() {
         when(projectRepository.getProjectsById(anyLong())).thenThrow(new RuntimeException("DB failure"));
 
         UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> projectService.getProjectsById(5L));
@@ -72,7 +72,7 @@ class ProjectServiceImplTest {
     }
 
     @Test
-    void listAllById_returnsProjectsForStudent() {
+    void listAllByIdReturnsProjectsForStudent() {
         List<Long> projectIds = List.of(3L, 8L);
         Project project = new Project();
         List<Project> projects = Collections.singletonList(project);
@@ -87,7 +87,7 @@ class ProjectServiceImplTest {
     }
 
     @Test
-    void listAllById_wrapsErrorsFromRepository() {
+    void listAllByIdWrapsErrorsFromRepository() {
         List<Long> projectIds = List.of(10L);
         when(projectRepository.getProjectsById(12L)).thenReturn(projectIds);
         when(projectRepository.findAllByIdIn(projectIds)).thenThrow(new RuntimeException("query failed"));

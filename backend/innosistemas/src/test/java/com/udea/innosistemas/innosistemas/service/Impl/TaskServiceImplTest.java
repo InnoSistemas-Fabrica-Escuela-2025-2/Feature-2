@@ -40,7 +40,7 @@ class TaskServiceImplTest {
     private TaskServiceImpl taskService;
 
     @Test
-    void deleteTask_removesExistingTask() {
+    void deleteTaskRemovesExistingTask() {
         when(taskRepository.existsById(1L)).thenReturn(true);
 
         taskService.deleteTask(1L);
@@ -49,7 +49,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void deleteTask_throwsWhenTaskDoesNotExist() {
+    void deleteTaskThrowsWhenTaskDoesNotExist() {
         when(taskRepository.existsById(2L)).thenReturn(false);
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.deleteTask(2L));
@@ -59,7 +59,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void saveTask_assignsDefaultStateWhenMissing() {
+    void saveTaskAssignsDefaultStateWhenMissing() {
         Task task = new Task();
 
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -75,7 +75,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void saveTask_preservesProvidedState() {
+    void saveTaskPreservesProvidedState() {
         State initialState = new State();
         initialState.setId(5L);
         Task task = new Task();
@@ -90,7 +90,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void saveTask_wrapsRepositoryExceptions() {
+    void saveTaskWrapsRepositoryExceptions() {
         Task task = new Task();
         when(taskRepository.save(any(Task.class))).thenThrow(new RuntimeException("DB error"));
 
@@ -98,7 +98,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void listAllTasks_returnsRepositoryData() {
+    void listAllTasksReturnsRepositoryData() {
         Task task = new Task();
         List<Task> expected = Collections.singletonList(task);
         when(taskRepository.findAll()).thenReturn(expected);
@@ -110,7 +110,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void updateState_updatesTaskWhenPresent() {
+    void updateStateUpdatesTaskWhenPresent() {
         Task existingTask = new Task();
         State newState = new State();
         newState.setId(4L);
@@ -125,7 +125,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void updateState_throwsWhenTaskMissing() {
+    void updateStateThrowsWhenTaskMissing() {
         when(taskRepository.findById(9L)).thenReturn(Optional.empty());
 
         assertThrows(UnsupportedOperationException.class, () -> taskService.updateState(9L, 2L));
@@ -133,7 +133,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void updateState_throwsWhenStateMissing() {
+    void updateStateThrowsWhenStateMissing() {
         Task existingTask = new Task();
 
         when(taskRepository.findById(15L)).thenReturn(Optional.of(existingTask));

@@ -25,7 +25,7 @@ class JwtUtilTest {
     }
 
     @Test
-    void generateToken_populatesMandatoryClaims() {
+    void generateTokenPopulatesMandatoryClaims() {
         Long userId = 42L;
         String email = DEFAULT_EMAIL;
         String role = "ADMIN";
@@ -39,7 +39,7 @@ class JwtUtilTest {
     }
 
     @Test
-    void validateToken_withMatchingEmailAndValidExpiration_returnsTrue() {
+    void validateTokenWithMatchingEmailAndValidExpirationReturnsTrue() {
         String email = DEFAULT_EMAIL;
         String token = jwtUtil.generateToken(99L, email, "USER");
 
@@ -47,14 +47,14 @@ class JwtUtilTest {
     }
 
     @Test
-    void validateToken_withDifferentEmail_returnsFalse() {
+    void validateTokenWithDifferentEmailReturnsFalse() {
         String token = jwtUtil.generateToken(99L, DEFAULT_EMAIL, "USER");
 
         assertFalse(jwtUtil.validateToken(token, "other@example.com"));
     }
 
     @Test
-    void validateToken_withExpiredToken_returnsFalse() {
+    void validateTokenWithExpiredTokenReturnsFalse() {
         setField("jwtExpiration", -1_000L);
         String token = jwtUtil.generateToken(99L, "expired@example.com", "USER");
 
@@ -62,7 +62,7 @@ class JwtUtilTest {
     }
 
     @Test
-    void validateToken_withMalformedToken_returnsFalse() {
+    void validateTokenWithMalformedTokenReturnsFalse() {
         assertFalse(jwtUtil.validateToken("not-a-valid-token"));
     }
 
