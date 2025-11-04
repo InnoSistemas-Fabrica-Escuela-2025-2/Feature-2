@@ -4,17 +4,12 @@ import { Plus, Calendar, Users, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { mockProjects } from '@/data/mockData';
-import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
 import CreateProjectDialog from '@/components/projects/CreateProjectDialog';
 
 const Proyectos = () => {
-  const { user } = useAuth();
-  const [projects, setProjects] = useState(mockProjects);
+  const { projects, isLoading, refreshData } = useData();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-  // Filter projects where user is a member
-  const userProjects = projects.filter(p => p.miembros.includes(user?.id || ''));
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -36,7 +31,13 @@ const Proyectos = () => {
       </div>
 
       {/* Projects Grid */}
-      {userProjects.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <p className="text-muted-foreground">Cargando proyectos...</p>
+          </CardContent>
+        </Card>
+      ) : projects.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center mb-4" aria-hidden="true">
@@ -54,7 +55,7 @@ const Proyectos = () => {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {userProjects.map((project) => (
+          {projects.map((project) => (
             <Card key={project.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="line-clamp-1">
@@ -62,11 +63,11 @@ const Proyectos = () => {
                     to={`/proyectos/${project.id}`}
                     className="hover:text-primary transition-colors"
                   >
-                    {project.nombre}
+                    {project.name || project.nombre}
                   </Link>
                 </CardTitle>
                 <CardDescription className="line-clamp-2">
-                  {project.descripcion}
+                  {project.description || project.descripcion}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -74,11 +75,11 @@ const Proyectos = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Progreso</span>
-                    <span className="font-medium">{project.progreso}%</span>
+                    <span className="font-medium">{project.progreso || 0}%</span>
                   </div>
                   <Progress
-                    value={project.progreso}
-                    aria-label={`Progreso del proyecto: ${project.progreso}%`}
+                    value={project.progreso || 0}
+                    aria-label={`Progreso del proyecto: ${project.progreso || 0}%`}
                   />
                 </div>
 
@@ -86,12 +87,12 @@ const Proyectos = () => {
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" aria-hidden="true" />
-                    <span>{project.miembros.length} miembros</span>
+                    <span>{project.tasks?.length || 0} tareas</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" aria-hidden="true" />
-                    <time dateTime={project.fechaEntrega.toISOString()}>
-                      {new Date(project.fechaEntrega).toLocaleDateString('es-ES', {
+                    <time dateTime={project.deadline || project.fechaEntrega}>
+                      {new Date(project.deadline || project.fechaEntrega).toLocaleDateString('es-ES', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric',
@@ -115,8 +116,8 @@ const Proyectos = () => {
       <CreateProjectDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        onProjectCreated={(newProject) => {
-          setProjects([...projects, newProject]);
+        onProjectCreated={() => {
+          refreshData();
         }}
       />
     </div>

@@ -50,14 +50,10 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
                 ActiveSession existingSession = session.get();
                 System.out.println("Verificando sesión activa para: " + person.getEmail());
                 
-                if (jwtUtil.validateToken(existingSession.getToken())) {
-                    System.out.println("El usuario ya tiene una sesión activa y válida: " + person.getEmail());
-                    throw new RuntimeException("El usuario ya tiene una sesión activa.");
-                } else {
-                    System.out.println("Token expirado, se eliminará la sesión anterior: " + person.getEmail());
-                    activeSessionService.invalidateSession(existingSession);
-                    activeSessionRepository.flush(); 
-                }
+                // Siempre invalidar la sesión anterior y crear una nueva
+                System.out.println("Invalidando sesión anterior y creando nueva: " + person.getEmail());
+                activeSessionService.invalidateSession(existingSession);
+                activeSessionRepository.flush();
             }
 
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();

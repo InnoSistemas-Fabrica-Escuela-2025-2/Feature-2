@@ -1,7 +1,7 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Project } from '@/types';
-import { mockTeams } from '@/data/mockData';
+import { teamsApi, projectsApi } from '@/lib/api';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface Team {
+  id: number;
+  name: string;
+}
+
 interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -49,6 +54,28 @@ const CreateProjectDialog = ({
   const [error, setError] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
+
+  // Load teams from API
+  useEffect(() => {
+    const loadTeams = async () => {
+      try {
+        setIsLoadingTeams(true);
+        const response = await teamsApi.getAll();
+        setTeams(response.data || []);
+      } catch (error) {
+        console.error('Error loading teams:', error);
+        toast.error('No se pudieron cargar los equipos');
+      } finally {
+        setIsLoadingTeams(false);
+      }
+    };
+
+    if (open) {
+      loadTeams();
+    }
+  }, [open]);
 
   const resetForm = () => {
     setNombre('');
@@ -130,29 +157,62 @@ const CreateProjectDialog = ({
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const selectedTeam = teams.find(t => t.id.toString() === equipoId);
+      
+      if (!selectedTeam) {
+        setError('El equipo seleccionado no es válido');
+        setIsSubmitting(false);
+        return;
+      }
 
-    const selectedTeam = mockTeams.find(t => t.id === equipoId);
-    
-    const newProject: Project = {
-      id: `p${Date.now()}`,
-      nombre: nombre.trim(),
-      descripcion: descripcion.trim(),
-      objetivos: objetivos.trim(),
-      fechaEntrega: new Date(fechaEntrega),
-      fechaCreacion: new Date(),
-      creadorId: user?.id || '',
-      equipoId,
-      miembros: selectedTeam?.miembros || [user?.id || ''],
-      progreso: 0,
-    };
+      // Preparar datos para el backend según la estructura de Project.java
+      const projectData = {
+        name: nombre.trim(),
+        description: descripcion.trim(),
+        deadline: new Date(fechaEntrega).toISOString(),
+        team: {
+          id: selectedTeam.id,
+          name: selectedTeam.name
+        },
+        objectives: objetivos.trim().split('\n').filter(obj => obj.trim()).map((obj, index) => ({
+          description: obj.trim()
+        })),
+        tasks: []
+      };
 
-    onProjectCreated(newProject);
-    toast.success('Proyecto creado exitosamente');
-    onOpenChange(false);
-    resetForm();
-    setIsSubmitting(false);
+      console.log('Enviando proyecto al backend:', projectData);
+
+      // Llamada real al backend
+      const response = await projectsApi.create(projectData);
+      
+      console.log('Proyecto creado:', response.data);
+
+      // Convertir respuesta del backend al formato del frontend
+      const newProject: Project = {
+        id: response.data.id?.toString() || `p${Date.now()}`,
+        nombre: response.data.name,
+        descripcion: response.data.description,
+        objetivos: response.data.objectives?.map((o: any) => o.description).join('\n') || objetivos.trim(),
+        fechaEntrega: new Date(response.data.deadline),
+        fechaCreacion: new Date(),
+        creadorId: user?.id || '',
+        equipoId: selectedTeam.id.toString(),
+        miembros: [user?.id || ''],
+        progreso: 0,
+      };
+
+      onProjectCreated(newProject);
+      toast.success('Proyecto creado exitosamente');
+      onOpenChange(false);
+      resetForm();
+    } catch (error: any) {
+      console.error('Error al crear proyecto:', error);
+      setError(error.response?.data?.message || 'Error al crear el proyecto. Por favor intenta de nuevo.');
+      toast.error('Error al crear el proyecto');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -253,20 +313,26 @@ const CreateProjectDialog = ({
                 Equipo
                 <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
               </Label>
-              <Select value={equipoId} onValueChange={setEquipoId} disabled={isSubmitting}>
+              <Select value={equipoId} onValueChange={setEquipoId} disabled={isSubmitting || isLoadingTeams}>
                 <SelectTrigger 
                   id="equipo"
                   aria-required="true"
                   aria-invalid={error && !equipoId ? 'true' : 'false'}
                 >
-                  <SelectValue placeholder="Selecciona un equipo" />
+                  <SelectValue placeholder={isLoadingTeams ? "Cargando equipos..." : "Selecciona un equipo"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockTeams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.nombre}
+                  {teams.length === 0 && !isLoadingTeams ? (
+                    <SelectItem value="no-teams" disabled>
+                      No hay equipos disponibles
                     </SelectItem>
-                  ))}
+                  ) : (
+                    teams.map((team) => (
+                      <SelectItem key={team.id} value={team.id.toString()}>
+                        {team.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">

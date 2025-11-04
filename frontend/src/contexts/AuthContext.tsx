@@ -123,6 +123,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.login({ email: correo, password: contrasena });
       
+      // Save JWT token to localStorage
+      const token = response.data.token;
+      localStorage.setItem('token', token);
+      
       // Transform backend response to match our User type
       const loggedInUser: User = {
         id: response.data.email, // Using email as ID for now
@@ -217,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('token'); // Remove JWT token
     toast.info('Sesión cerrada correctamente');
   };
 

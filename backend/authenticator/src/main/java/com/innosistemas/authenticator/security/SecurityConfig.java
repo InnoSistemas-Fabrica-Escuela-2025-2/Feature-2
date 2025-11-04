@@ -19,15 +19,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.disable())  // Deshabilitar CORS de Spring Security (usamos CorsConfig)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
+                    // Rutas del authenticator (después de StripPrefix) - PÚBLICAS
+                    .requestMatchers("/person/authenticate", "/person/message", "/person/**").permitAll()
+                    // Rutas de proyectos (si se enrutan a través de este servicio)
                     .requestMatchers("/project/project/**").hasRole("STUDENT")
                     .requestMatchers("/project/project/listAll").hasRole("PROFESOR")
-                    .requestMatchers("project/objective/**").hasRole("STUDENT")
-                    .requestMatchers("project/task/**").hasRole("STUDENT")
-                    .requestMatchers("project/state/**").hasRole("STUDENT")
-                    .requestMatchers("authenticator/person/authenticate").permitAll()
-                    .requestMatchers("authenticator/person/message").permitAll()
+                    .requestMatchers("/project/objective/**").hasRole("STUDENT")
+                    .requestMatchers("/project/task/**").hasRole("STUDENT")
+                    .requestMatchers("/project/state/**").hasRole("STUDENT")
+                    .anyRequest().permitAll()  // Permitir todo temporalmente para debug
                     )
                     
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

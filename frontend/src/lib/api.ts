@@ -87,10 +87,15 @@ const errorInterceptor = async (error: AxiosError) => {
   if (error.response?.status === 401 && !originalRequest._retry) {
     originalRequest._retry = true;
     
-    // Limpiar token y redirigir a login
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    globalThis.location.href = '/login';
+    // Solo redirigir si NO estamos ya en la página de login
+    const currentPath = globalThis.location?.pathname;
+    if (currentPath !== '/login' && currentPath !== '/') {
+      console.log('⚠️ Token inválido o expirado, redirigiendo a login...');
+      // Limpiar token y redirigir a login
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      globalThis.location.href = '/login';
+    }
     throw error;
   }
 
@@ -236,6 +241,13 @@ export const tasksApi = {
 // Usa el microservicio de InnoSistemas (puerto 8082) a través del Gateway
 
 export const teamsApi = {
+  /**
+   * Obtener todos los equipos
+   * GET /project/team/listAll
+   */
+  getAll: () => 
+    apiGateway.get('/project/team/listAll'),
+
   /**
    * Obtener nombres de estudiantes por ID de equipo
    * GET /project/team/getStudentsName/{id}
