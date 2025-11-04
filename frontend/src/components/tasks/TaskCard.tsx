@@ -2,6 +2,7 @@ import { Task, Project } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Edit, Trash2 } from 'lucide-react';
+import { tasksApi } from '@/lib/api';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface TaskCardProps {
   task: Task;
@@ -23,9 +25,23 @@ interface TaskCardProps {
 }
 
 const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
-  const handleDelete = () => {
-    onDelete(task.id);
-    toast.success('Tarea eliminada correctamente');
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      console.log('Deleting task:', task.id);
+      
+      await tasksApi.delete(parseInt(task.id));
+      
+      toast.success('Tarea eliminada correctamente');
+      onDelete(task.id);
+    } catch (error: any) {
+      console.error('Error deleting task:', error);
+      toast.error('Error al eliminar la tarea');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -51,12 +67,14 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
           </p>
         )}
 
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" aria-hidden="true" />
-          <time dateTime={task.fechaEntrega.toISOString()}>
-            Vence: {new Date(task.fechaEntrega).toLocaleDateString('es-ES')}
-          </time>
-        </div>
+        {(task.fechaEntrega || (task as any).deadline) && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" aria-hidden="true" />
+            <time dateTime={new Date(task.fechaEntrega || (task as any).deadline).toISOString()}>
+              Vence: {new Date(task.fechaEntrega || (task as any).deadline).toLocaleDateString('es-ES')}
+            </time>
+          </div>
+        )}
 
         <div className="flex gap-2 pt-2">
           <Button 
@@ -89,8 +107,10 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+                <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

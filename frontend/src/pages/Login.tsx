@@ -157,17 +157,6 @@ const Login = () => {
             >
               {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
-
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground text-center mb-2">
-                <strong>Usuarios de prueba:</strong>
-              </p>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• <strong>Estudiante:</strong> maria.garcia@universidad.edu</li>
-                <li>• <strong>Profesor:</strong> carlos.rodriguez@universidad.edu</li>
-                <li>• <strong>Contraseña:</strong> cualquier texto (mínimo 6 caracteres)</li>
-              </ul>
-            </div>
           </form>
         </CardContent>
       </Card>

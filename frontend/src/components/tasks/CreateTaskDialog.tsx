@@ -1,7 +1,8 @@
 import { useState, FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
 import { Task } from '@/types';
-import { mockProjects, mockUsers } from '@/data/mockData';
+import { tasksApi } from '@/lib/api';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,14 +21,17 @@ interface CreateTaskDialogProps {
 
 const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialogProps) => {
   const { user } = useAuth();
+  const { projects, refreshData } = useData();
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaEntrega, setFechaEntrega] = useState('');
   const [proyectoId, setProyectoId] = useState('');
   const [responsableId, setResponsableId] = useState(user?.id || '');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const userProjects = mockProjects.filter(p => p.miembros.includes(user?.id || ''));
+  // Show all projects for now (no filtering)
+  const userProjects = projects;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -47,24 +51,43 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
       return;
     }
 
-    const newTask: Task = {
-      id: `t${Date.now()}`,
-      proyectoId,
-      titulo: titulo.trim(),
-      descripcion: descripcion.trim(),
-      fechaEntrega: selectedDate,
-      fechaCreacion: new Date(),
-      responsableId,
-      estado: 'pendiente',
-    };
+    try {
+      setIsLoading(true);
+      
+      // Prepare task data for backend
+      const taskData = {
+        title: titulo.trim(),
+        description: descripcion.trim(),
+        deadline: selectedDate.toISOString(),
+        responsible: user?.correo || user?.nombre || 'Sin asignar', // Campo obligatorio en backend
+        state: { id: 1 }, // 1 = Pendiente
+        project: { id: parseInt(proyectoId) }
+      };
 
-    onTaskCreated(newTask);
-    toast.success('Tarea creada exitosamente');
-    onOpenChange(false);
-    setTitulo('');
-    setDescripcion('');
-    setFechaEntrega('');
-    setProyectoId('');
+      console.log('Creating task:', taskData);
+      
+      const response = await tasksApi.create(taskData);
+      console.log('Task created successfully:', response.data);
+      
+      // Refresh data from backend
+      await refreshData();
+      
+      toast.success('Tarea creada exitosamente');
+      onTaskCreated(response.data);
+      onOpenChange(false);
+      
+      // Reset form
+      setTitulo('');
+      setDescripcion('');
+      setFechaEntrega('');
+      setProyectoId('');
+    } catch (error: any) {
+      console.error('Error creating task:', error);
+      setError(error.response?.data?.message || 'Error al crear la tarea');
+      toast.error('Error al crear la tarea');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -122,9 +145,15 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
                 <SelectValue placeholder="Selecciona un proyecto" />
               </SelectTrigger>
               <SelectContent>
-                {userProjects.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
-                ))}
+                {userProjects.length === 0 ? (
+                  <SelectItem value="no-projects" disabled>No hay proyectos disponibles</SelectItem>
+                ) : (
+                  userProjects.map(p => (
+                    <SelectItem key={p.id} value={p.id.toString()}>
+                      {p.name || p.nombre}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -146,8 +175,12 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit">Crear Tarea</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Creando...' : 'Crear Tarea'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

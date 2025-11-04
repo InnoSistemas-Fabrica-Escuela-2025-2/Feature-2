@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockProjects, mockTasks, mockNotifications } from '@/data/mockData';
 import { CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,29 +8,38 @@ import { Progress } from '@/components/ui/progress';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { projects, tasks, isLoading } = useData();
 
-  // Filter data for current user
-  const userProjects = mockProjects.filter(p => p.miembros.includes(user?.id || ''));
-  const userTasks = mockTasks.filter(t => {
-    const project = mockProjects.find(p => p.id === t.proyectoId);
-    return project?.miembros.includes(user?.id || '');
+  // Filter data - show all for now
+  const userProjects = projects;
+  const userTasks = tasks;
+  
+  const myAssignedTasks = userTasks;
+  const pendingTasks = myAssignedTasks.filter((t: any) => {
+    const stateName = t.state?.name || t.estado;
+    return stateName === 'Pendiente' || stateName === 'pendiente' || !t.state;
+  });
+  const inProgressTasks = myAssignedTasks.filter((t: any) => {
+    const stateName = t.state?.name || t.estado;
+    return stateName === 'En progreso' || stateName === 'en-progreso';
+  });
+  const completedTasks = myAssignedTasks.filter((t: any) => {
+    const stateName = t.state?.name || t.estado;
+    return stateName === 'Completada' || stateName === 'finalizado' || stateName === 'completado';
   });
   
-  const myAssignedTasks = userTasks.filter(t => t.responsableId === user?.id);
-  const pendingTasks = myAssignedTasks.filter(t => t.estado === 'pendiente');
-  const inProgressTasks = myAssignedTasks.filter(t => t.estado === 'en-progreso');
-  const completedTasks = myAssignedTasks.filter(t => t.estado === 'finalizado');
-  
-  const unreadNotifications = mockNotifications.filter(
-    n => n.userId === user?.id && !n.leida
-  ).length;
+  const unreadNotifications = 0; // Por ahora no hay notificaciones en el backend
 
   // Calculate upcoming deadlines (next 7 days)
   const today = new Date();
   const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
   const upcomingDeadlines = myAssignedTasks.filter(t => {
-    const deadline = new Date(t.fechaEntrega);
-    return deadline >= today && deadline <= nextWeek && t.estado !== 'finalizado';
+    const deadlineDate = t.deadline || t.fechaEntrega;
+    if (!deadlineDate) return false;
+    const deadline = new Date(deadlineDate);
+    const stateName = t.state?.name || t.estado;
+    const isNotCompleted = stateName !== 'finalizado' && stateName !== 'completado' && stateName !== 'Completada';
+    return deadline >= today && deadline <= nextWeek && isNotCompleted;
   });
 
   return (
@@ -124,13 +133,13 @@ const Dashboard = () => {
                       to={`/proyectos/${project.id}`}
                       className="font-medium hover:text-primary transition-colors"
                     >
-                      {project.nombre}
+                      {project.name || project.nombre}
                     </Link>
                     <span className="text-sm text-muted-foreground">
-                      {project.progreso}%
+                      {project.progreso || 0}%
                     </span>
                   </div>
-                  <Progress value={project.progreso} aria-label={`Progreso del proyecto ${project.nombre}: ${project.progreso}%`} />
+                  <Progress value={project.progreso || 0} aria-label={`Progreso del proyecto ${project.name || project.nombre}: ${project.progreso || 0}%`} />
                 </div>
               ))
             )}
@@ -160,16 +169,16 @@ const Dashboard = () => {
                   className="flex items-start justify-between gap-4 p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">{task.titulo}</p>
+                    <p className="text-sm font-medium leading-none">{task.title || task.titulo}</p>
                     <p className="text-sm text-muted-foreground">
-                      Vence: {new Date(task.fechaEntrega).toLocaleDateString('es-ES', {
+                      Vence: {new Date(task.deadline || task.fechaEntrega).toLocaleDateString('es-ES', {
                         day: 'numeric',
                         month: 'short',
                       })}
                     </p>
                   </div>
-                  <span className={`status-badge status-${task.estado}`}>
-                    {task.estado}
+                  <span className={`status-badge status-${task.state?.name || task.estado}`}>
+                    {task.state?.name || task.estado}
                   </span>
                 </div>
               ))
@@ -193,8 +202,11 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-4">
               {userProjects.map((project) => {
-                const projectTasks = mockTasks.filter(t => t.proyectoId === project.id);
-                const completedProjectTasks = projectTasks.filter(t => t.estado === 'finalizado');
+                const projectTasks = tasks.filter(t => t.proyectoId === project.id);
+                const completedProjectTasks = projectTasks.filter(t => {
+                  const stateName = t.state?.name || t.estado;
+                  return stateName === 'finalizado' || stateName === 'completado' || stateName === 'Completada';
+                });
                 const progress = projectTasks.length > 0
                   ? Math.round((completedProjectTasks.length / projectTasks.length) * 100)
                   : 0;
@@ -206,13 +218,13 @@ const Dashboard = () => {
                         to={`/proyectos/${project.id}`}
                         className="font-medium hover:text-primary transition-colors"
                       >
-                        {project.nombre}
+                        {project.name || project.nombre}
                       </Link>
                       <span className="text-sm text-muted-foreground">
                         {completedProjectTasks.length}/{projectTasks.length} tareas completadas
                       </span>
                     </div>
-                    <Progress value={progress} aria-label={`Progreso del equipo en ${project.nombre}: ${progress}%`} />
+                    <Progress value={progress} aria-label={`Progreso del equipo en ${project.name || project.nombre}: ${progress}%`} />
                   </div>
                 );
               })}

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.udea.innosistemas.innosistemas.entity.Team;
 import com.udea.innosistemas.innosistemas.service.TeamService;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -22,5 +23,10 @@ public class TeamController {
     @GetMapping("/getStudentsName/{id}")
     public ResponseEntity<List<String>> getStudentsNameById(@PathVariable Long id) {
         return ResponseEntity.ok(teamService.getStudentsNameById(id));
+    }
+
+    @GetMapping("/listAll")
+    public ResponseEntity<List<Team>> listAllTeams() {
+        return ResponseEntity.ok(teamService.listAllTeams());
     }
 }

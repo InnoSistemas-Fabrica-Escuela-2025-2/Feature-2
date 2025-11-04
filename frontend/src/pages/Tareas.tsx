@@ -3,23 +3,21 @@ import { Plus, LayoutList, Columns } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockTasks, mockProjects } from '@/data/mockData';
-import { useAuth } from '@/contexts/AuthContext';
 import { Task, TaskStatus } from '@/types';
+import { useData } from '@/contexts/DataContext';
 import TaskCard from '@/components/tasks/TaskCard';
 import CreateTaskDialog from '@/components/tasks/CreateTaskDialog';
 import EditTaskDialog from '@/components/tasks/EditTaskDialog';
 import { TaskKanban } from '@/components/tasks/TaskKanban';
 
 const Tareas = () => {
-  const { user } = useAuth();
-  const [tasks, setTasks] = useState(mockTasks);
+  const { tasks, projects, isLoading, refreshData } = useData();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
-  // Filter tasks assigned to current user
-  const myTasks = tasks.filter(t => t.responsableId === user?.id);
+  // Filter tasks - show all tasks for now
+  const myTasks = tasks;
 
   const filterTasksByStatus = (status: TaskStatus | 'todas') => {
     if (status === 'todas') return myTasks;
@@ -27,15 +25,15 @@ const Tareas = () => {
   };
 
   const handleTaskCreated = (newTask: Task) => {
-    setTasks([...tasks, newTask]);
+    refreshData();
   };
 
   const handleTaskUpdated = (updatedTask: Task) => {
-    setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
+    refreshData();
   };
 
   const handleTaskDeleted = (taskId: string) => {
-    setTasks(tasks.filter(t => t.id !== taskId));
+    refreshData();
   };
 
   const pendingTasks = filterTasksByStatus('pendiente');
@@ -132,7 +130,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={mockProjects.find(p => p.id === task.proyectoId)}
+                    project={projects.find(p => p.id === task.proyectoId)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />
@@ -154,7 +152,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={mockProjects.find(p => p.id === task.proyectoId)}
+                    project={projects.find(p => p.id === task.proyectoId)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />
@@ -176,7 +174,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={mockProjects.find(p => p.id === task.proyectoId)}
+                    project={projects.find(p => p.id === task.proyectoId)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />
@@ -198,7 +196,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={mockProjects.find(p => p.id === task.proyectoId)}
+                    project={projects.find(p => p.id === task.proyectoId)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />

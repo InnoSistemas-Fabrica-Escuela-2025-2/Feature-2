@@ -7,10 +7,24 @@ spring:
         gateway:
             routes:
             - id: authenticator
-              uri: http://localhost:8081/
+              uri: http://localhost:8081
               predicates:
               - Path=/authenticator/**
+              filters:
+              - StripPrefix=1
             - id: innosistemas
-              uri: http://localhost:8082/
+              uri: http://localhost:8082
               predicates:
               - Path=/project/**
+            globalcors:
+                corsConfigurations:
+                    '[/**]':
+                        allowedOrigins: "http://localhost:5173"
+                        allowedMethods:
+                            - GET
+                            - POST
+                            - PUT
+                            - DELETE
+                            - OPTIONS
+                        allowedHeaders: "*"
+                        allowCredentials: true

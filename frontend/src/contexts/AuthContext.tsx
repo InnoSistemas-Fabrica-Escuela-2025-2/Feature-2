@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState } from '@/types';
-import { mockUsers } from '@/data/mockData';
+import { authApi } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface LoginAttempt {
@@ -119,16 +119,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('loginAttempts', JSON.stringify(updatedAttempts));
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Mock authentication - in production, this would be a real API call
-    const foundUser = mockUsers.find(u => u.correo === correo);
-    
-    if (foundUser && contrasena.length >= 6) {
+    // Real API call to backend
+    try {
+      const response = await authApi.login({ email: correo, password: contrasena });
+      
+      // Save JWT token to localStorage
+      const token = response.data.token;
+      localStorage.setItem('token', token);
+      
+      // Transform backend response to match our User type
+      const loggedInUser: User = {
+        id: response.data.email, // Using email as ID for now
+        nombre: response.data.email.split('@')[0], // Extract name from email
+        correo: response.data.email,
+        rol: response.data.role as 'estudiante' | 'profesor',
+        fechaRegistro: new Date()
+      };
+      
       // Successful login - reset attempts
-      setUser(foundUser);
-      localStorage.setItem('currentUser', JSON.stringify(foundUser));
+      setUser(loggedInUser);
+      localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
       const resetAttempts = { 
         count: 0, 
         lastAttempt: 0, 
@@ -138,58 +148,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       setLoginAttempts(resetAttempts);
       localStorage.setItem('loginAttempts', JSON.stringify(resetAttempts));
-      toast.success(`Bienvenido, ${foundUser.nombre}`);
+      toast.success(`Bienvenido, ${loggedInUser.nombre}`);
       setIsLoading(false);
       return { success: true };
-    }
-    
-    // Failed login - increment attempts
-    const newAttempts: LoginAttempt = {
-      ...loginAttempts,
-      count: loginAttempts.count + 1,
-      lastAttempt: now,
-      blockedUntil: null,
-    };
+    } catch (error: any) {
+      // Login failed - handle error from backend
+      console.error('Login error:', error);
+      
+      // Failed login - increment attempts
+      const newAttempts: LoginAttempt = {
+        ...loginAttempts,
+        count: loginAttempts.count + 1,
+        lastAttempt: now,
+        blockedUntil: null,
+      };
 
-    // Determine max attempts based on whether first block has passed
-    const maxAttempts = loginAttempts.firstBlockPassed ? 2 : 5;
+      // Determine max attempts based on whether first block has passed
+      const maxAttempts = loginAttempts.firstBlockPassed ? 2 : 5;
 
-    // Check if should block or permanently block
-    if (newAttempts.count >= maxAttempts) {
-      if (loginAttempts.firstBlockPassed) {
-        // After second chance, block permanently
-        newAttempts.permanentlyBlocked = true;
-        newAttempts.count = 0;
-        setLoginAttempts(newAttempts);
-        localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
-        setIsLoading(false);
-        return { 
-          success: false, 
-          error: 'Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.' 
-        };
-      } else {
-        // First block: 15 minutes
-        newAttempts.blockedUntil = now + (15 * 60 * 1000);
-        newAttempts.count = 0;
-        setLoginAttempts(newAttempts);
-        localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
-        setIsLoading(false);
-        return { 
-          success: false, 
-          error: 'Has superado el límite de intentos. Cuenta bloqueada por 15 minutos.' 
-        };
+      // Check if should block or permanently block
+      if (newAttempts.count >= maxAttempts) {
+        if (loginAttempts.firstBlockPassed) {
+          // After second chance, block permanently
+          newAttempts.permanentlyBlocked = true;
+          newAttempts.count = 0;
+          setLoginAttempts(newAttempts);
+          localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
+          setIsLoading(false);
+          return { 
+            success: false, 
+            error: 'Has alcanzado el límite de intentos. Contacta a soporte para desbloquear tu cuenta.' 
+          };
+        } else {
+          // First block: 15 minutes
+          newAttempts.blockedUntil = now + (15 * 60 * 1000);
+          newAttempts.count = 0;
+          setLoginAttempts(newAttempts);
+          localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
+          setIsLoading(false);
+          return { 
+            success: false, 
+            error: 'Has superado el límite de intentos. Cuenta bloqueada por 15 minutos.' 
+          };
+        }
       }
-    }
 
-    setLoginAttempts(newAttempts);
-    localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
-    
-    setIsLoading(false);
-    
-    const remainingAttempts = maxAttempts - newAttempts.count;
-    const errorMessage = `Credenciales incorrectas. Te quedan ${remainingAttempts} intento${remainingAttempts > 1 ? 's' : ''}.`;
-    
-    return { success: false, error: errorMessage };
+      setLoginAttempts(newAttempts);
+      localStorage.setItem('loginAttempts', JSON.stringify(newAttempts));
+      
+      setIsLoading(false);
+      
+      const remainingAttempts = maxAttempts - newAttempts.count;
+      const backendError = error.response?.data?.message || error.message || 'Credenciales incorrectas';
+      const errorMessage = `${backendError}. Te quedan ${remainingAttempts} intento${remainingAttempts > 1 ? 's' : ''}.`;
+      
+      return { success: false, error: errorMessage };
+    }
   };
 
   const resetLoginAttempts = () => {
@@ -207,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('token'); // Remove JWT token
     toast.info('Sesión cerrada correctamente');
   };
 
