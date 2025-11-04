@@ -25,6 +25,15 @@ public class TeamServiceImpl implements TeamService{
     }
 
     @Override
+    public Long getTeamIdByStudent(Long id_student) {
+        try{
+            return teamRepository.findTeamIdByStudent(id_student);
+        } catch (Exception e){
+            throw new UnsupportedOperationException("No fue posible encontrar el equipo del estudiante.");
+        }
+    }
+
+    @Override
     public List<String> getStudentsNameById(Long id_student) {
         try{
             String teamName = nameTeam(id_student);

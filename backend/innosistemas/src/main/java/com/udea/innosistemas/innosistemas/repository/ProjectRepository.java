@@ -16,4 +16,6 @@ public interface ProjectRepository extends JpaRepository<Project,Long>{
     List<Long> getProjectsById(@Param("student_id") Long student_id);
 
     List<Project> findAllByIdIn(List<Long> id_projects);
+    
+    List<Project> findAllByTeamId(Long team_id);
 }

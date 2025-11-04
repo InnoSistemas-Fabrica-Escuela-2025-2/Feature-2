@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.udea.innosistemas.innosistemas.entity.Project;
 import com.udea.innosistemas.innosistemas.service.ProjectService;
+import com.udea.innosistemas.innosistemas.service.TeamService;
 
 
 
@@ -28,6 +29,9 @@ public class ProjectController {
     
     @Autowired
     private ProjectService projectService;
+
+    @Autowired
+    private TeamService teamService;
 
     @GetMapping("/message")
     public ResponseEntity<String> showMesagge() {
@@ -59,14 +63,25 @@ public class ProjectController {
                 return ResponseEntity.ok(projectService.listAllProjects());
             }
             
-            // Si es estudiante y tenemos su ID, filtrar por sus proyectos
+            // Si es estudiante y tenemos su ID, buscar su equipo y filtrar proyectos
             if ("estudiante".equalsIgnoreCase(role) && userId != null) {
                 try {
                     Long studentId = Long.parseLong(userId);
-                    log.info("Usuario es estudiante con ID: {}, filtrando proyectos", studentId);
-                    return ResponseEntity.ok(projectService.listAllById(studentId));
+                    log.info("Usuario es estudiante con ID: {}, buscando su equipo", studentId);
+                    
+                    // Obtener el team_id del estudiante
+                    Long teamId = teamService.getTeamIdByStudent(studentId);
+                    log.info("Estudiante pertenece al equipo ID: {}", teamId);
+                    
+                    // Filtrar proyectos por team_id
+                    List<Project> projects = projectService.listAllByTeamId(teamId);
+                    log.info("Devolviendo {} proyectos para el equipo {}", projects.size(), teamId);
+                    return ResponseEntity.ok(projects);
                 } catch (NumberFormatException e) {
                     log.error("Error parseando userId: {}", userId, e);
+                    return ResponseEntity.ok(List.of());
+                } catch (Exception e) {
+                    log.error("Error obteniendo proyectos del estudiante", e);
                     return ResponseEntity.ok(List.of());
                 }
             }

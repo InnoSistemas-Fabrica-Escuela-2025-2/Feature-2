@@ -10,4 +10,5 @@ public interface ProjectService {
     public List<Project> listAllProjects();
     public List<Long> getProjectsById(Long student_id);
     public List<Project> listAllById(Long student_id);
+    public List<Project> listAllByTeamId(Long team_id);
 }

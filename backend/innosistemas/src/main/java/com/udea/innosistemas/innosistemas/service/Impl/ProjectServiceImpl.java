@@ -45,6 +45,15 @@ public class ProjectServiceImpl implements ProjectService{
 
         }
     }
+
+    @Override
+    public List<Project> listAllByTeamId(Long team_id) {
+        try{
+            return projectRepository.findAllByTeamId(team_id);
+        } catch (Exception e){
+            throw new UnsupportedOperationException("No fue posible mostrar los proyectos del equipo.");
+        }
+    }
     
     
 }
