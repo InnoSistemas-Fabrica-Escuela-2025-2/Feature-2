@@ -13,6 +13,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final String ROLE_STUDENT = "STUDENT";
+    private static final String ROLE_PROFESSOR = "PROFESOR";
+
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -25,11 +28,11 @@ public class SecurityConfig {
                     // Rutas del authenticator (después de StripPrefix) - PÚBLICAS
                     .requestMatchers("/person/authenticate", "/person/message", "/person/**").permitAll()
                     // Rutas de proyectos (si se enrutan a través de este servicio)
-                    .requestMatchers("/project/project/**").hasRole("STUDENT")
-                    .requestMatchers("/project/project/listAll").hasRole("PROFESOR")
-                    .requestMatchers("/project/objective/**").hasRole("STUDENT")
-                    .requestMatchers("/project/task/**").hasRole("STUDENT")
-                    .requestMatchers("/project/state/**").hasRole("STUDENT")
+                    .requestMatchers("/project/project/**").hasRole(ROLE_STUDENT)
+                    .requestMatchers("/project/project/listAll").hasRole(ROLE_PROFESSOR)
+                    .requestMatchers("/project/objective/**").hasRole(ROLE_STUDENT)
+                    .requestMatchers("/project/task/**").hasRole(ROLE_STUDENT)
+                    .requestMatchers("/project/state/**").hasRole(ROLE_STUDENT)
                     .anyRequest().permitAll()  // Permitir todo temporalmente para debug
                     )
                     

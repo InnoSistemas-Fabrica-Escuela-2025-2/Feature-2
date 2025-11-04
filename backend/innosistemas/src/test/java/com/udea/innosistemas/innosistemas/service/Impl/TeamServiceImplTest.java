@@ -22,6 +22,7 @@ class TeamServiceImplTest {
     private static final String REPOSITORY_FAILURE = "fallo";
     private static final String TEAM_NOT_FOUND_MESSAGE = "No fue posible encontrar el equipo.";
     private static final String STUDENT_NOT_FOUND_MESSAGE = "No existe el estudiante.";
+    private static final String TEAM_DELTA_NAME = "Equipo Delta";
 
     @Mock
     private TeamRepository teamRepository;
@@ -50,14 +51,14 @@ class TeamServiceImplTest {
 
     @Test
     void getStudentsNameById_returnsMembers() {
-        when(teamRepository.findNameByIdStudent(4L)).thenReturn("Equipo Delta");
+    when(teamRepository.findNameByIdStudent(4L)).thenReturn(TEAM_DELTA_NAME);
         List<String> members = List.of("Ana", "Luis");
-        when(teamRepository.getStudentsNameById("Equipo Delta")).thenReturn(members);
+    when(teamRepository.getStudentsNameById(TEAM_DELTA_NAME)).thenReturn(members);
 
         List<String> result = teamService.getStudentsNameById(4L);
 
         assertSame(members, result);
-        verify(teamRepository).getStudentsNameById("Equipo Delta");
+    verify(teamRepository).getStudentsNameById(TEAM_DELTA_NAME);
     }
 
     @Test
