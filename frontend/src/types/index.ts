@@ -33,14 +33,22 @@ export interface Project {
 
 export interface Task {
   id: string;
-  proyectoId: string;
+  proyectoId: string | number;
   titulo: string;
   descripcion: string;
-  fechaEntrega: Date;
-  fechaCreacion: Date;
+  fechaEntrega: Date | string;
+  fechaCreacion: Date | string;
   responsableId: string;
+  responsable?: string;
   estado: TaskStatus;
+  estadoId?: number;
   prioridad?: 'baja' | 'media' | 'alta';
+}
+
+export interface TaskState {
+  id: number;
+  name?: string;
+  nombre?: string;
 }
 
 export interface Notification {
