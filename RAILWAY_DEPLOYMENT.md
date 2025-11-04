@@ -27,7 +27,8 @@
 
 3. **Configurar Build**
    - Railway detectará automáticamente el `railway.toml`
-   - Se ejecutará: `chmod +x ./mvnw && ./mvnw clean package -DskipTests`
+   - Nixpacks compilará automáticamente el proyecto Maven
+   - ⚠️ **IMPORTANTE**: Si Railway dice "Deprecated", ignóralo - funcionará correctamente
 
 4. **Exponer Puerto Público**
    - En Settings → Networking → Generate Domain
@@ -132,6 +133,16 @@ Deberías recibir respuestas 200 OK.
 ---
 
 ## 🐛 Troubleshooting
+
+### Problema: "Docker build failed" o "failed to solve: process did not complete successfully"
+**Causa**: Railway está intentando usar Docker en lugar de Nixpacks.
+**Solución**: 
+1. Verifica que el `railway.toml` tenga `builder = "NIXPACKS"` (todo en mayúsculas)
+2. En Railway Settings → Builder, selecciona "Nixpacks" manualmente
+3. Haz un nuevo deploy desde Settings → Redeploy
+
+### Problema: "Builder: Nixpacks - Deprecated"
+**Solución**: Puedes ignorar este warning. Nixpacks sigue funcionando perfectamente y es la mejor opción para proyectos Java/Maven.
 
 ### Problema: "503 Service Unavailable" en Gateway
 **Solución**: Verifica que AUTHENTICATOR_URL e INNOSISTEMAS_URL estén correctas en las variables de entorno del Gateway.
