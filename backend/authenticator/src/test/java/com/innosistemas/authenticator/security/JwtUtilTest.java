@@ -13,6 +13,7 @@ class JwtUtilTest {
 
     private static final String SECRET_KEY = "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
     private static final long ONE_HOUR_IN_MILLIS = 3_600_000L;
+    private static final String DEFAULT_EMAIL = "user@example.com";
 
     private JwtUtil jwtUtil;
 
@@ -26,7 +27,7 @@ class JwtUtilTest {
     @Test
     void generateToken_populatesMandatoryClaims() {
         Long userId = 42L;
-        String email = "user@example.com";
+        String email = DEFAULT_EMAIL;
         String role = "ADMIN";
 
         String token = jwtUtil.generateToken(userId, email, role);
@@ -39,7 +40,7 @@ class JwtUtilTest {
 
     @Test
     void validateToken_withMatchingEmailAndValidExpiration_returnsTrue() {
-        String email = "user@example.com";
+        String email = DEFAULT_EMAIL;
         String token = jwtUtil.generateToken(99L, email, "USER");
 
         assertTrue(jwtUtil.validateToken(token, email));
@@ -47,7 +48,7 @@ class JwtUtilTest {
 
     @Test
     void validateToken_withDifferentEmail_returnsFalse() {
-        String token = jwtUtil.generateToken(99L, "user@example.com", "USER");
+        String token = jwtUtil.generateToken(99L, DEFAULT_EMAIL, "USER");
 
         assertFalse(jwtUtil.validateToken(token, "other@example.com"));
     }
