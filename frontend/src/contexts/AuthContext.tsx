@@ -21,6 +21,34 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const deriveDisplayName = (data: any): string => {
+  if (!data) {
+    return 'Usuario';
+  }
+
+  const explicitName = data.fullName || data.nombre || data.name;
+  if (explicitName && typeof explicitName === 'string') {
+    return explicitName;
+  }
+
+  const email: string | undefined = data.email;
+  if (typeof email === 'string' && email.includes('@')) {
+    const localPart = email.split('@')[0] ?? '';
+    const formatted = localPart
+      .replace(/[._-]+/g, ' ')
+      .split(' ')
+      .map((segment) => segment.trim())
+      .filter(Boolean)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ')
+      .replace(/\bDe\b/g, 'de');
+
+    return formatted || 'Usuario';
+  }
+
+  return 'Usuario';
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -122,15 +150,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Real API call to backend
     try {
       const response = await authApi.login({ email: correo, password: contrasena });
-      
+
       // Save JWT token to localStorage
       const token = response.data.token;
       localStorage.setItem('token', token);
-      
-      // Transform backend response to match our User type
+
+      const displayName = deriveDisplayName(response.data);
       const loggedInUser: User = {
-        id: response.data.email, // Using email as ID for now
-        nombre: response.data.email.split('@')[0], // Extract name from email
+        id: response.data.id ? String(response.data.id) : response.data.email,
+        nombre: displayName,
         correo: response.data.email,
         rol: response.data.role as 'estudiante' | 'profesor',
         fechaRegistro: new Date()
@@ -148,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       setLoginAttempts(resetAttempts);
       localStorage.setItem('loginAttempts', JSON.stringify(resetAttempts));
-      toast.success(`Bienvenido, ${loggedInUser.nombre}`);
+  toast.success(`Bienvenido, ${loggedInUser.nombre}`);
       setIsLoading(false);
       return { success: true };
     } catch (error: any) {

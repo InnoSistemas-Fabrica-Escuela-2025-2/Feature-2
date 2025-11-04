@@ -45,8 +45,8 @@ const statusLabels: Record<TaskStatus, string> = {
 };
 
 const baseTask: Task = {
-  id: "task-01",
-  proyectoId: "project-01",
+  id: "101",
+  proyectoId: "202",
   titulo: "Diseñar flujo de autenticación",
   descripcion: "Validar credenciales y definir tokens de acceso.",
   fechaEntrega: new Date("2025-02-01"),
@@ -59,7 +59,7 @@ const baseTask: Task = {
 const renderDialog = (overrides: Partial<Task> = {}) => {
   const task = { ...baseTask, ...overrides };
   const onOpenChange = vi.fn();
-  const onTaskUpdated = vi.fn();
+  const onTaskUpdated = vi.fn().mockResolvedValue(undefined);
 
   render(
     <EditTaskDialog task={task} open onOpenChange={onOpenChange} onTaskUpdated={onTaskUpdated} />
@@ -100,14 +100,16 @@ describe("EditTaskDialog", () => {
 
     await user.click(screen.getByRole("button", { name: /guardar cambios/i }));
 
-    expect(onTaskUpdated).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onTaskUpdated).toHaveBeenCalledTimes(1));
     const updatedTask = onTaskUpdated.mock.calls[0][0] as Task;
 
     expect(updatedTask.estado).toBe("en-progreso");
     expect(updatedTask.titulo).toBe("Ajustes finales");
     expect(updatedTask.fechaEntrega.toISOString()).toBe(new Date("2025-03-10").toISOString());
 
-    expect(toastSuccessMock).toHaveBeenNthCalledWith(2, "Tarea actualizada correctamente");
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenNthCalledWith(2, "Tarea actualizada correctamente")
+    );
   });
 
   it("permite cancelar el cambio de estado y conservar el valor original", async () => {
@@ -125,9 +127,9 @@ describe("EditTaskDialog", () => {
 
     expect(toastSuccessMock).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole("button", { name: /guardar cambios/i }));
+  await user.click(screen.getByRole("button", { name: /guardar cambios/i }));
 
-    expect(onTaskUpdated).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(onTaskUpdated).toHaveBeenCalledTimes(1));
     const updatedTask = onTaskUpdated.mock.calls[0][0] as Task;
 
     expect(updatedTask.estado).toBe("pendiente");

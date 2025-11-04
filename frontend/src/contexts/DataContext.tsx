@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { projectsApi } from '@/lib/api';
+import { projectsApi, statesApi } from '@/lib/api';
 import { useAuth } from './AuthContext';
+import type { TaskState } from '@/types';
 
 interface DataContextType {
   projects: any[];
   tasks: any[];
+  states: TaskState[];
   isLoading: boolean;
   error: string | null;
   refreshData: () => Promise<void>;
@@ -17,6 +19,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [states, setStates] = useState<TaskState[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -28,10 +31,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
       
-      const projectsResponse = await projectsApi.getAll();
+      const [projectsResponse, statesResponse] = await Promise.all([
+        projectsApi.getAll(),
+        statesApi.getAll().catch((error: unknown) => {
+          console.warn('⚠️ No fue posible obtener los estados.', error);
+          return { data: [] } as { data: TaskState[] };
+        })
+      ]);
+
       const projectsData = projectsResponse.data || [];
+      const statesData: TaskState[] = statesResponse.data || [];
       
       setProjects(projectsData);
+      setStates(statesData);
       
       // Extract all tasks from all projects and normalize field names
       const allTasks = projectsData.flatMap((project: any) => 
@@ -44,8 +56,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
           fechaEntrega: task.deadline || task.fechaEntrega,
           fechaCreacion: task.creationDate || task.fechaCreacion,
           estado: task.state?.name || task.estado,
-          responsableId: task.responsibleId || task.responsableId,
+          responsableId: task.responsibleId || task.responsableId || task.responsible,
+          responsable: task.responsible || task.responsable,
           prioridad: task.priority || task.prioridad,
+          estadoId: task.state?.id ?? task.estadoId,
           // Additional fields
           proyectoId: project.id,
           projectName: project.name || project.nombre
@@ -87,6 +101,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       value={{
         projects,
         tasks,
+        states,
         isLoading,
         error,
         refreshData,

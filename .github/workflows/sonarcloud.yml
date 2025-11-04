@@ -103,4 +103,5 @@ jobs:
             -Dsonar.java.binaries=backend/authenticator/target/classes,backend/gateway/target/classes,backend/innosistemas/target/classes
             -Dsonar.coverage.jacoco.xmlReportPaths=qa/reports/backend/authenticator/jacoco.xml,qa/reports/backend/gateway/jacoco.xml,qa/reports/backend/innosistemas/jacoco.xml
             -Dsonar.javascript.lcov.reportPaths=qa/reports/frontend/lcov.info
+            -Dsonar.coverage.exclusions=frontend/src/**/*.test.tsx,frontend/src/**/__tests__/**,backend/**/src/test/**
           projectBaseDir: .

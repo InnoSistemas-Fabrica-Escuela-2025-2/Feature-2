@@ -2,17 +2,29 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
+const { mockToastSuccess, mockToastError, mockTasksDelete } = vi.hoisted(() => ({
+  mockToastSuccess: vi.fn(),
+  mockToastError: vi.fn(),
+  mockTasksDelete: vi.fn(),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
-    success: vi.fn(),
+    success: mockToastSuccess,
+    error: mockToastError,
   },
 }));
 
-import { toast } from "sonner";
+vi.mock("@/lib/api", () => ({
+  tasksApi: {
+    delete: (taskId: number) => mockTasksDelete(taskId),
+  },
+}));
 import TaskCard from "../TaskCard";
 import type { Project, Task } from "@/types";
 
-const toastSuccessMock = toast.success as unknown as ReturnType<typeof vi.fn>;
+const toastSuccessMock = mockToastSuccess;
+const toastErrorMock = mockToastError;
 
 const baseTask: Task = {
   id: "task-1",
@@ -42,6 +54,9 @@ const mockProject: Project = {
 describe("TaskCard", () => {
   beforeEach(() => {
     toastSuccessMock.mockReset();
+    toastErrorMock.mockReset();
+    mockTasksDelete.mockReset();
+    mockTasksDelete.mockResolvedValue(undefined);
   });
 
   it("expone controles accesibles para editar y eliminar", async () => {
@@ -96,8 +111,10 @@ describe("TaskCard", () => {
     const confirmButton = await screen.findByRole("button", { name: /^eliminar$/i });
     await userEvent.click(confirmButton);
 
-  expect(onDelete).toHaveBeenCalledWith("task-1");
-  expect(toastSuccessMock).toHaveBeenCalledWith("Tarea eliminada correctamente");
+    expect(onDelete).toHaveBeenCalledWith("task-1");
+    expect(mockTasksDelete).toHaveBeenCalledWith(NaN);
+    expect(toastSuccessMock).toHaveBeenCalledWith("Tarea eliminada correctamente");
+    expect(toastErrorMock).not.toHaveBeenCalled();
     expect(onEdit).not.toHaveBeenCalled();
   });
 });

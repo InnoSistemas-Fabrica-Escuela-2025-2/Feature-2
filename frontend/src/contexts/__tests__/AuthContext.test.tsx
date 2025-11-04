@@ -4,10 +4,11 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 
 import { AuthProvider, useAuth } from "../AuthContext";
 
-const { toastSuccessMock, toastErrorMock, toastInfoMock } = vi.hoisted(() => ({
+const { toastSuccessMock, toastErrorMock, toastInfoMock, mockAuthLogin } = vi.hoisted(() => ({
   toastSuccessMock: vi.fn(),
   toastErrorMock: vi.fn(),
   toastInfoMock: vi.fn(),
+  mockAuthLogin: vi.fn(),
 }));
 
 const VALID_EMAIL = "maria.garcia@universidad.edu";
@@ -23,6 +24,12 @@ vi.mock("sonner", () => ({
   },
 }));
 
+vi.mock("@/lib/api", () => ({
+  authApi: {
+    login: (credentials: { email: string; password: string }) => mockAuthLogin(credentials),
+  },
+}));
+
 const wrapper = ({ children }: { children: ReactNode }) => <AuthProvider>{children}</AuthProvider>;
 
 describe("AuthProvider login flows", () => {
@@ -33,6 +40,32 @@ describe("AuthProvider login flows", () => {
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
     toastInfoMock.mockReset();
+    mockAuthLogin.mockReset();
+    mockAuthLogin.mockImplementation(({ email, password }: { email: string; password: string }) => {
+      if (email === VALID_EMAIL && password === VALID_PASSWORD) {
+        return Promise.resolve({
+          data: {
+            token: "token-valid",
+            email: VALID_EMAIL,
+            role: "estudiante",
+            fullName: "María García",
+          },
+        });
+      }
+
+      if (email === BLOCKED_EMAIL && password === VALID_PASSWORD) {
+        return Promise.resolve({
+          data: {
+            token: "token-blocked",
+            email: BLOCKED_EMAIL,
+            role: "estudiante",
+            fullName: "Juan Pérez",
+          },
+        });
+      }
+
+      return Promise.reject(new Error("Invalid credentials"));
+    });
   });
 
   afterEach(() => {

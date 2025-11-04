@@ -22,7 +22,7 @@ interface EditTaskDialogProps {
   task: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTaskUpdated: (task: Task) => void;
+  onTaskUpdated: (task: Task) => Promise<void>;
 }
 
 const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDialogProps) => {
@@ -34,6 +34,7 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
   const [estado, setEstado] = useState<TaskStatus>(task.estado);
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<TaskStatus | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleStatusChange = (newStatus: TaskStatus) => {
     if (newStatus !== estado) {
@@ -71,7 +72,7 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
     return labels[status] || status;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!titulo.trim()) {
@@ -92,9 +93,18 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
       estado
     };
 
-    onTaskUpdated(updatedTask);
-    toast.success('Tarea actualizada correctamente');
-    onOpenChange(false);
+    try {
+      setIsSaving(true);
+      await onTaskUpdated(updatedTask);
+      toast.success('Tarea actualizada correctamente');
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('Error al actualizar la tarea desde el formulario:', error);
+      const message = error?.message || 'Error al actualizar la tarea';
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -166,16 +176,16 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
                 Cambiar el estado requerirá confirmación
               </p>
             </div>
-          </form>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSubmit}>
-              Guardar Cambios
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
