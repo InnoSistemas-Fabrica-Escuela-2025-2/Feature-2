@@ -60,9 +60,7 @@ public class JwtUtil {
     }
 
     public String generateToken(Long id_usuario, String email, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
-        claims.put("id", id_usuario);
+        Map<String, Object> claims = buildClaims(id_usuario, role);
         return createToken(claims, email);
     }
 
@@ -77,15 +75,41 @@ public class JwtUtil {
     }
 
     public Boolean validateToken(String token, String email) {
-        final String extractedEmail = extractEmail(token);
-        return (extractedEmail.equals(email) && !isTokenExpired(token));
+        return validateToken(token, email, true);
     }
 
     public Boolean validateToken(String token) {
+        return validateToken(token, null, false);
+    }
+
+    private Boolean validateToken(String token, String email, boolean requireSubjectMatch) {
+        if (!isTokenSignatureAndDateValid(token)) {
+            return false;
+        }
+
+        if (!requireSubjectMatch) {
+            return true;
+        }
+
+        return isSubjectValid(extractEmail(token), email);
+    }
+
+    private boolean isTokenSignatureAndDateValid(String token) {
         try {
             return !isTokenExpired(token);
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private boolean isSubjectValid(String extracted, String expected) {
+        return expected != null && expected.equals(extracted);
+    }
+
+    private Map<String, Object> buildClaims(Long id, String role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+        claims.put("id", id);
+        return claims;
     }
 }
