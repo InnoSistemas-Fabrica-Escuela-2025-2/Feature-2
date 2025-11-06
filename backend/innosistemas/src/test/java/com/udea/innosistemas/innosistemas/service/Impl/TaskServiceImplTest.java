@@ -61,8 +61,12 @@ class TaskServiceImplTest {
     @Test
     void saveTaskAssignsDefaultStateWhenMissing() {
         Task task = new Task();
+        State defaultState = new State();
+        defaultState.setId(3L);
+        defaultState.setName("Pendiente");
 
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(stateRepository.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
 
         Task savedTask = taskService.saveTask(task);
 
@@ -82,6 +86,7 @@ class TaskServiceImplTest {
         task.setState(initialState);
 
         when(taskRepository.save(task)).thenReturn(task);
+        when(stateRepository.findById(5L)).thenReturn(Optional.of(initialState));
 
         Task savedTask = taskService.saveTask(task);
 
@@ -92,6 +97,10 @@ class TaskServiceImplTest {
     @Test
     void saveTaskWrapsRepositoryExceptions() {
         Task task = new Task();
+        State defaultState = new State();
+        defaultState.setId(1L);
+        defaultState.setName("Pendiente");
+        when(stateRepository.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
         when(taskRepository.save(any(Task.class))).thenThrow(new RuntimeException("DB error"));
 
         assertThrows(NoSuchElementException.class, () -> taskService.saveTask(task));
@@ -128,7 +137,7 @@ class TaskServiceImplTest {
     void updateStateThrowsWhenTaskMissing() {
         when(taskRepository.findById(9L)).thenReturn(Optional.empty());
 
-        assertThrows(UnsupportedOperationException.class, () -> taskService.updateState(9L, 2L));
+        assertThrows(NoSuchElementException.class, () -> taskService.updateState(9L, 2L));
         verify(taskRepository, never()).save(any(Task.class));
     }
 
