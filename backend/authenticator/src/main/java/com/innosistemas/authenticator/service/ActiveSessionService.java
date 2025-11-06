@@ -8,6 +8,8 @@ public interface ActiveSessionService {
 
     void invalidateSession(ActiveSession activeSession);
 
+    void invalidateSessionByToken(String token);
+
     boolean isSessionActive(Person person);
 
 }

@@ -4,11 +4,12 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 
 import { AuthProvider, useAuth } from "../AuthContext";
 
-const { toastSuccessMock, toastErrorMock, toastInfoMock, mockAuthLogin } = vi.hoisted(() => ({
+const { toastSuccessMock, toastErrorMock, toastInfoMock, mockAuthLogin, mockAuthLogout } = vi.hoisted(() => ({
   toastSuccessMock: vi.fn(),
   toastErrorMock: vi.fn(),
   toastInfoMock: vi.fn(),
   mockAuthLogin: vi.fn(),
+  mockAuthLogout: vi.fn(),
 }));
 
 const VALID_EMAIL = "maria.garcia@universidad.edu";
@@ -27,6 +28,7 @@ vi.mock("sonner", () => ({
 vi.mock("@/lib/api", () => ({
   authApi: {
     login: (credentials: { email: string; password: string }) => mockAuthLogin(credentials),
+    logout: () => mockAuthLogout(),
   },
 }));
 
@@ -41,6 +43,7 @@ describe("AuthProvider login flows", () => {
     toastErrorMock.mockReset();
     toastInfoMock.mockReset();
     mockAuthLogin.mockReset();
+      mockAuthLogout.mockReset();
     mockAuthLogin.mockImplementation(({ email, password }: { email: string; password: string }) => {
       if (email === VALID_EMAIL && password === VALID_PASSWORD) {
         return Promise.resolve({

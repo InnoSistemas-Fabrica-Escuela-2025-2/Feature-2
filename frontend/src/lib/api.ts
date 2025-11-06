@@ -50,14 +50,9 @@ const innosistemasClient = axios.create({
 // ==================== INTERCEPTORES ====================
 
 /**
- * Interceptor de Request - Agrega token JWT a todas las peticiones
+ * Interceptor de Request - Logging y trazabilidad
  */
 const requestInterceptor = (config: any) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  
   // Log para debugging (solo en desarrollo)
   if (import.meta.env.DEV) {
     console.log(`🔵 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.data || '');
@@ -92,7 +87,6 @@ const errorInterceptor = async (error: AxiosError) => {
     if (currentPath !== '/login' && currentPath !== '/') {
       console.log('⚠️ Token inválido o expirado, redirigiendo a login...');
       // Limpiar token y redirigir a login
-      localStorage.removeItem('token');
       localStorage.removeItem('user');
       globalThis.location.href = '/login';
     }
@@ -141,6 +135,8 @@ export const authApi = {
    */
   login: (credentials: { email: string; password: string }) => 
     apiGateway.post('/authenticator/person/authenticate', credentials),
+  
+  logout: () => apiGateway.post('/authenticator/person/logout'),
   
   /**
    * Verificar estado del servicio de autenticación
@@ -310,28 +306,6 @@ export const checkAllServices = async () => {
   }
 
   return results;
-};
-
-/**
- * Guarda el token en localStorage
- */
-export const saveToken = (token: string) => {
-  localStorage.setItem('token', token);
-};
-
-/**
- * Obtiene el token de localStorage
- */
-export const getToken = () => {
-  return localStorage.getItem('token');
-};
-
-/**
- * Elimina el token de localStorage
- */
-export const removeToken = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
 };
 
 // Exportar cliente principal por defecto (Gateway)
