@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { projectsApi, statesApi } from '@/lib/api';
 import { useAuth } from './AuthContext';
 import type { TaskState, TaskStatus } from '@/types';
@@ -24,8 +24,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user) return;
+
+    const activeUserId = user.id;
     
     try {
       setIsLoading(true);
@@ -41,6 +43,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
           return { data: [] } as { data: TaskState[] };
         })
       ]);
+
+      if (!user || user.id !== activeUserId) {
+        return;
+      }
 
       const projectsData = projectsResponse.data || [];
       const statesData: TaskState[] = statesResponse.data || [];
@@ -135,6 +141,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         };
       });
 
+      if (!user || user.id !== activeUserId) {
+        return;
+      }
+
       setProjects(enrichedProjects);
       setTasks(allTasks);
       setLastUpdated(new Date());
@@ -148,17 +158,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('❌ Error loading data:', err);
       setError(err.message || 'Error al cargar los datos');
     } finally {
+      if (!user || user.id !== activeUserId) {
+        return;
+      }
       setIsLoading(false);
     }
-  };
-
-  // Load data only once when user logs in
-  useEffect(() => {
-    if (user && projects.length === 0) {
-      console.log('📊 Initial data load...');
-      loadData();
-    }
   }, [user]);
+
+  // Reload data whenever the authenticated user changes and clear caches on logout
+  useEffect(() => {
+    if (!user) {
+      setProjects([]);
+      setTasks([]);
+      setStates([]);
+      setLastUpdated(null);
+      setIsLoading(false);
+      return;
+    }
+
+    console.log('📊 Loading data for user:', user.id);
+    setProjects([]);
+    setTasks([]);
+    setLastUpdated(null);
+    loadData();
+  }, [loadData, user?.id, user?.rol]);
 
   // Refresh function for manual updates
   const refreshData = async () => {
