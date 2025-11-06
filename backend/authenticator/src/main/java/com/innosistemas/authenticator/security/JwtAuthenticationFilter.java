@@ -29,49 +29,62 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
             @NonNull FilterChain chain) throws ServletException, IOException {
 
-        final String authorizationHeader = request.getHeader("Authorization");
-
-        String email = null;
-        String jwt = null;
-
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
-            jwt = authorizationHeader.substring(7);
-        } else if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("access_token".equals(cookie.getName())) {
-                    jwt = cookie.getValue();
-                    break;
-                }
-            }
+        String jwt = resolveToken(request);
+        if (jwt == null) {
+            chain.doFilter(request, response);
+            return;
         }
 
-        if (jwt != null) {
-            try {
-                email = jwtUtil.extractEmail(jwt);
-            } catch (Exception e) {
-                jwt = null;
-            }
+        String email = extractEmailSafely(jwt);
+        if (email == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+            chain.doFilter(request, response);
+            return;
         }
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.validateToken(jwt)) {
-                String role = jwtUtil.extractRole(jwt);
-
-                List<SimpleGrantedAuthority> authorities;
-                if (role != null && role.equals("profesor")) {
-                    authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_PROFESOR"));
-                } else {
-                    authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT"));
-                }
-
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null,
-                        authorities);
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+        if (!jwtUtil.validateToken(jwt, email)) {
+            chain.doFilter(request, response);
+            return;
         }
+
+        List<SimpleGrantedAuthority> authorities = buildAuthorities(jwtUtil.extractRole(jwt));
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null, authorities);
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
         chain.doFilter(request, response);
     }
 
+    private String resolveToken(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if ("access_token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String extractEmailSafely(String jwt) {
+        try {
+            return jwtUtil.extractEmail(jwt);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private List<SimpleGrantedAuthority> buildAuthorities(String role) {
+        if (role != null && role.equalsIgnoreCase("profesor")) {
+            return List.of(new SimpleGrantedAuthority("ROLE_PROFESOR"));
+        }
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT"));
+    }
 }

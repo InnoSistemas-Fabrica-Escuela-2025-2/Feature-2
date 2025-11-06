@@ -105,4 +105,5 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=qa/reports/frontend/lcov.info
             -Dsonar.coverage.exclusions=frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/**/__tests__/**,frontend/src/test/**,backend/**/src/test/**
             -Dsonar.exclusions=qa/reports/**,backend/**/target/**,backend/**/generated-sources/**,backend/**/generated-test-sources/**,backend/**/.mvn/**,frontend/dist/**,frontend/src/components/ui/**,frontend/src/hooks/use-toast.ts,frontend/src/**/__tests__/**,frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/test/**,frontend/src/data/mockData.ts,frontend/src/lib/apiExamples.ts,docs/**,qa/**,integrations/**,deployment/**,project-management/**,*.md
+            -Dsonar.test.exclusions=backend/**/src/test/**,frontend/src/**/__tests__/**,frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/test/**
           projectBaseDir: .

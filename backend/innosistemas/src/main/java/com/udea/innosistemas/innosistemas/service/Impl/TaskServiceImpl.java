@@ -25,11 +25,10 @@ public class TaskServiceImpl implements TaskService{
 
     @Override
     public void deleteTask(long id) {
-        if(taskRepository.existsById(id)){
-            taskRepository.deleteById(id);
-        } else {
+        if (!taskRepository.existsById(id)) {
             throw new NoSuchElementException("El usuario no existe.");
         }
+        taskRepository.deleteById(id);
     }
 
     @Override
@@ -52,38 +51,87 @@ public class TaskServiceImpl implements TaskService{
 
     @Override
     public void updateState(Long id_task, Long id_state) {
-        Task task = taskRepository.findById(id_task)
-            .orElseThrow(() -> new NoSuchElementException("La tarea no existe."));
-
-        State state = stateRepository.findById(id_state)
-            .orElseThrow(() -> new NoSuchElementException("El estado no existe."));
+        Task task = getTaskOrThrow(id_task);
+        State state = getStateOrThrow(id_state);
 
         task.setState(state);
         taskRepository.save(task);
     }
 
     private State resolveState(State requestedState) {
-        if (requestedState != null) {
-            Long requestedId = requestedState.getId();
-            if (requestedId != null) {
-                return stateRepository.findById(requestedId)
-                    .orElseThrow(() -> new NoSuchElementException("El estado especificado no existe."));
-            }
+        return Optional.ofNullable(requestedState)
+            .flatMap(this::tryResolveExplicitState)
+            .orElseGet(this::resolveDefaultState);
+    }
 
-            String requestedName = requestedState.getName();
-            if (requestedName != null && !requestedName.trim().isEmpty()) {
-                Optional<State> byName = stateRepository.findByNameIgnoreCase(requestedName.trim());
-                if (byName.isPresent()) {
-                    return byName.get();
-                }
-            }
+    private Optional<State> tryResolveExplicitState(State candidate) {
+        return resolveById(candidate).or(() -> resolveByName(candidate));
+    }
+
+    private Optional<State> resolveById(State candidate) {
+        Long requestedId = candidate.getId();
+        if (requestedId == null) {
+            return Optional.empty();
+        }
+        State state = stateRepository.findById(requestedId)
+            .orElseThrow(() -> new NoSuchElementException("El estado especificado no existe."));
+        return Optional.of(state);
+    }
+
+    private Optional<State> resolveByName(State candidate) {
+        String normalizedName = normalizeName(candidate.getName());
+        if (normalizedName.isEmpty()) {
+            return Optional.empty();
+        }
+        return findByNameIgnoreCase(normalizedName);
+    }
+
+    private State resolveDefaultState() {
+        Optional<State> pending = findByNameIgnoreCase("pendiente");
+        if (pending.isPresent()) {
+            return pending.get();
         }
 
-        return stateRepository.findByNameIgnoreCase("pendiente")
-            .or(() -> stateRepository.findById(1L))
-            .orElseGet(() -> stateRepository.findAll().stream()
-                .filter(s -> s.getId() != null)
-                .min(Comparator.comparing(State::getId))
-                .orElseThrow(() -> new NoSuchElementException("No hay estados configurados en el sistema.")));
+        Optional<State> byDefaultId = stateRepository.findById(1L);
+        if (byDefaultId.isPresent()) {
+            return byDefaultId.get();
+        }
+
+        return findFirstStateOrThrow();
+    }
+
+    private State findFirstStateOrThrow() {
+        return stateRepository.findAll().stream()
+            .filter(s -> s.getId() != null)
+            .min(Comparator.comparing(State::getId))
+            .orElseThrow(() -> new NoSuchElementException("No hay estados configurados en el sistema."));
+    }
+
+    private String normalizeName(String name) {
+        return name == null ? "" : name.trim();
+    }
+
+    private Optional<State> findByNameIgnoreCase(String name) {
+        String normalizedName = normalizeName(name);
+        if (normalizedName.isEmpty()) {
+            return Optional.empty();
+        }
+        Optional<State> directMatch = stateRepository.findByNameIgnoreCase(normalizedName);
+        if (directMatch.isPresent()) {
+            return directMatch;
+        }
+        return stateRepository.findAll().stream()
+            .filter(state -> state.getName() != null && state.getName().equalsIgnoreCase(normalizedName))
+            .findFirst();
+    }
+
+    private Task getTaskOrThrow(Long taskId) {
+        return taskRepository.findById(taskId)
+            .orElseThrow(() -> new NoSuchElementException("La tarea no existe."));
+    }
+
+    private State getStateOrThrow(Long stateId) {
+        return stateRepository.findById(stateId)
+            .orElseThrow(() -> new NoSuchElementException("El estado no existe."));
     }
 }
