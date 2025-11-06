@@ -2,8 +2,10 @@ package com.innosistemas.authenticator.service.Impl;
 
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import com.innosistemas.authenticator.dto.AuthenticatorRequest;
 import com.innosistemas.authenticator.dto.AuthenticatorResponse;
 import com.innosistemas.authenticator.entity.ActiveSession;
@@ -42,7 +44,7 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
 
             if (loginAttemptService.isBlocked(person)){
                 System.out.println("Usuario bloqueado por múltiples intentos fallidos: " + person.getEmail());
-                throw new RuntimeException("Usuario bloqueado por múltiples intentos fallidos");
+                throw new ResponseStatusException(HttpStatus.LOCKED, "Usuario bloqueado por múltiples intentos fallidos");
             }
 
             Optional<ActiveSession> session = activeSessionRepository.findByPerson(person);
@@ -61,7 +63,7 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
             
             if (!isPasswordValid) {
                 loginAttemptService.loginFailed(person);
-                throw new RuntimeException("Contraseña incorrecta");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos.");
             }
 
             loginAttemptService.loginSucceeded(person);
@@ -78,7 +80,7 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
 
             return response;
         } else {
-            throw new UnsupportedOperationException ("Correo no encontrado");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No encontramos una cuenta registrada con ese correo.");
         }
     }
 }

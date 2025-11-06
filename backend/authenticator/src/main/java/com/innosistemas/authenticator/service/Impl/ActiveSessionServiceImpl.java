@@ -43,6 +43,16 @@ public class ActiveSessionServiceImpl implements ActiveSessionService {
     }
 
     @Override
+    @Transactional
+    public void invalidateSessionByToken(String token) {
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        activeSessionRepository.findByToken(token)
+            .ifPresent(activeSessionRepository::delete);
+    }
+
+    @Override
     public boolean isSessionActive(Person person) {
         return activeSessionRepository.findByPerson(person)
             .map(session -> {

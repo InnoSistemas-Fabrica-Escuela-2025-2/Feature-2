@@ -239,9 +239,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const attemptAuthentication = async (correo: string, contrasena: string, emailKey: string) => {
     try {
       const response = await authApi.login({ email: correo, password: contrasena });
-      const token = response.data.token;
-      localStorage.setItem('token', token);
-
       const displayName = deriveDisplayName(response.data);
       const loggedInUser: User = {
         id: response.data.id ? String(response.data.id) : response.data.email,
@@ -256,10 +253,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true as const };
     } catch (error: any) {
       console.error('Login error:', error);
+      const status = error.response?.status;
+      const backendMessage = error.response?.data?.message;
+      let friendlyMessage = backendMessage;
+
+      if (!friendlyMessage) {
+        if (!error.response) {
+          friendlyMessage = 'No se pudo contactar al servicio de autenticación. Verifica tu conexión.';
+        } else if (status === 401) {
+          friendlyMessage = 'Correo o contraseña incorrectos.';
+        } else if (status === 500 || status === 404) {
+          friendlyMessage = 'No encontramos una cuenta registrada con ese correo.';
+        } else {
+          friendlyMessage = error.message || 'Credenciales incorrectas';
+        }
+      }
+
       return {
         success: false as const,
         error,
-        errorMessage: error.response?.data?.message || error.message || 'Credenciales incorrectas'
+        errorMessage: friendlyMessage || 'Credenciales incorrectas'
       };
     }
   };
@@ -355,9 +368,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    void authApi.logout().catch((error: unknown) => {
+      console.error('Error al cerrar sesión en el servidor:', error);
+    });
     setUser(null);
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('token'); // Remove JWT token
     toast.info('Sesión cerrada correctamente');
   };
 
