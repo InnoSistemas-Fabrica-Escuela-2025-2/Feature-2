@@ -158,10 +158,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('❌ Error loading data:', err);
       setError(err.message || 'Error al cargar los datos');
     } finally {
-      if (!user || user.id !== activeUserId) {
-        return;
+      if (user && user.id === activeUserId) {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
   }, [user]);
 
