@@ -56,8 +56,15 @@ public class TaskController {
     
     @PutMapping("updateState/{id_task}/{id_state}")
     public ResponseEntity<Void> updateState(@PathVariable Long id_task, @PathVariable Long id_state) {
-        taskService.updateState(id_task, id_state);
-        return ResponseEntity.noContent().build();
+        try {
+            taskService.updateState(id_task, id_state);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            if (e instanceof java.util.NoSuchElementException) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 
