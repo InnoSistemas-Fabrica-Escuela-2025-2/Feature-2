@@ -73,7 +73,7 @@ describe("TaskCard", () => {
 
     expect(
       screen.getByRole("status", {
-        name: /estado de la tarea: en-progreso/i,
+        name: /estado de la tarea: en progreso/i,
       })
     ).toBeInTheDocument();
 
