@@ -20,15 +20,22 @@ export interface Team {
 
 export interface Project {
   id: string;
+  name?: string;
   nombre: string;
+  description?: string;
   descripcion: string;
+  objectives?: string;
   objetivos: string;
   fechaEntrega: Date;
+  deadline?: Date | string;
   fechaCreacion: Date;
+  creationDate?: Date | string;
   creadorId: string;
   equipoId?: string; // Team assigned to project
   miembros: string[]; // Array of user IDs
-  progreso: number; // 0-100
+  progreso?: number; // 0-100
+  totalTasks?: number;
+  completedTasks?: number;
 }
 
 export interface Task {
@@ -41,8 +48,10 @@ export interface Task {
   responsableId: string;
   responsable?: string;
   estado: TaskStatus;
+  estadoLabel?: string;
   estadoId?: number;
   prioridad?: 'baja' | 'media' | 'alta';
+  projectName?: string;
 }
 
 export interface TaskState {

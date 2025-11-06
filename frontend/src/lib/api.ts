@@ -158,11 +158,11 @@ export const projectsApi = {
     apiGateway.get('/project/project/listAll'),
   
   /**
-   * Obtener proyectos por ID de equipo
+   * Obtener proyectos asociados a un estudiante específico
    * GET /project/project/listAllById/{id}
    */
-  getByTeamId: (teamId: number) => 
-    apiGateway.get(`/project/project/listAllById/${teamId}`),
+  getByStudentId: (studentId: number) => 
+    apiGateway.get(`/project/project/listAllById/${studentId}`),
   
   /**
    * Crear un nuevo proyecto

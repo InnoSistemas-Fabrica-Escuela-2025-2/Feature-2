@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar, Users, TrendingUp } from 'lucide-react';
+import { Plus, Calendar, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -55,60 +55,73 @@ const Proyectos = () => {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <Card key={project.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="line-clamp-1">
-                  <Link
-                    to={`/proyectos/${project.id}`}
-                    className="hover:text-primary transition-colors"
-                  >
-                    {project.name || project.nombre}
-                  </Link>
-                </CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {project.description || project.descripcion}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Progress */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Progreso</span>
-                    <span className="font-medium">{project.progreso || 0}%</span>
-                  </div>
-                  <Progress
-                    value={project.progreso || 0}
-                    aria-label={`Progreso del proyecto: ${project.progreso || 0}%`}
-                  />
-                </div>
+          {projects.map((project) => {
+            const totalTasks = project.totalTasks ?? (Array.isArray(project.tasks) ? project.tasks.length : 0);
+            const fallbackCompleted = Array.isArray(project.tasks)
+              ? project.tasks.filter((task: any) => {
+                  const rawStatus = String(task.estado || task.state?.name || task.status || '').toLowerCase();
+                  return rawStatus.includes('final') || rawStatus.includes('complet');
+                }).length
+              : 0;
+            const completedTasks = project.completedTasks ?? fallbackCompleted;
+            const computedProgress = project.progreso ?? (totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0);
+            const progressValue = Math.min(100, Math.max(0, Math.round(computedProgress)));
+            const rawDeadline = project.deadline || project.fechaEntrega;
+            const parsedDeadline = rawDeadline ? new Date(rawDeadline) : null;
+            const deadlineDate = parsedDeadline && !Number.isNaN(parsedDeadline.getTime()) ? parsedDeadline : null;
+            const deadlineLabel = deadlineDate
+              ? deadlineDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+              : 'Sin fecha';
 
-                {/* Metadata */}
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" aria-hidden="true" />
-                    <span>{project.tasks?.length || 0} tareas</span>
+            return (
+              <Card key={project.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="line-clamp-1">
+                    <Link
+                      to={`/proyectos/${project.id}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {project.name || project.nombre}
+                    </Link>
+                  </CardTitle>
+                  <CardDescription className="line-clamp-2">
+                    {project.description || project.descripcion || 'Sin descripción disponible'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Progress */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Progreso</span>
+                      <span className="font-medium">{progressValue}%</span>
+                    </div>
+                    <Progress
+                      value={progressValue}
+                      aria-label={`Progreso del proyecto: ${progressValue}%`}
+                    />
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" aria-hidden="true" />
-                    <time dateTime={project.deadline || project.fechaEntrega}>
-                      {new Date(project.deadline || project.fechaEntrega).toLocaleDateString('es-ES', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </time>
-                  </div>
-                </div>
 
-                <Button asChild variant="outline" className="w-full">
-                  <Link to={`/proyectos/${project.id}`}>
-                    Ver Detalles
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  {/* Metadata */}
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                      <span>{completedTasks}/{totalTasks} tareas completadas</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" aria-hidden="true" />
+                      <time dateTime={deadlineDate ? deadlineDate.toISOString() : ''}>{deadlineLabel}</time>
+                    </div>
+                  </div>
+
+                  <Button asChild variant="outline" className="w-full">
+                    <Link to={`/proyectos/${project.id}`}>
+                      Ver Detalles
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 

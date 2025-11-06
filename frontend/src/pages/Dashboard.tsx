@@ -14,19 +14,22 @@ const Dashboard = () => {
   const userProjects = projects;
   const userTasks = tasks;
   
+  const normalizeTaskStatus = (task: any): 'pendiente' | 'en-progreso' | 'finalizado' => {
+    const estado = typeof task.estado === 'string' ? task.estado : '';
+    if (estado === 'pendiente' || estado === 'en-progreso' || estado === 'finalizado') {
+      return estado;
+    }
+
+    const fallback = String(task.state?.name || '').toLowerCase();
+    if (fallback.includes('prog')) return 'en-progreso';
+    if (fallback.includes('final') || fallback.includes('complet')) return 'finalizado';
+    return 'pendiente';
+  };
+
   const myAssignedTasks = userTasks;
-  const pendingTasks = myAssignedTasks.filter((t: any) => {
-    const stateName = t.state?.name || t.estado;
-    return stateName === 'Pendiente' || stateName === 'pendiente' || !t.state;
-  });
-  const inProgressTasks = myAssignedTasks.filter((t: any) => {
-    const stateName = t.state?.name || t.estado;
-    return stateName === 'En progreso' || stateName === 'en-progreso';
-  });
-  const completedTasks = myAssignedTasks.filter((t: any) => {
-    const stateName = t.state?.name || t.estado;
-    return stateName === 'Completada' || stateName === 'finalizado' || stateName === 'completado';
-  });
+  const pendingTasks = myAssignedTasks.filter((t: any) => normalizeTaskStatus(t) === 'pendiente');
+  const inProgressTasks = myAssignedTasks.filter((t: any) => normalizeTaskStatus(t) === 'en-progreso');
+  const completedTasks = myAssignedTasks.filter((t: any) => normalizeTaskStatus(t) === 'finalizado');
   
   const unreadNotifications = 0; // Por ahora no hay notificaciones en el backend
 
@@ -37,8 +40,8 @@ const Dashboard = () => {
     const deadlineDate = t.deadline || t.fechaEntrega;
     if (!deadlineDate) return false;
     const deadline = new Date(deadlineDate);
-    const stateName = t.state?.name || t.estado;
-    const isNotCompleted = stateName !== 'finalizado' && stateName !== 'completado' && stateName !== 'Completada';
+    const status = normalizeTaskStatus(t);
+    const isNotCompleted = status !== 'finalizado';
     return deadline >= today && deadline <= nextWeek && isNotCompleted;
   });
 
@@ -126,22 +129,30 @@ const Dashboard = () => {
                 No tienes proyectos activos
               </p>
             ) : (
-              userProjects.map((project) => (
-                <div key={project.id} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Link
-                      to={`/proyectos/${project.id}`}
-                      className="font-medium hover:text-primary transition-colors"
-                    >
-                      {project.name || project.nombre}
-                    </Link>
-                    <span className="text-sm text-muted-foreground">
-                      {project.progreso || 0}%
-                    </span>
+              userProjects.map((project) => {
+                const progressValue = project.progreso ?? 0;
+                const clampedProgress = Math.min(100, Math.max(0, Math.round(progressValue)));
+
+                return (
+                  <div key={project.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Link
+                        to={`/proyectos/${project.id}`}
+                        className="font-medium hover:text-primary transition-colors"
+                      >
+                        {project.name || project.nombre}
+                      </Link>
+                      <span className="text-sm text-muted-foreground">
+                        {clampedProgress}%
+                      </span>
+                    </div>
+                    <Progress
+                      value={clampedProgress}
+                      aria-label={`Progreso del proyecto ${project.name || project.nombre}: ${clampedProgress}%`}
+                    />
                   </div>
-                  <Progress value={project.progreso || 0} aria-label={`Progreso del proyecto ${project.name || project.nombre}: ${project.progreso || 0}%`} />
-                </div>
-              ))
+                );
+              })
             )}
             <Button asChild className="w-full mt-4">
               <Link to="/proyectos">Ver Todos los Proyectos</Link>
@@ -177,8 +188,8 @@ const Dashboard = () => {
                       })}
                     </p>
                   </div>
-                  <span className={`status-badge status-${task.state?.name || task.estado}`}>
-                    {task.state?.name || task.estado}
+                  <span className={`status-badge status-${normalizeTaskStatus(task)}`}>
+                    {task.estadoLabel || task.estado}
                   </span>
                 </div>
               ))
@@ -202,14 +213,13 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-4">
               {userProjects.map((project) => {
-                const projectTasks = tasks.filter(t => t.proyectoId === project.id);
-                const completedProjectTasks = projectTasks.filter(t => {
-                  const stateName = t.state?.name || t.estado;
-                  return stateName === 'finalizado' || stateName === 'completado' || stateName === 'Completada';
-                });
-                const progress = projectTasks.length > 0
-                  ? Math.round((completedProjectTasks.length / projectTasks.length) * 100)
+                const fallbackProjectTasks = tasks.filter(t => t.proyectoId === project.id);
+                const totalTasks = project.totalTasks ?? fallbackProjectTasks.length;
+                const completedProjectTasks = project.completedTasks ?? fallbackProjectTasks.filter(t => normalizeTaskStatus(t) === 'finalizado').length;
+                const progress = totalTasks > 0
+                  ? Math.round((completedProjectTasks / totalTasks) * 100)
                   : 0;
+                const clampedProgress = Math.min(100, Math.max(0, progress));
 
                 return (
                   <div key={project.id} className="space-y-2">
@@ -221,10 +231,13 @@ const Dashboard = () => {
                         {project.name || project.nombre}
                       </Link>
                       <span className="text-sm text-muted-foreground">
-                        {completedProjectTasks.length}/{projectTasks.length} tareas completadas
+                        {completedProjectTasks}/{totalTasks} tareas completadas
                       </span>
                     </div>
-                    <Progress value={progress} aria-label={`Progreso del equipo en ${project.name || project.nombre}: ${progress}%`} />
+                    <Progress
+                      value={clampedProgress}
+                      aria-label={`Progreso del equipo en ${project.name || project.nombre}: ${clampedProgress}%`}
+                    />
                   </div>
                 );
               })}

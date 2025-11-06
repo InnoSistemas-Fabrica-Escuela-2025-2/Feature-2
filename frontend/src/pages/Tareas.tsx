@@ -45,16 +45,40 @@ const Tareas = () => {
       throw new Error('Los identificadores de la tarea o del proyecto no son válidos.');
     }
 
-    const normalizedStatus = updatedTask.estado.toLowerCase();
-    const matchingState = states.find((state) =>
-      (state.name || state.nombre || '').toLowerCase() === normalizedStatus
-    );
+    const normalizeStatusKey = (value: string) =>
+      value
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-');
 
-    const stateId = matchingState?.id ?? updatedTask.estadoId;
+    const allowedStatuses: TaskStatus[] = ['pendiente', 'en-progreso', 'finalizado'];
+    const statusKey = normalizeStatusKey(updatedTask.estado) as TaskStatus | string;
+    const canonicalStatus: TaskStatus = allowedStatuses.includes(statusKey as TaskStatus)
+      ? (statusKey as TaskStatus)
+      : 'pendiente';
+
+    const matchingState = states.find((state) => {
+      const candidate = state.name || state.nombre || '';
+      return normalizeStatusKey(candidate) === canonicalStatus;
+    });
+
+    const defaultStatusIds: Record<TaskStatus, number> = {
+      'pendiente': 1,
+      'en-progreso': 2,
+      'finalizado': 3,
+    };
+
+    const stateId = matchingState?.id ?? defaultStatusIds[canonicalStatus] ?? updatedTask.estadoId;
 
     if (!stateId) {
       throw new Error('No se encontró un estado válido para actualizar la tarea.');
     }
+
+    updatedTask.estado = canonicalStatus;
+    updatedTask.estadoId = stateId;
 
     const deadlineDate = updatedTask.fechaEntrega instanceof Date
       ? updatedTask.fechaEntrega
@@ -91,6 +115,12 @@ const Tareas = () => {
   const pendingTasks = filterTasksByStatus('pendiente');
   const inProgressTasks = filterTasksByStatus('en-progreso');
   const completedTasks = filterTasksByStatus('finalizado');
+
+  const resolveProjectForTask = (task: Task) => {
+    const taskProjectId = task.proyectoId != null ? String(task.proyectoId) : null;
+    if (!taskProjectId) return undefined;
+    return projects.find((p) => String(p.id) === taskProjectId);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -182,7 +212,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={projects.find(p => p.id === task.proyectoId)}
+                    project={resolveProjectForTask(task)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />
@@ -204,7 +234,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={projects.find(p => p.id === task.proyectoId)}
+                    project={resolveProjectForTask(task)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />
@@ -226,7 +256,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={projects.find(p => p.id === task.proyectoId)}
+                    project={resolveProjectForTask(task)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />
@@ -248,7 +278,7 @@ const Tareas = () => {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    project={projects.find(p => p.id === task.proyectoId)}
+                    project={resolveProjectForTask(task)}
                     onEdit={() => setEditingTask(task)}
                     onDelete={handleTaskDeleted}
                   />

@@ -1,4 +1,4 @@
-import { Task, Project } from '@/types';
+import { Task, Project, TaskStatus } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Edit, Trash2 } from 'lucide-react';
@@ -24,8 +24,20 @@ interface TaskCardProps {
   onDelete: (taskId: string) => void;
 }
 
+const STATUS_LABELS: Record<TaskStatus, string> = {
+  pendiente: 'Pendiente',
+  'en-progreso': 'En progreso',
+  finalizado: 'Finalizada'
+};
+
 const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const displayStatus = task.estadoLabel ?? STATUS_LABELS[task.estado] ?? task.estado;
+  const projectLabel = project?.nombre || project?.name || task.projectName;
+  const projectDateValue = task.fechaEntrega || (task as any).deadline;
+  const deadlineDate = projectDateValue ? new Date(projectDateValue) : null;
+  const hasValidDeadline = deadlineDate instanceof Date && !Number.isNaN(deadlineDate.getTime());
   
   const handleDelete = async () => {
     try {
@@ -52,26 +64,26 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
           <span 
             className={`status-badge status-${task.estado} shrink-0`}
             role="status"
-            aria-label={`Estado de la tarea: ${task.estado}`}
+            aria-label={`Estado de la tarea: ${displayStatus}`}
           >
-            {task.estado}
+            {displayStatus}
           </span>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground line-clamp-2">{task.descripcion}</p>
         
-        {project && (
+        {projectLabel && (
           <p className="text-xs text-muted-foreground">
-            Proyecto: <span className="font-medium">{project.nombre}</span>
+            Proyecto: <span className="font-medium">{projectLabel}</span>
           </p>
         )}
 
-        {(task.fechaEntrega || (task as any).deadline) && (
+        {hasValidDeadline && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" aria-hidden="true" />
-            <time dateTime={new Date(task.fechaEntrega || (task as any).deadline).toISOString()}>
-              Vence: {new Date(task.fechaEntrega || (task as any).deadline).toLocaleDateString('es-ES')}
+            <time dateTime={deadlineDate!.toISOString()}>
+              Vence: {deadlineDate!.toLocaleDateString('es-ES')}
             </time>
           </div>
         )}

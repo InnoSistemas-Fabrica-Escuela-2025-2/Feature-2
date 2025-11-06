@@ -60,7 +60,6 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
         description: descripcion.trim(),
         deadline: selectedDate.toISOString(),
         responsible: user?.correo || user?.nombre || 'Sin asignar', // Campo obligatorio en backend
-        state: { id: 1 }, // 1 = Pendiente
         project: { id: parseInt(proyectoId) }
       };
 
