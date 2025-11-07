@@ -49,41 +49,53 @@ public class ProjectController {
             @RequestHeader(value = "Role", required = false) String role,
             @RequestHeader(value = "Email", required = false) String email,
             @RequestHeader(value = "User-Id", required = false) String userId) {
-        
         log.info("listAll called - Role: {}, Email: {}, UserId: {}", role, email, userId);
-        
         try {
-            // Si es profesor, devolver todos los proyectos
-            if ("profesor".equalsIgnoreCase(role)) {
-                log.info("Usuario es profesor, devolviendo todos los proyectos");
-                return ResponseEntity.ok(projectService.listAllProjects());
+            if (isProfesor(role)) {
+                return handleProfesorProjects();
             }
-            
-            // Si es estudiante y tenemos su ID, filtrar por sus proyectos usando listAllById
-            // Esta función ya consulta la BD y devuelve solo los proyectos del equipo del estudiante
-            if ("estudiante".equalsIgnoreCase(role) && userId != null) {
-                try {
-                    Long studentId = Long.parseLong(userId);
-                    log.info("Usuario es estudiante con ID: {}, obteniendo sus proyectos", studentId);
-                    List<Project> projects = projectService.listAllById(studentId);
-                    log.info("Devolviendo {} proyectos para el estudiante {}", projects.size(), studentId);
-                    return ResponseEntity.ok(projects);
-                } catch (NumberFormatException e) {
-                    log.error("Error parseando userId: {}", userId, e);
-                    return ResponseEntity.ok(List.of());
-                } catch (Exception e) {
-                    log.error("Error obteniendo proyectos del estudiante", e);
-                    return ResponseEntity.ok(List.of());
-                }
+            if (isEstudiante(role, userId)) {
+                return handleEstudianteProjects(userId);
             }
-            
-            // Por defecto, devolver todos (para casos sin autenticación o roles desconocidos)
-            log.info("No hay rol específico, devolviendo todos los proyectos");
-            return ResponseEntity.ok(projectService.listAllProjects());
+            return handleDefaultProjects();
         } catch (Exception e) {
             log.error("Error en listAll", e);
             throw e;
         }
+    }
+
+    private boolean isProfesor(String role) {
+        return "profesor".equalsIgnoreCase(role);
+    }
+
+    private boolean isEstudiante(String role, String userId) {
+        return "estudiante".equalsIgnoreCase(role) && userId != null;
+    }
+
+    private ResponseEntity<List<Project>> handleProfesorProjects() {
+        log.info("Usuario es profesor, devolviendo todos los proyectos");
+        return ResponseEntity.ok(projectService.listAllProjects());
+    }
+
+    private ResponseEntity<List<Project>> handleEstudianteProjects(String userId) {
+        try {
+            Long studentId = Long.parseLong(userId);
+            log.info("Usuario es estudiante con ID: {}, obteniendo sus proyectos", studentId);
+            List<Project> projects = projectService.listAllById(studentId);
+            log.info("Devolviendo {} proyectos para el estudiante {}", projects.size(), studentId);
+            return ResponseEntity.ok(projects);
+        } catch (NumberFormatException e) {
+            log.error("Error parseando userId: {}", userId, e);
+            return ResponseEntity.ok(List.of());
+        } catch (Exception e) {
+            log.error("Error obteniendo proyectos del estudiante", e);
+            return ResponseEntity.ok(List.of());
+        }
+    }
+
+    private ResponseEntity<List<Project>> handleDefaultProjects() {
+        log.info("No hay rol específico, devolviendo todos los proyectos");
+        return ResponseEntity.ok(projectService.listAllProjects());
     }
 
     @GetMapping("/listAllById/{id}")

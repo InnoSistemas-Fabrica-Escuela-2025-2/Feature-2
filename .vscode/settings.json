@@ -2,5 +2,9 @@
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python-envs.pythonProjects": [],
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "innosistemas-fabrica-escuela-2025-2-1",
+        "projectKey": "InnoSistemas-Fabrica-Escuela-2025-2_Feature-2"
+    }
 }

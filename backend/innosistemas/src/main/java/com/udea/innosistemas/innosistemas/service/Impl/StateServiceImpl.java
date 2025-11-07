@@ -17,12 +17,15 @@ public class StateServiceImpl implements StateService{
 
     @Override
     public List<State> allStates() {
+        return handleAllStates();
+    }
+
+    private List<State> handleAllStates() {
         try {
             return stateRepository.findAll();
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new UnsupportedOperationException("No hay estados que mostrar.");
         }
-        
     }
     
 }
