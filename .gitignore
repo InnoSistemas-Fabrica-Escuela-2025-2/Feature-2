@@ -4,3 +4,6 @@
 
 # Generated coverage reports
 qa/reports/
+.vscode/settings.json
+.sonarlint/connectedMode.json
+.vscode/settings.json

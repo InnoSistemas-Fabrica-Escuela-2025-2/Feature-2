@@ -25,12 +25,7 @@ public class TaskController {
 
     @PostMapping("/save")
     public ResponseEntity<Task> saveTask(@RequestBody Task task) {
-        try {
-            Task saved = taskService.saveTask(task);
-            return ResponseEntity.ok(saved);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return handleTaskSaveOrUpdate(() -> taskService.saveTask(task));
     }
 
     @GetMapping("/listAll")
@@ -46,23 +41,35 @@ public class TaskController {
 
     @PutMapping("/update")
     public ResponseEntity<Task> updatedTask(@RequestBody Task task) {
-        try {
-            Task updated = taskService.saveTask(task);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return handleTaskSaveOrUpdate(() -> taskService.saveTask(task));
     }
     
     @PutMapping("updateState/{id_task}/{id_state}")
     public ResponseEntity<Void> updateState(@PathVariable Long id_task, @PathVariable Long id_state) {
+        return handleUpdateState(id_task, id_state);
+    }
+
+    private ResponseEntity<Task> handleTaskSaveOrUpdate(TaskSupplier supplier) {
         try {
-            taskService.updateState(id_task, id_state);
-            return ResponseEntity.noContent().build();
+            Task result = supplier.get();
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            if (e instanceof java.util.NoSuchElementException) {
-                return ResponseEntity.notFound().build();
-            }
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @FunctionalInterface
+    private interface TaskSupplier {
+        Task get();
+    }
+
+    private ResponseEntity<Void> handleUpdateState(Long idTask, Long idState) {
+        try {
+            taskService.updateState(idTask, idState);
+            return ResponseEntity.noContent().build();
+        } catch (java.util.NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }

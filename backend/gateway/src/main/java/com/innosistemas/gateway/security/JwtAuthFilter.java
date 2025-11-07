@@ -38,63 +38,68 @@ public class JwtAuthFilter implements WebFilter{
     @Override
     public @NonNull Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-        String authheader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        String token = null;
-
-        if(authheader != null && authheader.startsWith("Bearer ")){
-            token = authheader.substring(7);
-        }
+        String token = extractToken(request);
 
         if (token == null || token.isBlank()) {
-            HttpCookie cookie = request.getCookies().getFirst("access_token");
-            if (cookie != null && cookie.getValue() != null && !cookie.getValue().isBlank()) {
-                token = cookie.getValue();
-            }
-        }
-
-        if(token == null || token.isBlank()){
             log.debug("JWT: Token no presente en cabecera ni cookie; permitiendo paso sin autenticación");
             return chain.filter(exchange);
         }
 
+        Claims claims = validateToken(token);
+        if (claims == null) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
+        String role = String.valueOf(claims.get("role"));
+        String userId = String.valueOf(claims.get("id"));
+        String normalizedRole = role == null ? "" : role.trim().toLowerCase();
+        Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(normalizedRole));
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(claims.getSubject(), null, authorities);
+
+        log.debug("JWT: token válido. subject={}, role={} (normalized={}), userId={}", claims.getSubject(), role, normalizedRole, userId);
+
+        ServerWebExchange mutatedExchange = new ServerWebExchangeDecorator(exchange) {
+            @Override
+            public @NonNull org.springframework.http.server.reactive.ServerHttpRequest getRequest() {
+                return exchange.getRequest().mutate()
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .header("Email", claims.getSubject())
+                        .header("Role", normalizedRole)
+                        .header("User-Id", userId)
+                        .build();
+            }
+        };
+
+        return chain
+            .filter(mutatedExchange)
+            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+    }
+
+    private String extractToken(ServerHttpRequest request) {
+        String authheader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authheader != null && authheader.startsWith("Bearer ")) {
+            return authheader.substring(7);
+        }
+        HttpCookie cookie = request.getCookies().getFirst("access_token");
+        if (cookie != null && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+            return cookie.getValue();
+        }
+        return null;
+    }
+
+    private Claims validateToken(String token) {
         try {
             var key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-            Claims claims = Jwts.parser()
+            return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
-            String role = String.valueOf(claims.get("role"));
-            String userId = String.valueOf(claims.get("id"));
-            String normalizedRole = role == null ? "" : role.trim().toLowerCase();
-            Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(normalizedRole));
-            final String resolvedToken = token;
-
-            UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(claims.getSubject(), null, authorities);
-
-            log.debug("JWT: token válido. subject={}, role={} (normalized={}), userId={}", claims.getSubject(), role, normalizedRole, userId);
-
-            ServerWebExchange mutatedExchange = new ServerWebExchangeDecorator(exchange) {
-                @Override
-                public @NonNull org.springframework.http.server.reactive.ServerHttpRequest getRequest() {
-            return exchange.getRequest().mutate()
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + resolvedToken)
-                .header("Email", claims.getSubject())
-                .header("Role", normalizedRole)
-                .header("User-Id", userId)
-                .build();
-                }
-            };
-
-            return chain
-                .filter(mutatedExchange)
-                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
         } catch (Exception e) {
             log.error("JWT: validación fallida: {}", e.getMessage());
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            return null;
         }
-    }; 
+    }
 }

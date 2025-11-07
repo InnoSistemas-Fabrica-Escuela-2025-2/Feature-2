@@ -17,35 +17,50 @@ public class TeamServiceImpl implements TeamService{
 
     @Override
     public String nameTeam(Long id_student) {
-        try{
-            return teamRepository.findNameByIdStudent(id_student);
-        } catch (Exception e){
-            throw new UnsupportedOperationException("No fue posible encontrar el equipo.");
-        }
+        return handleNameTeam(id_student);
     }
 
     @Override
     public Long getTeamIdByStudent(Long id_student) {
-        try{
-            return teamRepository.findTeamIdByStudent(id_student);
-        } catch (Exception e){
-            throw new UnsupportedOperationException("No fue posible encontrar el equipo del estudiante.");
-        }
+        return handleGetTeamIdByStudent(id_student);
     }
 
     @Override
     public List<String> getStudentsNameById(Long id_student) {
-        try{
-            String teamName = nameTeam(id_student);
-            return teamRepository.getStudentsNameById(teamName);
-        } catch (Exception e){
-            throw new UnsupportedOperationException("No existe el estudiante.");
-        }
-        
+        return handleGetStudentsNameById(id_student);
     }
 
     @Override
     public List<Team> listAllTeams() {
+        return handleListAllTeams();
+    }
+
+    private String handleNameTeam(Long idStudent) {
+        try {
+            return teamRepository.findNameByIdStudent(idStudent);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("No fue posible encontrar el equipo.");
+        }
+    }
+
+    private Long handleGetTeamIdByStudent(Long idStudent) {
+        try {
+            return teamRepository.findTeamIdByStudent(idStudent);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("No fue posible encontrar el equipo del estudiante.");
+        }
+    }
+
+    private List<String> handleGetStudentsNameById(Long idStudent) {
+        try {
+            String teamName = handleNameTeam(idStudent);
+            return teamRepository.getStudentsNameById(teamName);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("No existe el estudiante.");
+        }
+    }
+
+    private List<Team> handleListAllTeams() {
         try {
             return teamRepository.findAll();
         } catch (Exception e) {

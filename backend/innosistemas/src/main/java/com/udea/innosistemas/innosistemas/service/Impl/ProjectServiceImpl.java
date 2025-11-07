@@ -28,29 +28,40 @@ public class ProjectServiceImpl implements ProjectService{
 
     @Override
     public List<Long> getProjectsById(Long student_id) {
-        try{
-            return projectRepository.getProjectsById(student_id);
-        } catch (Exception e){
-            throw new UnsupportedOperationException("El estudiante no existe.");
-        }
+        return handleGetProjectsById(student_id);
     }
 
     @Override
     public List<Project> listAllById(Long student_id) {
-        try{
-            List<Long> id_projects = getProjectsById(student_id);
-            return projectRepository.findAllByIdIn(id_projects);
-        } catch (Exception e){
-            throw new UnsupportedOperationException("No fue posible mostrar todos los projectos.");
-
-        }
+        return handleListAllById(student_id);
     }
 
     @Override
     public List<Project> listAllByTeamId(Long team_id) {
-        try{
-            return projectRepository.findAllByTeamId(team_id);
-        } catch (Exception e){
+        return handleListAllByTeamId(team_id);
+    }
+
+    private List<Long> handleGetProjectsById(Long studentId) {
+        try {
+            return projectRepository.getProjectsById(studentId);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("El estudiante no existe.");
+        }
+    }
+
+    private List<Project> handleListAllById(Long studentId) {
+        try {
+            List<Long> idProjects = handleGetProjectsById(studentId);
+            return projectRepository.findAllByIdIn(idProjects);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("No fue posible mostrar todos los projectos.");
+        }
+    }
+
+    private List<Project> handleListAllByTeamId(Long teamId) {
+        try {
+            return projectRepository.findAllByTeamId(teamId);
+        } catch (Exception e) {
             throw new UnsupportedOperationException("No fue posible mostrar los proyectos del equipo.");
         }
     }

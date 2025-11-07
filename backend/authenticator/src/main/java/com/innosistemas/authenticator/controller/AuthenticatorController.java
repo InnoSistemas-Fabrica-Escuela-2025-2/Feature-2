@@ -21,12 +21,12 @@ import com.innosistemas.authenticator.service.ActiveSessionService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
-
-
 @RestController
 @RequestMapping("/person")
 public class AuthenticatorController {
     
+    private static final String ACCESS_TOKEN_COOKIE = "access_token";
+
     @Autowired
     private AuthenticatorService authenticatorService;
 
@@ -39,9 +39,7 @@ public class AuthenticatorController {
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticatorResponse> login(@RequestBody AuthenticatorRequest request, HttpServletRequest httpRequest) {
         AuthenticatorResponse response = authenticatorService.login(request);
-
-        ResponseCookie cookie = buildJwtCookie(response.getToken(), httpRequest.isSecure());
-
+        ResponseCookie cookie = createJwtCookie(response.getToken(), httpRequest.isSecure());
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, cookie.toString())
             .body(response);
@@ -49,31 +47,20 @@ public class AuthenticatorController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest httpRequest) {
-        String token = resolveTokenFromRequest(httpRequest);
-        if (token != null) {
-            activeSessionService.invalidateSessionByToken(token);
-        }
-
-        ResponseCookie deleteCookie = ResponseCookie.from("access_token", "")
-            .maxAge(Duration.ZERO)
-            .path("/")
-            .httpOnly(true)
-            .secure(httpRequest.isSecure())
-            .sameSite("Lax")
-            .build();
-
+        invalidateSessionIfTokenPresent(httpRequest);
+        ResponseCookie deleteCookie = createDeleteCookie(httpRequest.isSecure());
         return ResponseEntity.noContent()
             .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
             .build();
     }
 
     @GetMapping("/message")
-    public ResponseEntity<String> showMesagge() {
+    public ResponseEntity<String> showMessage() {
         return ResponseEntity.ok("servicio 1 funcionando");
     }
 
-    private ResponseCookie buildJwtCookie(String token, boolean secure) {
-        return ResponseCookie.from("access_token", token)
+    private ResponseCookie createJwtCookie(String token, boolean secure) {
+        return ResponseCookie.from(ACCESS_TOKEN_COOKIE, token)
             .httpOnly(true)
             .secure(secure)
             .path("/")
@@ -82,10 +69,27 @@ public class AuthenticatorController {
             .build();
     }
 
-    private String resolveTokenFromRequest(HttpServletRequest request) {
+    private ResponseCookie createDeleteCookie(boolean secure) {
+        return ResponseCookie.from(ACCESS_TOKEN_COOKIE, "")
+            .maxAge(Duration.ZERO)
+            .path("/")
+            .httpOnly(true)
+            .secure(secure)
+            .sameSite("Lax")
+            .build();
+    }
+
+    private void invalidateSessionIfTokenPresent(HttpServletRequest request) {
+        String token = extractTokenFromRequest(request);
+        if (token != null) {
+            activeSessionService.invalidateSessionByToken(token);
+        }
+    }
+
+    private String extractTokenFromRequest(HttpServletRequest request) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("access_token".equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                if (ACCESS_TOKEN_COOKIE.equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
                     return cookie.getValue();
                 }
             }
