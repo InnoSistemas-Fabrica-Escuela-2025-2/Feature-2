@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentCaptor;
 
 import jakarta.servlet.ServletException;
 
@@ -55,14 +56,21 @@ class TaskControllerTest {
 
         when(taskService.saveTask(any(Task.class))).thenReturn(saved);
 
+        // Arrange
+        String json = "{\"title\":\"Nueva tarea accesible\",\"description\":\"Descripción\"}";
+
+        // Act
         mockMvc.perform(post("/project/task/save")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+                .content(json))
+            // Assert
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(99L))
+            .andExpect(jsonPath("$.id").value(99))
             .andExpect(jsonPath("$.title").value("Nueva tarea accesible"));
 
-        verify(taskService).saveTask(any(Task.class));
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        verify(taskService).saveTask(captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("Nueva tarea accesible", captor.getValue().getTitle());
     }
 
     @Test
@@ -81,9 +89,10 @@ class TaskControllerTest {
         task.setId(5L);
         when(taskService.listAllTasks()).thenReturn(List.of(task));
 
+        // Act & Assert
         mockMvc.perform(get("/project/task/listAll"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(5L));
+            .andExpect(jsonPath("$[0].id").value(5));
     }
 
     @Test
@@ -112,11 +121,13 @@ class TaskControllerTest {
         updated.setTitle("Título actualizado");
         when(taskService.saveTask(any(Task.class))).thenReturn(updated);
 
-        mockMvc.perform(put("/project/task/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(11L));
+    String json = "{\"title\":\"Título actualizado\"}";
+
+    mockMvc.perform(put("/project/task/update")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(11));
     }
 
     @Test

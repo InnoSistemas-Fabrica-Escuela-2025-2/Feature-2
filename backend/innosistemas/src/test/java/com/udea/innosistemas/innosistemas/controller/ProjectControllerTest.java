@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -55,14 +56,20 @@ class ProjectControllerTest {
 
         when(projectService.saveProject(any(Project.class))).thenReturn(project);
 
+        // Arrange - realistic request body
+        String json = "{\"name\":\"Proyecto Accesible\"}";
+
+        // Act & Assert
         mockMvc.perform(post("/project/project/save")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+                .content(json))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(77L))
+            .andExpect(jsonPath("$.id").value(77))
             .andExpect(jsonPath("$.name").value("Proyecto Accesible"));
 
-        verify(projectService).saveProject(any(Project.class));
+        ArgumentCaptor<Project> captor = ArgumentCaptor.forClass(Project.class);
+        verify(projectService).saveProject(captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("Proyecto Accesible", captor.getValue().getName());
     }
 
     @Test
@@ -83,7 +90,7 @@ class ProjectControllerTest {
 
         mockMvc.perform(get("/project/project/listAll"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(12L));
+            .andExpect(jsonPath("$[0].id").value(12));
     }
 
     @Test
@@ -94,6 +101,6 @@ class ProjectControllerTest {
 
         mockMvc.perform(get("/project/project/listAllById/{id}", 4L))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(21L));
+            .andExpect(jsonPath("$[0].id").value(21));
     }
 }
