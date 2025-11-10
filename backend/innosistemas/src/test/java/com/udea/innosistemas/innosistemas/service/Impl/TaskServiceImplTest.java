@@ -106,7 +106,7 @@ class TaskServiceImplTest {
 
         IllegalStateException ex = assertThrows(IllegalStateException.class, () -> taskService.saveTask(task));
         assertEquals("No fue posible guardar la tarea.", ex.getMessage());
-        
+    }
 
     @Test
     void listAllTasksReturnsRepositoryData() {

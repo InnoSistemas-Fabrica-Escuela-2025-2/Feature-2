@@ -2,7 +2,6 @@ package com.udea.innosistemas.innosistemas.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,11 +25,14 @@ public class ProjectController {
     
     private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
     
-    @Autowired
-    private ProjectService projectService;
+    private final ProjectService projectService;
+
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
+    }
 
     @GetMapping("/message")
-    public ResponseEntity<String> showMesagge() {
+    public ResponseEntity<String> showMessage() {
         return ResponseEntity.ok("servicio 2 funcionando");
     }
 
@@ -50,18 +52,13 @@ public class ProjectController {
             @RequestHeader(value = "Email", required = false) String email,
             @RequestHeader(value = "User-Id", required = false) String userId) {
         log.info("listAll called - Role: {}, Email: {}, UserId: {}", role, email, userId);
-        try {
-            if (isProfesor(role)) {
-                return handleProfesorProjects();
-            }
-            if (isEstudiante(role, userId)) {
-                return handleEstudianteProjects(userId);
-            }
-            return handleDefaultProjects();
-        } catch (Exception e) {
-            log.error("Error en listAll", e);
-            throw e;
+        if (isProfesor(role)) {
+            return handleProfesorProjects();
         }
+        if (isEstudiante(role, userId)) {
+            return handleEstudianteProjects(userId);
+        }
+        return handleDefaultProjects();
     }
 
     private boolean isProfesor(String role) {
@@ -86,10 +83,10 @@ public class ProjectController {
             return ResponseEntity.ok(projects);
         } catch (NumberFormatException e) {
             log.error("Error parseando userId: {}", userId, e);
-            return ResponseEntity.ok(List.of());
+            return ResponseEntity.badRequest().body(List.<Project>of());
         } catch (Exception e) {
             log.error("Error obteniendo proyectos del estudiante", e);
-            return ResponseEntity.ok(List.of());
+            return ResponseEntity.internalServerError().body(List.<Project>of());
         }
     }
 
