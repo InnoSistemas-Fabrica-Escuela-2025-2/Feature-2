@@ -1,4 +1,4 @@
-package com.udea.innosistemas.innosistemas.service.Impl;
+package com.udea.innosistemas.innosistemas.service.impl;
 
 import java.util.Comparator;
 import java.util.List;
@@ -17,16 +17,20 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 @Service
 public class TaskServiceImpl implements TaskService{
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+
+    private final StateRepository stateRepository;
 
     @Autowired
-    private StateRepository stateRepository;
+    public TaskServiceImpl(TaskRepository taskRepository, StateRepository stateRepository) {
+        this.taskRepository = taskRepository;
+        this.stateRepository = stateRepository;
+    }
 
     @Override
     public void deleteTask(long id) {
         if (!taskRepository.existsById(id)) {
-            throw new NoSuchElementException("El usuario no existe.");
+            throw new NoSuchElementException("La tarea no existe.");
         }
         taskRepository.deleteById(id);
     }
@@ -42,9 +46,11 @@ public class TaskServiceImpl implements TaskService{
             task.setState(resolvedState);
             return taskRepository.save(task);
         } catch (NoSuchElementException e) {
+            // propagate not-found semantics
             throw e;
         } catch (Exception e) {
-            throw new NoSuchElementException("No fue posible guardar la tarea.");
+            // wrap unexpected exceptions to preserve the cause and provide clearer intent
+            throw new IllegalStateException("No fue posible guardar la tarea.", e);
         }
     }
 
@@ -54,9 +60,9 @@ public class TaskServiceImpl implements TaskService{
     }
 
     @Override
-    public void updateState(Long id_task, Long id_state) {
-        Task task = getTaskOrThrow(id_task);
-        State state = getStateOrThrow(id_state);
+    public void updateState(Long idTask, Long idState) {
+        Task task = getTaskOrThrow(idTask);
+        State state = getStateOrThrow(idState);
 
         task.setState(state);
         taskRepository.save(task);

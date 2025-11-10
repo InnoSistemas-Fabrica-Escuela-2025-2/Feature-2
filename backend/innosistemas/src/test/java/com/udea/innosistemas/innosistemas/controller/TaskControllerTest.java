@@ -47,7 +47,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void saveTaskReturnsPersistedPayload() throws Exception {
+    void saveTaskReturnsPersistedPayload() {
         Task saved = new Task();
         saved.setId(99L);
         saved.setTitle("Nueva tarea accesible");
@@ -60,13 +60,17 @@ class TaskControllerTest {
         String json = "{\"title\":\"Nueva tarea accesible\",\"description\":\"Descripción\"}";
 
         // Act
-        mockMvc.perform(post("/project/task/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            // Assert
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(99))
-            .andExpect(jsonPath("$.title").value("Nueva tarea accesible"));
+        try {
+            mockMvc.perform(post("/project/task/save")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+                // Assert
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(99))
+                .andExpect(jsonPath("$.title").value("Nueva tarea accesible"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
         verify(taskService).saveTask(captor.capture());
@@ -74,48 +78,63 @@ class TaskControllerTest {
     }
 
     @Test
-    void saveTaskReturnsErrorWhenServiceFails() throws Exception {
+    void saveTaskReturnsErrorWhenServiceFails() {
         when(taskService.saveTask(any(Task.class))).thenThrow(new RuntimeException("fallo"));
 
-        mockMvc.perform(post("/project/task/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isInternalServerError());
+        try {
+            mockMvc.perform(post("/project/task/save")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                .andExpect(status().isInternalServerError());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void listAllTasksDelegatesToService() throws Exception {
+    void listAllTasksDelegatesToService() {
         Task task = new Task();
         task.setId(5L);
         when(taskService.listAllTasks()).thenReturn(List.of(task));
 
         // Act & Assert
-        mockMvc.perform(get("/project/task/listAll"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(5));
+        try {
+            mockMvc.perform(get("/project/task/listAll"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(5));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void deleteTaskReturnsNoContent() throws Exception {
-        mockMvc.perform(delete("/project/task/delete/{id}", 7L))
-            .andExpect(status().isNoContent());
+    void deleteTaskReturnsNoContent() {
+        try {
+            mockMvc.perform(delete("/project/task/delete/{id}", 7L))
+                .andExpect(status().isNoContent());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         verify(taskService).deleteTask(7L);
     }
 
     @Test
-    void deleteTaskPropagatesServiceException() throws Exception {
+    void deleteTaskPropagatesServiceException() {
         doThrow(new UnsupportedOperationException("sin permiso")).when(taskService).deleteTask(8L);
 
-        ServletException exception = org.junit.jupiter.api.Assertions.assertThrows(ServletException.class, () ->
-            mockMvc.perform(delete("/project/task/delete/{id}", 8L)).andReturn()
-        );
-
-        org.junit.jupiter.api.Assertions.assertTrue(exception.getCause() instanceof UnsupportedOperationException);
+        try {
+            mockMvc.perform(delete("/project/task/delete/{id}", 8L)).andReturn();
+            org.junit.jupiter.api.Assertions.fail("Expected ServletException to be thrown");
+        } catch (ServletException se) {
+            org.junit.jupiter.api.Assertions.assertTrue(se.getCause() instanceof UnsupportedOperationException);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void updateTaskReturnsPayloadWhenServiceSucceeds() throws Exception {
+    void updateTaskReturnsPayloadWhenServiceSucceeds() {
         Task updated = new Task();
         updated.setId(11L);
         updated.setTitle("Título actualizado");
@@ -123,27 +142,39 @@ class TaskControllerTest {
 
     String json = "{\"title\":\"Título actualizado\"}";
 
-    mockMvc.perform(put("/project/task/update")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(json))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(11));
+    try {
+        mockMvc.perform(put("/project/task/update")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(11));
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
     }
 
     @Test
-    void updateTaskReturnsErrorWhenServiceThrows() throws Exception {
+    void updateTaskReturnsErrorWhenServiceThrows() {
         when(taskService.saveTask(any(Task.class))).thenThrow(new RuntimeException("fallo"));
 
-        mockMvc.perform(put("/project/task/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isInternalServerError());
+        try {
+            mockMvc.perform(put("/project/task/update")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                .andExpect(status().isInternalServerError());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void updateStateReturnsNoContent() throws Exception {
-        mockMvc.perform(put("/project/task/updateState/{taskId}/{stateId}", 15L, 3L))
-            .andExpect(status().isNoContent());
+    void updateStateReturnsNoContent() {
+        try {
+            mockMvc.perform(put("/project/task/updateState/{taskId}/{stateId}", 15L, 3L))
+                .andExpect(status().isNoContent());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         verify(taskService, times(1)).updateState(15L, 3L);
     }
