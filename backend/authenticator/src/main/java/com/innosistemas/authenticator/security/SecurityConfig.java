@@ -1,6 +1,5 @@
 package com.innosistemas.authenticator.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,15 +15,18 @@ public class SecurityConfig {
     private static final String ROLE_STUDENT = "STUDENT";
     private static final String ROLE_PROFESSOR = "PROFESOR";
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .cors(cors -> cors.disable())  // Deshabilitar CORS de Spring Security (usamos CorsConfig)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authz -> authz
+        .authorizeHttpRequests(authz -> authz
                     // Rutas del authenticator (después de StripPrefix) - PÚBLICAS
                     .requestMatchers("/person/authenticate", "/person/message", "/person/**").permitAll()
                     // Rutas de proyectos (si se enrutan a través de este servicio)
