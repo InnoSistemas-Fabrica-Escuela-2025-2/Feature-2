@@ -23,20 +23,25 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.disable())  // Deshabilitar CORS de Spring Security (usamos CorsConfig)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    http.csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.disable())  // Deshabilitar CORS de Spring Security (usamos CorsConfig)
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(authz -> authz
-                    // Rutas del authenticator (después de StripPrefix) - PÚBLICAS
-                    .requestMatchers("/person/authenticate", "/person/message", "/person/**").permitAll()
-                    // Rutas de proyectos (si se enrutan a través de este servicio)
-                    .requestMatchers("/project/project/**").hasRole(ROLE_STUDENT)
-                    .requestMatchers("/project/project/listAll").hasRole(ROLE_PROFESSOR)
-                    .requestMatchers("/project/objective/**").hasRole(ROLE_STUDENT)
-                    .requestMatchers("/project/task/**").hasRole(ROLE_STUDENT)
-                    .requestMatchers("/project/state/**").hasRole(ROLE_STUDENT)
-                    
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            // Rutas del authenticator (después de StripPrefix) - PÚBLICAS
+            .requestMatchers("/person/authenticate", "/person/message", "/person/**").permitAll()
+            // Rutas de proyectos (si se enrutan a través de este servicio)
+            .requestMatchers("/project/project/**").hasRole(ROLE_STUDENT)
+            .requestMatchers("/project/project/listAll").hasRole(ROLE_PROFESSOR)
+            .requestMatchers("/project/objective/**").hasRole(ROLE_STUDENT)
+            .requestMatchers("/project/task/**").hasRole(ROLE_STUDENT)
+            .requestMatchers("/project/state/**").hasRole(ROLE_STUDENT)
+            // cualquier otra petición requiere autenticación
+            .anyRequest().authenticated()
+        );
+
+    // El filtro de JWT debe añadirse sobre la cadena de filtros de Spring Security
+    http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
     return http.build();
     }
 
