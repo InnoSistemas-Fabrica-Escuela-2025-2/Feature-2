@@ -144,6 +144,11 @@ export const authApi = {
    */
   checkService: () => 
     apiGateway.get('/authenticator/person/message'),
+  /**
+   * Obtener perfil del usuario autenticado (usa cookie HttpOnly en el backend)
+   * GET /authenticator/person/me
+   */
+  me: () => apiGateway.get('/authenticator/person/me'),
 };
 
 // ==================== API DE PROYECTOS ====================
