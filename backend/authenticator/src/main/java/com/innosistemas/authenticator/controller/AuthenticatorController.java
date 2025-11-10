@@ -27,14 +27,18 @@ public class AuthenticatorController {
     
     private static final String ACCESS_TOKEN_COOKIE = "access_token";
 
-    @Autowired
-    private AuthenticatorService authenticatorService;
+    private final AuthenticatorService authenticatorService;
 
-    @Autowired
-    private ActiveSessionService activeSessionService;
+    private final ActiveSessionService activeSessionService;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+
+    @Autowired
+    public AuthenticatorController(AuthenticatorService authenticatorService, ActiveSessionService activeSessionService) {
+        this.authenticatorService = authenticatorService;
+        this.activeSessionService = activeSessionService;
+    }
     
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticatorResponse> login(@RequestBody AuthenticatorRequest request, HttpServletRequest httpRequest) {

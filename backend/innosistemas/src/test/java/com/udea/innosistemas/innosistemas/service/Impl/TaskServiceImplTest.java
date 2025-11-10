@@ -26,6 +26,7 @@ import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.repository.StateRepository;
 import com.udea.innosistemas.innosistemas.repository.TaskRepository;
+import com.udea.innosistemas.innosistemas.service.impl.TaskServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceImplTest {
@@ -54,7 +55,7 @@ class TaskServiceImplTest {
 
     NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.deleteTask(2L));
 
-        assertEquals("El usuario no existe.", exception.getMessage());
+        assertEquals("La tarea no existe.", exception.getMessage());
         verify(taskRepository, never()).deleteById(anyLong());
     }
 
@@ -103,7 +104,8 @@ class TaskServiceImplTest {
         when(stateRepository.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
         when(taskRepository.save(any(Task.class))).thenThrow(new RuntimeException("DB error"));
 
-        assertThrows(NoSuchElementException.class, () -> taskService.saveTask(task));
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> taskService.saveTask(task));
+        assertEquals("No fue posible guardar la tarea.", ex.getMessage());
     }
 
     @Test

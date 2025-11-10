@@ -35,10 +35,8 @@ public class SecurityConfig {
                     .requestMatchers("/project/objective/**").hasRole(ROLE_STUDENT)
                     .requestMatchers("/project/task/**").hasRole(ROLE_STUDENT)
                     .requestMatchers("/project/state/**").hasRole(ROLE_STUDENT)
-                    .anyRequest().permitAll()  // Permitir todo temporalmente para debug
-        );
-
-    http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                    
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
     }
 
