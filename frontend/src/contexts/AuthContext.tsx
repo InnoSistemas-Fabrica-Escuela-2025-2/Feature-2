@@ -80,11 +80,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loginAttempts, setLoginAttempts] = useState<LoginAttempt>(createInitialLoginAttempt());
 
   useEffect(() => {
-    // Check for existing session
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Try to load current user from backend using cookie-based session (if backend exposes /person/me)
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await authApi.me();
+        const data = res.data;
+        const displayName = deriveDisplayName(data);
+        const loggedInUser: User = {
+          id: data.id ? String(data.id) : data.email,
+          nombre: displayName,
+          correo: data.email,
+          rol: data.role as 'estudiante' | 'profesor',
+          fechaRegistro: new Date(),
+        };
+        setUser(loggedInUser);
+      } catch (err) {
+        // If backend doesn't expose /me or user not authenticated, leave user null
+        setUser(null);
+      }
+    };
+
+    void fetchCurrentUser();
 
     // Check for stored login attempts (per email)
     const storedAttempts = localStorage.getItem('loginAttempts');
@@ -156,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearTimeout(inactivityTimer);
       inactivityTimer = setTimeout(() => {
         setUser(null);
-        localStorage.removeItem('currentUser');
+        // Do not persist session in localStorage; simply clear in-memory state on timeout
         toast.error('Tu sesión ha sido cerrada por inactividad. Por favor, inicia sesión nuevamente.');
       }, INACTIVITY_TIMEOUT);
     };
@@ -278,8 +294,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const persistSuccessfulLogin = (loggedInUser: User, emailKey: string) => {
+    // Keep user in memory only; session token is managed via HttpOnly cookie from the backend
     setUser(loggedInUser);
-    localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
 
     const resetAttempts = createInitialLoginAttempt();
 
@@ -372,7 +388,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Error al cerrar sesión en el servidor:', error);
     });
     setUser(null);
-    localStorage.removeItem('currentUser');
     toast.info('Sesión cerrada correctamente');
   };
 
@@ -386,7 +401,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const updatedUser = { ...user, ...userData };
     setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
     toast.success('Perfil actualizado correctamente');
     
     setIsLoading(false);

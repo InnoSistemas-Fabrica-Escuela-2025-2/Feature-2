@@ -37,17 +37,21 @@ class ObjectiveControllerTest {
 
     @Test
     void saveObjectiveReturnsSavedEntity() throws Exception {
+        // Arrange
         Objective objective = new Objective();
         objective.setId(3L);
         objective.setDescription("Accesibilidad mejorada");
 
         when(objectiveService.saveObjective(any(Objective.class))).thenReturn(objective);
 
+        String json = "{\"description\":\"Accesibilidad mejorada\"}";
+
+        // Act & Assert
         mockMvc.perform(post("/project/objective/save")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+                .content(json))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(3L))
+            .andExpect(jsonPath("$.id").value(3))
             .andExpect(jsonPath("$.description").value("Accesibilidad mejorada"));
     }
 
