@@ -42,14 +42,18 @@ class ProjectControllerTest {
     }
 
     @Test
-    void messageEndpointReturnsHealthMessage() throws Exception {
-        mockMvc.perform(get("/project/project/message"))
-            .andExpect(status().isOk())
-            .andExpect(content().string("servicio 2 funcionando"));
+    void messageEndpointReturnsHealthMessage() {
+        try {
+            mockMvc.perform(get("/project/project/message"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("servicio 2 funcionando"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void saveProjectReturnsPersistedInstance() throws Exception {
+    void saveProjectReturnsPersistedInstance() {
         Project project = new Project();
         project.setId(77L);
     project.setName("Proyecto Accesible");
@@ -60,12 +64,16 @@ class ProjectControllerTest {
         String json = "{\"name\":\"Proyecto Accesible\"}";
 
         // Act & Assert
-        mockMvc.perform(post("/project/project/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(77))
-            .andExpect(jsonPath("$.name").value("Proyecto Accesible"));
+        try {
+            mockMvc.perform(post("/project/project/save")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(77))
+                .andExpect(jsonPath("$.name").value("Proyecto Accesible"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         ArgumentCaptor<Project> captor = ArgumentCaptor.forClass(Project.class);
         verify(projectService).saveProject(captor.capture());
@@ -73,34 +81,44 @@ class ProjectControllerTest {
     }
 
     @Test
-    void saveProjectReturnsErrorOnServiceFailure() throws Exception {
+    void saveProjectReturnsErrorOnServiceFailure() {
         when(projectService.saveProject(any(Project.class))).thenThrow(new RuntimeException("fallo"));
 
-        mockMvc.perform(post("/project/project/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isInternalServerError());
+        try {
+            mockMvc.perform(post("/project/project/save")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                .andExpect(status().isInternalServerError());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void listAllProjectsReturnsRepositoryData() throws Exception {
+    void listAllProjectsReturnsRepositoryData() {
         Project project = new Project();
         project.setId(12L);
         when(projectService.listAllProjects()).thenReturn(List.of(project));
-
-        mockMvc.perform(get("/project/project/listAll"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(12));
+        try {
+            mockMvc.perform(get("/project/project/listAll"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(12));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void listAllProjectsByIdReturnsStudentProjects() throws Exception {
+    void listAllProjectsByIdReturnsStudentProjects() {
         Project project = new Project();
         project.setId(21L);
         when(projectService.listAllById(4L)).thenReturn(List.of(project));
-
-        mockMvc.perform(get("/project/project/listAllById/{id}", 4L))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(21));
+        try {
+            mockMvc.perform(get("/project/project/listAllById/{id}", 4L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(21));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

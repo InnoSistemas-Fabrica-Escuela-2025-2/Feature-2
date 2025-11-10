@@ -36,7 +36,7 @@ class ObjectiveControllerTest {
     }
 
     @Test
-    void saveObjectiveReturnsSavedEntity() throws Exception {
+    void saveObjectiveReturnsSavedEntity() {
         // Arrange
         Objective objective = new Objective();
         objective.setId(3L);
@@ -47,21 +47,29 @@ class ObjectiveControllerTest {
         String json = "{\"description\":\"Accesibilidad mejorada\"}";
 
         // Act & Assert
-        mockMvc.perform(post("/project/objective/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(3))
-            .andExpect(jsonPath("$.description").value("Accesibilidad mejorada"));
+        try {
+            mockMvc.perform(post("/project/objective/save")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3))
+                .andExpect(jsonPath("$.description").value("Accesibilidad mejorada"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void saveObjectiveReturnsErrorWhenServiceFails() throws Exception {
+    void saveObjectiveReturnsErrorWhenServiceFails() {
         when(objectiveService.saveObjective(any(Objective.class))).thenThrow(new RuntimeException("fallo"));
 
-        mockMvc.perform(post("/project/objective/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isInternalServerError());
+        try {
+            mockMvc.perform(post("/project/objective/save")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                .andExpect(status().isInternalServerError());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
