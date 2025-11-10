@@ -92,11 +92,11 @@ describe("AuthProvider login flows", () => {
 
     expect(loginResult?.success).toBe(true);
 
-    const storedUser = localStorage.getItem("currentUser");
-    expect(storedUser).not.toBeNull();
-    if (storedUser) {
-  expect(JSON.parse(storedUser).correo).toBe(VALID_EMAIL);
-    }
+    // With Option A we no longer persist the current user to localStorage.
+    // Verify the in-memory user and authentication flag instead.
+    expect(result.current.user).not.toBeNull();
+    expect(result.current.user?.correo).toBe(VALID_EMAIL);
+    expect(result.current.isAuthenticated).toBe(true);
 
     expect(toastSuccessMock).toHaveBeenCalledWith(expect.stringContaining("María"));
     expect(result.current.loginAttempts.permanentlyBlocked).toBe(false);
@@ -124,7 +124,8 @@ describe("AuthProvider login flows", () => {
   expect(result.current.isLoading).toBe(false);
     }
 
-    expect(localStorage.getItem("currentUser")).toBeNull();
+  // No session is persisted to localStorage under Option A; user should still be null
+  expect(result.current.user).toBeNull();
   });
 
   it("bloquea temporalmente tras cinco intentos fallidos y permite reingresar luego del bloqueo", async () => {
@@ -165,11 +166,10 @@ describe("AuthProvider login flows", () => {
     });
 
     expect(lastResult?.success).toBe(true);
-    const storedLogin = localStorage.getItem("currentUser");
-    expect(storedLogin).not.toBeNull();
-    if (storedLogin) {
-  expect(JSON.parse(storedLogin).correo).toBe(BLOCKED_EMAIL);
-    }
+    // After successful login (post-block), the user is kept in memory, not localStorage
+    expect(result.current.user).not.toBeNull();
+    expect(result.current.user?.correo).toBe(BLOCKED_EMAIL);
+    expect(result.current.isAuthenticated).toBe(true);
     expect(toastSuccessMock).toHaveBeenCalledWith(expect.stringContaining("Juan"));
   });
 });
