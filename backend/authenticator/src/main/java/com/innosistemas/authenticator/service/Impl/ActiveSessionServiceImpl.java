@@ -1,4 +1,4 @@
-package com.innosistemas.authenticator.service.impl;
+package com.innosistemas.authenticator.service.Impl;
 
 import java.sql.Timestamp;
 import org.springframework.beans.factory.annotation.Autowired;

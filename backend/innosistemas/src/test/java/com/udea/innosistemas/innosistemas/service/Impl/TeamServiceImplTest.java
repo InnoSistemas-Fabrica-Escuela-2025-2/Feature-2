@@ -1,4 +1,4 @@
-package com.udea.innosistemas.innosistemas.service.impl;
+package com.udea.innosistemas.innosistemas.service.Impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -15,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.udea.innosistemas.innosistemas.repository.TeamRepository;
-import com.udea.innosistemas.innosistemas.service.Impl.TeamServiceImpl;
+import com.udea.innosistemas.innosistemas.service.impl.TeamServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class TeamServiceImplTest {
