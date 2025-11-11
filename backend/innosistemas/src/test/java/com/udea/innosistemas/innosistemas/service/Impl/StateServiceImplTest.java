@@ -1,4 +1,4 @@
-package com.udea.innosistemas.innosistemas.service.impl;
+package com.udea.innosistemas.innosistemas.service.Impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.repository.StateRepository;
-import com.udea.innosistemas.innosistemas.service.impl.StateServiceImpl;
+import com.udea.innosistemas.innosistemas.service.Impl.StateServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class StateServiceImplTest {

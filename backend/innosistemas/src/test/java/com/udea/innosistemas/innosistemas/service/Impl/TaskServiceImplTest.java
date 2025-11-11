@@ -1,4 +1,4 @@
-package com.udea.innosistemas.innosistemas.service.impl;
+package com.udea.innosistemas.innosistemas.service.Impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,7 +26,7 @@ import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.repository.StateRepository;
 import com.udea.innosistemas.innosistemas.repository.TaskRepository;
-import com.udea.innosistemas.innosistemas.service.impl.TaskServiceImpl;
+import com.udea.innosistemas.innosistemas.service.Impl.TaskServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceImplTest {
