@@ -1,15 +1,3 @@
-// Polyfill for Web Crypto getRandomValues used by Vite/Vitest in some environments.
-// This runs early because this config file is loaded before the test setup.
-import { randomFillSync } from 'crypto';
-
-// @ts-ignore
-if (typeof globalThis.crypto === 'undefined' || typeof (globalThis.crypto as any).getRandomValues !== 'function') {
-  // @ts-ignore
-  globalThis.crypto = globalThis.crypto || {};
-  // @ts-ignore
-  globalThis.crypto.getRandomValues = (arr: any) => randomFillSync(arr);
-}
-
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
