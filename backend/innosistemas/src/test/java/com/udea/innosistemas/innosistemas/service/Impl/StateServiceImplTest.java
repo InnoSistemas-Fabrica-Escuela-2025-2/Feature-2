@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.repository.StateRepository;
-import com.udea.innosistemas.innosistemas.service.Impl.StateServiceImpl;
+import com.udea.innosistemas.innosistemas.service.impl.StateServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class StateServiceImplTest {

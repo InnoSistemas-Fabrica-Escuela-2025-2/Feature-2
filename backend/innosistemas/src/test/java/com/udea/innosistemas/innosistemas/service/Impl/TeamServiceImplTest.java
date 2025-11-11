@@ -15,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.udea.innosistemas.innosistemas.repository.TeamRepository;
-import com.udea.innosistemas.innosistemas.service.Impl.TeamServiceImpl;
+import com.udea.innosistemas.innosistemas.service.impl.TeamServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class TeamServiceImplTest {
