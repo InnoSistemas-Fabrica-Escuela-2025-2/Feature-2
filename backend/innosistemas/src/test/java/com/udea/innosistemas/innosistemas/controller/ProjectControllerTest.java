@@ -36,6 +36,8 @@ class ProjectControllerTest {
     @InjectMocks
     private ProjectController projectController;
 
+    private static final String PROJECT_NAME = "Proyecto Accesible";
+
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(projectController).build();
@@ -56,12 +58,12 @@ class ProjectControllerTest {
     void saveProjectReturnsPersistedInstance() {
         Project project = new Project();
         project.setId(77L);
-    project.setName("Proyecto Accesible");
+        project.setName(PROJECT_NAME);
 
         when(projectService.saveProject(any(Project.class))).thenReturn(project);
 
         // Arrange - realistic request body
-        String json = "{\"name\":\"Proyecto Accesible\"}";
+        String json = "{\"name\":\"" + PROJECT_NAME + "\"}";
 
         // Act & Assert
         try {
@@ -70,14 +72,14 @@ class ProjectControllerTest {
                     .content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(77))
-                .andExpect(jsonPath("$.name").value("Proyecto Accesible"));
+                .andExpect(jsonPath("$.name").value(PROJECT_NAME));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         ArgumentCaptor<Project> captor = ArgumentCaptor.forClass(Project.class);
         verify(projectService).saveProject(captor.capture());
-        org.junit.jupiter.api.Assertions.assertEquals("Proyecto Accesible", captor.getValue().getName());
+        org.junit.jupiter.api.Assertions.assertEquals(PROJECT_NAME, captor.getValue().getName());
     }
 
     @Test

@@ -34,6 +34,8 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 class TaskControllerTest {
 
     private MockMvc mockMvc;
+    private static final String TASK_TITLE = "Nueva tarea accesible";
+    private static final String TASK_DESCRIPTION = "Descripción";
 
     @Mock
     private TaskService taskService;
@@ -50,14 +52,14 @@ class TaskControllerTest {
     void saveTaskReturnsPersistedPayload() {
         Task saved = new Task();
         saved.setId(99L);
-        saved.setTitle("Nueva tarea accesible");
-        saved.setDescription("Descripción");
+    saved.setTitle(TASK_TITLE);
+    saved.setDescription(TASK_DESCRIPTION);
         saved.setState(new State());
 
         when(taskService.saveTask(any(Task.class))).thenReturn(saved);
 
         // Arrange
-        String json = "{\"title\":\"Nueva tarea accesible\",\"description\":\"Descripción\"}";
+    String json = "{\"title\":\"" + TASK_TITLE + "\",\"description\":\"" + TASK_DESCRIPTION + "\"}";
 
         // Act
         try {
@@ -67,14 +69,14 @@ class TaskControllerTest {
                 // Assert
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(99))
-                .andExpect(jsonPath("$.title").value("Nueva tarea accesible"));
+                .andExpect(jsonPath("$.title").value(TASK_TITLE));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
         verify(taskService).saveTask(captor.capture());
-        org.junit.jupiter.api.Assertions.assertEquals("Nueva tarea accesible", captor.getValue().getTitle());
+    org.junit.jupiter.api.Assertions.assertEquals(TASK_TITLE, captor.getValue().getTitle());
     }
 
     @Test
