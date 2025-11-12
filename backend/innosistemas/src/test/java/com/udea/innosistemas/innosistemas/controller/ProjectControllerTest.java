@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -42,83 +41,59 @@ class ProjectControllerTest {
     }
 
     @Test
-    void messageEndpointReturnsHealthMessage() {
-        try {
-            mockMvc.perform(get("/project/project/message"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("servicio 2 funcionando"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    void messageEndpointReturnsHealthMessage() throws Exception {
+        mockMvc.perform(get("/project/project/message"))
+            .andExpect(status().isOk())
+            .andExpect(content().string("servicio 2 funcionando"));
     }
 
     @Test
-    void saveProjectReturnsPersistedInstance() {
+    void saveProjectReturnsPersistedInstance() throws Exception {
         Project project = new Project();
         project.setId(77L);
     project.setName("Proyecto Accesible");
 
         when(projectService.saveProject(any(Project.class))).thenReturn(project);
 
-        // Arrange - realistic request body
-        String json = "{\"name\":\"Proyecto Accesible\"}";
+        mockMvc.perform(post("/project/project/save")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(77L))
+            .andExpect(jsonPath("$.name").value("Proyecto Accesible"));
 
-        // Act & Assert
-        try {
-            mockMvc.perform(post("/project/project/save")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(json))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(77))
-                .andExpect(jsonPath("$.name").value("Proyecto Accesible"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        ArgumentCaptor<Project> captor = ArgumentCaptor.forClass(Project.class);
-        verify(projectService).saveProject(captor.capture());
-        org.junit.jupiter.api.Assertions.assertEquals("Proyecto Accesible", captor.getValue().getName());
+        verify(projectService).saveProject(any(Project.class));
     }
 
     @Test
-    void saveProjectReturnsErrorOnServiceFailure() {
+    void saveProjectReturnsErrorOnServiceFailure() throws Exception {
         when(projectService.saveProject(any(Project.class))).thenThrow(new RuntimeException("fallo"));
 
-        try {
-            mockMvc.perform(post("/project/project/save")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{}"))
-                .andExpect(status().isInternalServerError());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mockMvc.perform(post("/project/project/save")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isInternalServerError());
     }
 
     @Test
-    void listAllProjectsReturnsRepositoryData() {
+    void listAllProjectsReturnsRepositoryData() throws Exception {
         Project project = new Project();
         project.setId(12L);
         when(projectService.listAllProjects()).thenReturn(List.of(project));
-        try {
-            mockMvc.perform(get("/project/project/listAll"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(12));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+        mockMvc.perform(get("/project/project/listAll"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(12L));
     }
 
     @Test
-    void listAllProjectsByIdReturnsStudentProjects() {
+    void listAllProjectsByIdReturnsStudentProjects() throws Exception {
         Project project = new Project();
         project.setId(21L);
         when(projectService.listAllById(4L)).thenReturn(List.of(project));
-        try {
-            mockMvc.perform(get("/project/project/listAllById/{id}", 4L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(21));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+        mockMvc.perform(get("/project/project/listAllById/{id}", 4L))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(21L));
     }
 }

@@ -17,20 +17,16 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 @Service
 public class TaskServiceImpl implements TaskService{
 
-    private final TaskRepository taskRepository;
-
-    private final StateRepository stateRepository;
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, StateRepository stateRepository) {
-        this.taskRepository = taskRepository;
-        this.stateRepository = stateRepository;
-    }
+    private StateRepository stateRepository;
 
     @Override
     public void deleteTask(long id) {
         if (!taskRepository.existsById(id)) {
-            throw new NoSuchElementException("La tarea no existe.");
+            throw new NoSuchElementException("El usuario no existe.");
         }
         taskRepository.deleteById(id);
     }
@@ -46,11 +42,9 @@ public class TaskServiceImpl implements TaskService{
             task.setState(resolvedState);
             return taskRepository.save(task);
         } catch (NoSuchElementException e) {
-            // propagate not-found semantics
             throw e;
         } catch (Exception e) {
-            // wrap unexpected exceptions to preserve the cause and provide clearer intent
-            throw new IllegalStateException("No fue posible guardar la tarea.", e);
+            throw new NoSuchElementException("No fue posible guardar la tarea.");
         }
     }
 
@@ -60,9 +54,9 @@ public class TaskServiceImpl implements TaskService{
     }
 
     @Override
-    public void updateState(Long idTask, Long idState) {
-        Task task = getTaskOrThrow(idTask);
-        State state = getStateOrThrow(idState);
+    public void updateState(Long id_task, Long id_state) {
+        Task task = getTaskOrThrow(id_task);
+        State state = getStateOrThrow(id_state);
 
         task.setState(state);
         taskRepository.save(task);

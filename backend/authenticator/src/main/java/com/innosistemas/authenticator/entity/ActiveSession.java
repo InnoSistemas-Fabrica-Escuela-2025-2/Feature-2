@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "active_sessions")
+@Table(name = "active_sessions", schema="authentication")
 @Getter
 @Setter
 @NoArgsConstructor

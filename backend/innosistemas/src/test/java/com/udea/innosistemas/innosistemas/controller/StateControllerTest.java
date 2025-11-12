@@ -37,22 +37,16 @@ class StateControllerTest {
     }
 
     @Test
-    void listAllStatesReturnsStates() {
-        // Arrange
+    void listAllStatesReturnsStates() throws Exception {
         State state = new State();
         state.setId(3L);
         state.setName("Completada");
         when(stateService.allStates()).thenReturn(List.of(state));
 
-        // Act & Assert
-        try {
-            mockMvc.perform(get("/project/state/listAll"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(3))
-                .andExpect(jsonPath("$[0].name").value("Completada"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mockMvc.perform(get("/project/state/listAll"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(3L))
+            .andExpect(jsonPath("$[0].name").value("Completada"));
 
         verify(stateService).allStates();
     }

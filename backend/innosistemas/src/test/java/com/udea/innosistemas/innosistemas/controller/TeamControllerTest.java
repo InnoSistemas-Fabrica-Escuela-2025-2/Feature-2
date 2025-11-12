@@ -36,17 +36,13 @@ class TeamControllerTest {
     }
 
     @Test
-    void getStudentsNameReturnsTeamMembers() {
+    void getStudentsNameReturnsTeamMembers() throws Exception {
         when(teamService.getStudentsNameById(10L)).thenReturn(List.of("María", "Juan"));
 
-        try {
-            mockMvc.perform(get("/project/team/getStudentsName/{id}", 10L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").value("María"))
-                .andExpect(jsonPath("$[1]").value("Juan"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mockMvc.perform(get("/project/team/getStudentsName/{id}", 10L))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0]").value("María"))
+            .andExpect(jsonPath("$[1]").value("Juan"));
 
         verify(teamService).getStudentsNameById(10L);
     }

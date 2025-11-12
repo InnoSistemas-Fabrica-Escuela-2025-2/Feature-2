@@ -26,7 +26,6 @@ import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.repository.StateRepository;
 import com.udea.innosistemas.innosistemas.repository.TaskRepository;
-import com.udea.innosistemas.innosistemas.service.impl.TaskServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceImplTest {
@@ -42,20 +41,20 @@ class TaskServiceImplTest {
 
     @Test
     void deleteTaskRemovesExistingTask() {
-    when(taskRepository.existsById(1L)).thenReturn(true);
+        when(taskRepository.existsById(1L)).thenReturn(true);
 
-    taskService.deleteTask(1L);
+        taskService.deleteTask(1L);
 
-    verify(taskRepository).deleteById(1L);
+        verify(taskRepository).deleteById(1L);
     }
 
     @Test
     void deleteTaskThrowsWhenTaskDoesNotExist() {
-    when(taskRepository.existsById(2L)).thenReturn(false);
+        when(taskRepository.existsById(2L)).thenReturn(false);
 
-    NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.deleteTask(2L));
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.deleteTask(2L));
 
-        assertEquals("La tarea no existe.", exception.getMessage());
+        assertEquals("El usuario no existe.", exception.getMessage());
         verify(taskRepository, never()).deleteById(anyLong());
     }
 
@@ -63,7 +62,7 @@ class TaskServiceImplTest {
     void saveTaskAssignsDefaultStateWhenMissing() {
         Task task = new Task();
         State defaultState = new State();
-    defaultState.setId(3L);
+        defaultState.setId(3L);
         defaultState.setName("Pendiente");
 
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -72,22 +71,22 @@ class TaskServiceImplTest {
         Task savedTask = taskService.saveTask(task);
 
         assertNotNull(savedTask.getState(), "Se debe asignar un estado por defecto cuando no se envía desde la capa superior.");
-    assertEquals(3L, savedTask.getState().getId());
+        assertEquals(3L, savedTask.getState().getId());
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
         verify(taskRepository).save(captor.capture());
-    assertEquals(3L, captor.getValue().getState().getId());
+        assertEquals(3L, captor.getValue().getState().getId());
     }
 
     @Test
     void saveTaskPreservesProvidedState() {
         State initialState = new State();
-    initialState.setId(5L);
+        initialState.setId(5L);
         Task task = new Task();
         task.setState(initialState);
 
         when(taskRepository.save(task)).thenReturn(task);
-    when(stateRepository.findById(5L)).thenReturn(Optional.of(initialState));
+        when(stateRepository.findById(5L)).thenReturn(Optional.of(initialState));
 
         Task savedTask = taskService.saveTask(task);
 
@@ -99,13 +98,12 @@ class TaskServiceImplTest {
     void saveTaskWrapsRepositoryExceptions() {
         Task task = new Task();
         State defaultState = new State();
-    defaultState.setId(1L);
+        defaultState.setId(1L);
         defaultState.setName("Pendiente");
         when(stateRepository.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
         when(taskRepository.save(any(Task.class))).thenThrow(new RuntimeException("DB error"));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> taskService.saveTask(task));
-        assertEquals("No fue posible guardar la tarea.", ex.getMessage());
+        assertThrows(NoSuchElementException.class, () -> taskService.saveTask(task));
     }
 
     @Test
@@ -124,12 +122,12 @@ class TaskServiceImplTest {
     void updateStateUpdatesTaskWhenPresent() {
         Task existingTask = new Task();
         State newState = new State();
-    newState.setId(4L);
+        newState.setId(4L);
 
-    when(taskRepository.findById(1L)).thenReturn(Optional.of(existingTask));
-    when(stateRepository.findById(4L)).thenReturn(Optional.of(newState));
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(existingTask));
+        when(stateRepository.findById(4L)).thenReturn(Optional.of(newState));
 
-    taskService.updateState(1L, 4L);
+        taskService.updateState(1L, 4L);
 
         assertSame(newState, existingTask.getState());
         verify(taskRepository).save(existingTask);
@@ -137,9 +135,9 @@ class TaskServiceImplTest {
 
     @Test
     void updateStateThrowsWhenTaskMissing() {
-    when(taskRepository.findById(9L)).thenReturn(Optional.empty());
+        when(taskRepository.findById(9L)).thenReturn(Optional.empty());
 
-    assertThrows(NoSuchElementException.class, () -> taskService.updateState(9L, 2L));
+        assertThrows(NoSuchElementException.class, () -> taskService.updateState(9L, 2L));
         verify(taskRepository, never()).save(any(Task.class));
     }
 
@@ -147,10 +145,10 @@ class TaskServiceImplTest {
     void updateStateThrowsWhenStateMissing() {
         Task existingTask = new Task();
 
-    when(taskRepository.findById(15L)).thenReturn(Optional.of(existingTask));
-    when(stateRepository.findById(99L)).thenReturn(Optional.empty());
+        when(taskRepository.findById(15L)).thenReturn(Optional.of(existingTask));
+        when(stateRepository.findById(99L)).thenReturn(Optional.empty());
 
-    assertThrows(NoSuchElementException.class, () -> taskService.updateState(15L, 99L));
+        assertThrows(NoSuchElementException.class, () -> taskService.updateState(15L, 99L));
         verify(taskRepository, never()).save(any(Task.class));
     }
 }

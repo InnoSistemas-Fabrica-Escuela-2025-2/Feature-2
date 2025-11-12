@@ -36,40 +36,28 @@ class ObjectiveControllerTest {
     }
 
     @Test
-    void saveObjectiveReturnsSavedEntity() {
-        // Arrange
+    void saveObjectiveReturnsSavedEntity() throws Exception {
         Objective objective = new Objective();
         objective.setId(3L);
         objective.setDescription("Accesibilidad mejorada");
 
         when(objectiveService.saveObjective(any(Objective.class))).thenReturn(objective);
 
-        String json = "{\"description\":\"Accesibilidad mejorada\"}";
-
-        // Act & Assert
-        try {
-            mockMvc.perform(post("/project/objective/save")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(json))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(3))
-                .andExpect(jsonPath("$.description").value("Accesibilidad mejorada"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mockMvc.perform(post("/project/objective/save")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(3L))
+            .andExpect(jsonPath("$.description").value("Accesibilidad mejorada"));
     }
 
     @Test
-    void saveObjectiveReturnsErrorWhenServiceFails() {
+    void saveObjectiveReturnsErrorWhenServiceFails() throws Exception {
         when(objectiveService.saveObjective(any(Objective.class))).thenThrow(new RuntimeException("fallo"));
 
-        try {
-            mockMvc.perform(post("/project/objective/save")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{}"))
-                .andExpect(status().isInternalServerError());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mockMvc.perform(post("/project/objective/save")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isInternalServerError());
     }
 }

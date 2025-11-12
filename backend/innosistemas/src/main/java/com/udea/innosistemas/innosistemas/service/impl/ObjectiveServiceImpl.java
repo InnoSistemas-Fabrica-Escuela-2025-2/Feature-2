@@ -9,12 +9,9 @@ import com.udea.innosistemas.innosistemas.service.ObjectiveService;
 
 @Service
 public class ObjectiveServiceImpl implements ObjectiveService{
-    private final ObjectiveRepository objectiveRepository;
-
+    
     @Autowired
-    public ObjectiveServiceImpl(ObjectiveRepository objectiveRepository) {
-        this.objectiveRepository = objectiveRepository;
-    }
+    private ObjectiveRepository objectiveRepository;
 
     @Override
     public Objective saveObjective(Objective objective){

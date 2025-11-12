@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.udea.innosistemas.innosistemas.entity.Project;
 import com.udea.innosistemas.innosistemas.repository.ProjectRepository;
-import com.udea.innosistemas.innosistemas.service.impl.ProjectServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceImplTest {
