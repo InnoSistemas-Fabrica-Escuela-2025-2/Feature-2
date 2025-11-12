@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.udea.innosistemas.innosistemas.entity.State;
@@ -17,11 +16,14 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 @Service
 public class TaskServiceImpl implements TaskService{
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
-    @Autowired
-    private StateRepository stateRepository;
+    private final StateRepository stateRepository;
+
+    public TaskServiceImpl(TaskRepository taskRepository, StateRepository stateRepository) {
+        this.taskRepository = taskRepository;
+        this.stateRepository = stateRepository;
+    }
 
     @Override
     public void deleteTask(long id) {
@@ -54,9 +56,9 @@ public class TaskServiceImpl implements TaskService{
     }
 
     @Override
-    public void updateState(Long id_task, Long id_state) {
-        Task task = getTaskOrThrow(id_task);
-        State state = getStateOrThrow(id_state);
+    public void updateState(Long idTask, Long idState) {
+        Task task = getTaskOrThrow(idTask);
+        State state = getStateOrThrow(idState);
 
         task.setState(state);
         taskRepository.save(task);

@@ -19,13 +19,13 @@ const deriveDisplayName = (data: any): string => {
   if (typeof email === 'string' && email.includes('@')) {
     const localPart = email.split('@')[0] ?? '';
     const formatted = localPart
-      .replace(/[._-]+/g, ' ')
-      .split(' ')
-      .map((segment) => segment.trim())
-      .filter(Boolean)
-      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-      .join(' ')
-      .replace(/\bDe\b/g, 'de');
+        .replace(/[._-]+/g, ' ')
+        .split(' ')
+        .map((segment) => segment.trim())
+        .filter(Boolean)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join(' ')
+        .replace(/\bDe\b/g, 'de');
     return formatted || 'Usuario';
   }
   return 'Usuario';
@@ -50,7 +50,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         setUser(loggedInUser);
       } catch (err) {
+        console.error('Error restoring session:', err);
         setUser(null);
+        toast.error('No se pudo restaurar la sesión. Por favor, inicia sesión nuevamente.');
       }
     };
     void fetchCurrentUser();
@@ -69,15 +71,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }, INACTIVITY_TIMEOUT);
     };
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
-    events.forEach(event => {
-      window.addEventListener(event, resetInactivityTimer);
-    });
+    for (const event of events) {
+      globalThis.addEventListener(event, resetInactivityTimer);
+    }
     resetInactivityTimer();
     return () => {
       clearTimeout(inactivityTimer);
-      events.forEach(event => {
-        window.removeEventListener(event, resetInactivityTimer);
-      });
+      for (const event of events) {
+        globalThis.removeEventListener(event, resetInactivityTimer);
+      }
     };
   }, [user]);
 
@@ -102,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const status = error.response?.status;
       const backendMessage = error.response?.data?.message;
       let friendlyMessage = backendMessage;
-      if (status === 423 || (friendlyMessage && friendlyMessage.toLowerCase().includes('bloqueado'))) {
+      if (status === 423 || friendlyMessage?.toLowerCase().includes('bloqueado')) {
         friendlyMessage = 'Tu cuenta está bloqueada por intentos fallidos. Contacta a soporte para desbloquearla.';
       } else if (!friendlyMessage) {
         if (!error.response) {
@@ -137,17 +139,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   };
 
+  const contextValue = React.useMemo(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      login,
+      logout,
+      updateUser
+    }),
+    [user, isLoading, login, logout, updateUser]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        updateUser
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
