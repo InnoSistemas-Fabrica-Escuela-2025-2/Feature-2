@@ -1,6 +1,5 @@
 package com.innosistemas.authenticator.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,8 +15,11 @@ public class SecurityConfig {
     private static final String ROLE_STUDENT = "STUDENT";
     private static final String ROLE_PROFESSOR = "PROFESOR";
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -33,7 +35,6 @@ public class SecurityConfig {
                     .requestMatchers("/project/objective/**").hasRole(ROLE_STUDENT)
                     .requestMatchers("/project/task/**").hasRole(ROLE_STUDENT)
                     .requestMatchers("/project/state/**").hasRole(ROLE_STUDENT)
-                    .anyRequest().permitAll()  // Permitir todo temporalmente para debug
                     )
                     
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

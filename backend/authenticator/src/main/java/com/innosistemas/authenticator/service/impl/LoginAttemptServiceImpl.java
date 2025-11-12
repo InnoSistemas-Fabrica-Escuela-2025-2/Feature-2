@@ -1,7 +1,6 @@
 package com.innosistemas.authenticator.service.impl;
 
 import java.time.LocalDateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.innosistemas.authenticator.entity.LoginAttempt;
 import com.innosistemas.authenticator.entity.Person;
@@ -14,8 +13,11 @@ public class LoginAttemptServiceImpl implements LoginAttemptService{
     private static final int MAX_SECOND_ATTEMPT = 2;
     private static final long BLOCK_TIME_MINUTES = 15;
 
-    @Autowired 
-    private LoginAttempsRepository loginAttempsRepository;
+    private final LoginAttempsRepository loginAttempsRepository;
+
+    public LoginAttemptServiceImpl(LoginAttempsRepository loginAttempsRepository) {
+        this.loginAttempsRepository = loginAttempsRepository;
+    }
 
     @Override
     public void loginSucceeded(Person person) {
@@ -35,7 +37,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService{
 
         if (loginAttempt.getBlockUntil() != null &&
             loginAttempt.getBlockUntil().toLocalDateTime().isAfter(LocalDateTime.now())) {
-            throw new RuntimeException("Usuario bloqueado hasta: " + loginAttempt.getBlockUntil());
+            throw new AccountBlockedException("Usuario bloqueado hasta: " + loginAttempt.getBlockUntil());
         }
 
         loginAttempt.setAttempts(loginAttempt.getAttempts() + 1);
@@ -58,5 +60,15 @@ public class LoginAttemptServiceImpl implements LoginAttemptService{
         .filter(attempt -> attempt.getBlockUntil() != null &&
         attempt.getBlockUntil().toLocalDateTime().isAfter(LocalDateTime.now()))
         .isPresent();
+    }
+}
+
+class AccountBlockedException extends RuntimeException {
+    public AccountBlockedException(String message) {
+        super(message);
+    }
+
+    public AccountBlockedException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

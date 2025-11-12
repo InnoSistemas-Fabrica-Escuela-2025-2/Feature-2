@@ -2,23 +2,33 @@ package com.udea.innosistemas.innosistemas.service.impl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.udea.innosistemas.innosistemas.entity.Project;
 import com.udea.innosistemas.innosistemas.repository.ProjectRepository;
 import com.udea.innosistemas.innosistemas.service.ProjectService;
 
+
 @Service
 public class ProjectServiceImpl implements ProjectService{
 
 
-    @Autowired
-    private ProjectRepository projectRepository;
+    private final ProjectRepository projectRepository;
+
+    public ProjectServiceImpl(ProjectRepository projectRepository) {
+        this.projectRepository = projectRepository;
+    }
 
     @Override
     public Project saveProject(Project project) {
-        return projectRepository.save(project);
+        if (project == null) {
+            throw new IllegalArgumentException("Project must not be null");
+        }
+        try {
+            return projectRepository.save(project);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("No fue posible guardar el proyecto.", e);
+        }
     }
 
     @Override
@@ -27,18 +37,18 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     @Override
-    public List<Long> getProjectsById(Long student_id) {
-        return handleGetProjectsById(student_id);
+    public List<Long> getProjectsById(Long studentId) {
+        return handleGetProjectsById(studentId);
     }
 
     @Override
-    public List<Project> listAllById(Long student_id) {
-        return handleListAllById(student_id);
+    public List<Project> listAllById(Long studentId) {
+        return handleListAllById(studentId);
     }
 
     @Override
-    public List<Project> listAllByTeamId(Long team_id) {
-        return handleListAllByTeamId(team_id);
+    public List<Project> listAllByTeamId(Long teamId) {
+        return handleListAllByTeamId(teamId);
     }
 
     private List<Long> handleGetProjectsById(Long studentId) {

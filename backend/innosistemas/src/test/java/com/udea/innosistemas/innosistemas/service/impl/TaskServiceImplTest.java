@@ -103,7 +103,8 @@ class TaskServiceImplTest {
         when(stateRepository.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
         when(taskRepository.save(any(Task.class))).thenThrow(new RuntimeException("DB error"));
 
-        assertThrows(NoSuchElementException.class, () -> taskService.saveTask(task));
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.saveTask(task));
+        assertNotNull(exception);
     }
 
     @Test
@@ -137,10 +138,10 @@ class TaskServiceImplTest {
     void updateStateThrowsWhenTaskMissing() {
         when(taskRepository.findById(9L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> taskService.updateState(9L, 2L));
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.updateState(9L, 2L));
+        assertNotNull(exception);
         verify(taskRepository, never()).save(any(Task.class));
     }
-
     @Test
     void updateStateThrowsWhenStateMissing() {
         Task existingTask = new Task();
@@ -148,7 +149,9 @@ class TaskServiceImplTest {
         when(taskRepository.findById(15L)).thenReturn(Optional.of(existingTask));
         when(stateRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> taskService.updateState(15L, 99L));
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.updateState(15L, 99L));
+        assertNotNull(exception);
         verify(taskRepository, never()).save(any(Task.class));
     }
-}
+    }
+

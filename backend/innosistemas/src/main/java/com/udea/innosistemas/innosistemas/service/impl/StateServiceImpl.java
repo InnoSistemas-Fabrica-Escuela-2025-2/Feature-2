@@ -12,8 +12,12 @@ import com.udea.innosistemas.innosistemas.service.StateService;
 @Service
 public class StateServiceImpl implements StateService{
 
+    private final StateRepository stateRepository;
+    
     @Autowired
-    private StateRepository stateRepository;
+    public StateServiceImpl(StateRepository stateRepository) {
+        this.stateRepository = stateRepository;
+    }
 
     @Override
     public List<State> allStates() {

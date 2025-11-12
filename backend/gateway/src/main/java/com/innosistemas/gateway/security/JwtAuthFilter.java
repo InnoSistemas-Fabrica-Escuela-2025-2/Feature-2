@@ -31,12 +31,24 @@ import org.slf4j.LoggerFactory;
 public class JwtAuthFilter implements WebFilter{
     
     @Value("${jwt.secret}")
-    private String SECRET_KEY;
+    private String secretKey;
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
+    private String extractToken(ServerHttpRequest request) {
+        String authheader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authheader != null && authheader.startsWith("Bearer ")) {
+            return authheader.substring(7);
+        }
+        HttpCookie cookie = request.getCookies().getFirst("access_token");
+        if (cookie != null && !cookie.getValue().isBlank()) {
+            return cookie.getValue();
+        }
+        return null;
+    }
+
     @Override
-    public @NonNull Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
+    public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String token = extractToken(request);
 
@@ -72,34 +84,25 @@ public class JwtAuthFilter implements WebFilter{
             }
         };
 
-        return chain
+        Mono<Void> result = chain
             .filter(mutatedExchange)
-            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
-    }
+            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))
+            .cast(Void.class);
 
-    private String extractToken(ServerHttpRequest request) {
-        String authheader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authheader != null && authheader.startsWith("Bearer ")) {
-            return authheader.substring(7);
-        }
-        HttpCookie cookie = request.getCookies().getFirst("access_token");
-        if (cookie != null && cookie.getValue() != null && !cookie.getValue().isBlank()) {
-            return cookie.getValue();
-        }
-        return null;
+        return result != null ? result : Mono.<Void>empty();
     }
 
     private Claims validateToken(String token) {
         try {
-            var key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+            var key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
             return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        } catch (Exception e) {
+        } catch (io.jsonwebtoken.security.SecurityException | io.jsonwebtoken.MalformedJwtException | io.jsonwebtoken.ExpiredJwtException | IllegalArgumentException e) {
             log.error("JWT: validación fallida: {}", e.getMessage());
-            return null;
+            return Jwts.claims().build();
         }
     }
 }

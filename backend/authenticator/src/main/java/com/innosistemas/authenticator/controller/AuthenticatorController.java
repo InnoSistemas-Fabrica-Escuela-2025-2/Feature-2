@@ -27,14 +27,18 @@ public class AuthenticatorController {
     
     private static final String ACCESS_TOKEN_COOKIE = "access_token";
 
-    @Autowired
-    private AuthenticatorService authenticatorService;
+    private final AuthenticatorService authenticatorService;
+    private final ActiveSessionService activeSessionService;
+    private final long jwtExpiration;
 
     @Autowired
-    private ActiveSessionService activeSessionService;
-
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
+    public AuthenticatorController(AuthenticatorService authenticatorService,
+            ActiveSessionService activeSessionService,
+            @Value("${jwt.expiration}") long jwtExpiration) {
+        this.authenticatorService = authenticatorService;
+        this.activeSessionService = activeSessionService;
+        this.jwtExpiration = jwtExpiration;
+    }
     
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticatorResponse> login(@RequestBody AuthenticatorRequest request, HttpServletRequest httpRequest) {
@@ -60,18 +64,19 @@ public class AuthenticatorController {
     }
 
     private ResponseCookie createJwtCookie(String token, boolean secure) {
+        java.time.Duration duration = java.time.Duration.ofMillis(jwtExpiration);
         return ResponseCookie.from(ACCESS_TOKEN_COOKIE, token)
             .httpOnly(true)
             .secure(secure)
             .path("/")
-            .maxAge(Duration.ofMillis(jwtExpiration))
+            .maxAge(java.util.Objects.requireNonNull(duration))
             .sameSite("Lax")
             .build();
     }
 
     private ResponseCookie createDeleteCookie(boolean secure) {
         return ResponseCookie.from(ACCESS_TOKEN_COOKIE, "")
-            .maxAge(Duration.ZERO)
+            .maxAge(java.util.Objects.requireNonNull(Duration.ZERO))
             .path("/")
             .httpOnly(true)
             .secure(secure)

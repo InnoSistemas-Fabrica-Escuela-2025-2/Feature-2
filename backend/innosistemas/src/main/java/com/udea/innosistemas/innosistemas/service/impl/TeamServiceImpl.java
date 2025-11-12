@@ -2,7 +2,6 @@ package com.udea.innosistemas.innosistemas.service.impl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.udea.innosistemas.innosistemas.entity.Team;
@@ -12,22 +11,25 @@ import com.udea.innosistemas.innosistemas.service.TeamService;
 @Service
 public class TeamServiceImpl implements TeamService{
 
-    @Autowired
-    private TeamRepository teamRepository;
+    private final TeamRepository teamRepository;
 
-    @Override
-    public String nameTeam(Long id_student) {
-        return handleNameTeam(id_student);
+    public TeamServiceImpl(TeamRepository teamRepository) {
+        this.teamRepository = teamRepository;
     }
 
     @Override
-    public Long getTeamIdByStudent(Long id_student) {
-        return handleGetTeamIdByStudent(id_student);
+    public String nameTeam(Long idStudent) {
+        return handleNameTeam(idStudent);
     }
 
     @Override
-    public List<String> getStudentsNameById(Long id_student) {
-        return handleGetStudentsNameById(id_student);
+    public Long getTeamIdByStudent(Long idStudent) {
+        return handleGetTeamIdByStudent(idStudent);
+    }
+
+    @Override
+    public List<String> getStudentsNameById(Long idStudent) {
+        return handleGetStudentsNameById(idStudent);
     }
 
     @Override
