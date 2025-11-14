@@ -35,7 +35,7 @@ class TaskServiceImplTest {
     private TaskRepository taskRepository;
 
     @Mock
-    private StateService stateService; // use service mock, not repository
+    private StateService stateService;
 
     @InjectMocks
     private TaskServiceImpl taskService;
@@ -104,8 +104,8 @@ class TaskServiceImplTest {
         input.setTitle("t1");
         input.setState(null);
 
-    // act: call saveTask
-    Task result = taskService.saveTask(input);
+        when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(stateService.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
 
         // assert: default state assigned
         assertNotNull(result.getState());
@@ -114,19 +114,18 @@ class TaskServiceImplTest {
 
     @Test
     void saveTaskPreservesProvidedState() {
-        // arrange: create task with provided state id 2L
-        Task input = new Task();
-        input.setTitle("t2");
-        State s = new State();
-        s.setId(2L);
-        input.setState(s);
+        State initialState = new State();
+        initialState.setId(5L);
+        Task task = new Task();
+        task.setState(initialState);
 
-    // act
-    Task result = taskService.saveTask(input);
+        when(taskRepository.save(task)).thenReturn(task);
+    when(stateService.findById(5L)).thenReturn(Optional.of(initialState));
 
-        // assert
-        assertNotNull(result.getState());
-        assertEquals(2L, result.getState().getId());
+        Task savedTask = taskService.saveTask(task);
+
+        assertSame(initialState, savedTask.getState());
+        verify(taskRepository).save(task);
     }
 
     @Test
@@ -135,6 +134,7 @@ class TaskServiceImplTest {
         State defaultState = new State();
         defaultState.setId(1L);
         defaultState.setName("Pendiente");
+    when(stateService.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
         when(taskRepository.save(any(Task.class))).thenThrow(new RuntimeException("DB error"));
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.saveTask(task));
