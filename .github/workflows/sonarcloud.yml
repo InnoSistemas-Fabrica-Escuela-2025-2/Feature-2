@@ -90,9 +90,9 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Frontend tests with coverage
-        working-directory: frontend
-        run: npm run test:coverage
+      # Frontend tests and coverage step removed: frontend tests deleted per request
+      # If you later want frontend coverage, re-enable this step and ensure
+      # tests exist or adjust the path to the coverage report.
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
@@ -102,7 +102,7 @@ jobs:
             -Dsonar.organization=innosistemas-fabrica-escuela-2025-2-1
             -Dsonar.java.binaries=backend/authenticator/target/classes,backend/gateway/target/classes,backend/innosistemas/target/classes
             -Dsonar.coverage.jacoco.xmlReportPaths=qa/reports/backend/authenticator/jacoco.xml,qa/reports/backend/gateway/jacoco.xml,qa/reports/backend/innosistemas/jacoco.xml
-            -Dsonar.javascript.lcov.reportPaths=qa/reports/frontend/lcov.info
+            # Frontend LCOV report path removed because frontend tests were deleted
             -Dsonar.coverage.exclusions=frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/**/__tests__/**,frontend/src/test/**,backend/**/src/test/**
             -Dsonar.exclusions=qa/reports/**,backend/**/target/**,backend/**/generated-sources/**,backend/**/generated-test-sources/**,backend/**/.mvn/**,frontend/dist/**,frontend/src/components/ui/**,frontend/src/hooks/use-toast.ts,frontend/src/**/__tests__/**,frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/test/**,frontend/src/data/mockData.ts,frontend/src/lib/apiExamples.ts,docs/**,qa/**,integrations/**,deployment/**,project-management/**,*.md
             -Dsonar.test.exclusions=backend/**/src/test/**,frontend/src/**/__tests__/**,frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/test/**
