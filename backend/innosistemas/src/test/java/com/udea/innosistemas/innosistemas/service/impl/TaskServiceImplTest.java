@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,9 +16,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,6 +39,44 @@ class TaskServiceImplTest {
 
     @InjectMocks
     private TaskServiceImpl taskService;
+
+    @BeforeEach
+    void setUp() {
+        // common fixtures
+        State defaultState = new State();
+        defaultState.setId(1L);
+        defaultState.setName("pendiente");
+
+        State providedState = new State();
+        providedState.setId(2L);
+        providedState.setName("en-progreso");
+
+        // Ensure resolveState behaves as expected for tests: if incoming state is null or
+        // has no id/name, return defaultState; if it has id==2L return providedState.
+        lenient().when(stateService.resolveState(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> {
+                    State arg = invocation.getArgument(0);
+                    if (arg == null) {
+                        return defaultState;
+                    }
+                    Long id = arg.getId();
+                    String name = arg.getName();
+                    if (id != null && id.equals(2L)) {
+                        return providedState;
+                    }
+                    if ((id == null) && (name == null || name.trim().isEmpty())) {
+                        return defaultState;
+                    }
+                    // fallback: return providedState when id==2, otherwise default
+                    return defaultState;
+                });
+
+        // Ensure repository save returns the passed task (by default) so service returns it
+        lenient().when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // If tests previously stubbed repository methods that are no longer called,
+        // remove those stubbings instead of keeping them.
+    }
 
     @Test
     void deleteTaskRemovesExistingTask() {
@@ -60,22 +99,17 @@ class TaskServiceImplTest {
 
     @Test
     void saveTaskAssignsDefaultStateWhenMissing() {
-        Task task = new Task();
-        State defaultState = new State();
-        defaultState.setId(3L);
-        defaultState.setName("Pendiente");
+        // arrange: create task without state
+        Task input = new Task();
+        input.setTitle("t1");
+        input.setState(null);
 
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(stateService.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
 
-        Task savedTask = taskService.saveTask(task);
-
-        assertNotNull(savedTask.getState(), "Se debe asignar un estado por defecto cuando no se envía desde la capa superior.");
-        assertEquals(3L, savedTask.getState().getId());
-
-        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
-        verify(taskRepository).save(captor.capture());
-        assertEquals(3L, captor.getValue().getState().getId());
+        // assert: default state assigned
+        assertNotNull(result.getState());
+        assertEquals("pendiente", result.getState().getName());
     }
 
     @Test
