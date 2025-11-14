@@ -27,15 +27,27 @@ export interface Project {
   objectives?: string;
   objetivos: string;
   fechaEntrega: Date;
+  deliveryDate?: string | Date;
+  responsiblePeople?: string[];
   deadline?: Date | string;
   fechaCreacion: Date;
   creationDate?: Date | string;
+  createdAt?: string;
+  updatedAt?: string;
   creadorId: string;
-  equipoId?: string; // Team assigned to project
-  miembros: string[]; // Array of user IDs
-  progreso?: number; // 0-100
+  equipoId?: string;
+  miembros: string[]; 
+  progreso?: number; 
   totalTasks?: number;
   completedTasks?: number;
+}
+
+export interface ProjectFormData {
+  name: string;
+  description: string;
+  objectives: string;
+  deliveryDate: string;
+  responsiblePeople: string[];
 }
 
 export interface Task {

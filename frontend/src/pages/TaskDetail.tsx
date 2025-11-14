@@ -23,7 +23,7 @@ export default function TaskDetail() {
     let foundProject = null;
 
     for (const proj of projects) {
-      const taskInProject = (proj.tasks || []).find((t: any) => t.id === parseInt(taskId));
+      const taskInProject = (proj.tasks || []).find((t: any) => t.id === Number.parseInt(taskId));
       if (taskInProject) {
         foundTask = taskInProject;
         foundProject = proj;

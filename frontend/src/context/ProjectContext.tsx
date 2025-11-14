@@ -42,8 +42,8 @@ const projectReducer = (state: ProjectState, action: ProjectAction): ProjectStat
     case 'DELETE_PROJECT':
       return {
         ...state,
-        projects: state.projects.filter(project => project.id !== action.payload),
-        tasks: state.tasks.filter(task => task.projectId !== action.payload),
+          projects: state.projects.filter(project => project.id !== action.payload),
+          tasks: state.tasks.filter(task => String(task.proyectoId) !== String(action.payload)),
       };
     case 'SELECT_PROJECT':
       return {
@@ -90,7 +90,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [state, dispatch] = useReducer(projectReducer, initialState);
 
   const getTasksByProject = (projectId: string): Task[] => {
-    return state.tasks.filter(task => task.projectId === projectId);
+    return state.tasks.filter(task => String(task.proyectoId) === String(projectId));
   };
 
   return (

@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { projects, tasks, isLoading } = useData();
+  const { projects, tasks } = useData();
 
   // Filter data - show all for now
   const userProjects = projects;
@@ -50,14 +50,14 @@ const Dashboard = () => {
       {/* Page Header - WCAG 2.4.2, 2.4.6 */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-2" role="status" aria-live="polite">
+        <p className="text-muted-foreground mt-2">
           Bienvenido, {user?.nombre}. Aquí está el resumen de tus proyectos y tareas.
         </p>
       </div>
 
       {/* Stats Cards - WCAG 1.3.1, 4.1.2 */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Resumen de estadísticas">
-        <Card role="article" aria-labelledby="stat-projects">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle id="stat-projects" className="text-sm font-medium">Proyectos Activos</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />

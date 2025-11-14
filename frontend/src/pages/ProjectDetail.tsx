@@ -20,7 +20,7 @@ export default function ProjectDetail() {
         setIsLoading(true);
         const response = await projectsApi.getAll();
         const projects = response.data || [];
-        const foundProject = projects.find((p: any) => p.id === parseInt(id || '0'));
+        const foundProject = projects.find((p: any) => p.id === Number.parseInt(id || '0'));
         
         if (foundProject) {
           setProject(foundProject);

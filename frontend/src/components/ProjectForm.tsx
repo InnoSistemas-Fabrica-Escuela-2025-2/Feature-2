@@ -1,17 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useProject } from '@/context/ProjectContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { ConfirmationDialog } from '@/components/ConfirmationDialog';
-import { ArrowLeft, Plus, X, Save } from 'lucide-react';
-import { validateRequired, validateDate, validateArray } from '@/utils/validation';
-import { Project, ProjectFormData } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useProject } from "@/context/ProjectContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
+import { ArrowLeft, Plus, X, Save } from "lucide-react";
+import {
+  validateRequired,
+  validateDate,
+  validateArray,
+} from "@/utils/validation";
+import { Project, ProjectFormData } from "@/types";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProjectFormProps {
   editingProject?: Project;
@@ -21,87 +25,106 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
   const { dispatch } = useProject();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState<ProjectFormData>({
-    name: '',
-    description: '',
-    objectives: '',
-    deliveryDate: '',
+    name: "",
+    description: "",
+    objectives: "",
+    deliveryDate: "",
     responsiblePeople: [],
   });
-  
+
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [newPerson, setNewPerson] = useState('');
+  const [newPerson, setNewPerson] = useState("");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // helper: normalize Date|string -> ISO string
+  const toISOStringSafe = (v?: string | Date) => {
+    if (!v) return undefined;
+    return typeof v === "string" ? v : v.toISOString();
+  };
+
+  // helper: format a Date|string into YYYY-MM-DD for input[type=date]
+  const formatDateForInput = (v?: string | Date) => {
+    if (!v) return "";
+    const d = typeof v === "string" ? new Date(v) : v;
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  };
 
   useEffect(() => {
     if (editingProject) {
       setFormData({
-        name: editingProject.name,
-        description: editingProject.description,
-        objectives: editingProject.objectives,
-        deliveryDate: editingProject.deliveryDate,
-        responsiblePeople: [...editingProject.responsiblePeople],
+        name: editingProject.name ?? editingProject.nombre ?? "",
+        description: editingProject.description ?? editingProject.descripcion ?? "",
+        objectives: editingProject.objectives ?? editingProject.objetivos ?? "",
+        deliveryDate: formatDateForInput(editingProject.deliveryDate ?? editingProject.deadline ?? editingProject.fechaEntrega ?? editingProject.fechaCreacion),
+        responsiblePeople: [...(editingProject.responsiblePeople ?? editingProject.miembros ?? [])],
       });
     }
   }, [editingProject]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
+
     const nameError = validateRequired(formData.name);
     if (nameError) newErrors.name = nameError;
-    
+
     const descriptionError = validateRequired(formData.description);
     if (descriptionError) newErrors.description = descriptionError;
-    
+
     const objectivesError = validateRequired(formData.objectives);
     if (objectivesError) newErrors.objectives = objectivesError;
-    
+
     const dateError = validateDate(formData.deliveryDate);
     if (dateError) newErrors.deliveryDate = dateError;
-    
+
     const peopleError = validateArray(formData.responsiblePeople);
     if (peopleError) newErrors.responsiblePeople = peopleError;
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const handleAddPerson = () => {
-    if (newPerson.trim() && !formData.responsiblePeople.includes(newPerson.trim())) {
-      setFormData(prev => ({
+    if (
+      newPerson.trim() &&
+      !formData.responsiblePeople.includes(newPerson.trim())
+    ) {
+      setFormData((prev) => ({
         ...prev,
-        responsiblePeople: [...prev.responsiblePeople, newPerson.trim()]
+        responsiblePeople: [...prev.responsiblePeople, newPerson.trim()],
       }));
-      setNewPerson('');
+      setNewPerson("");
       setHasChanges(true);
       if (errors.responsiblePeople) {
-        setErrors(prev => ({ ...prev, responsiblePeople: '' }));
+        setErrors((prev) => ({ ...prev, responsiblePeople: "" }));
       }
     }
   };
 
   const handleRemovePerson = (personToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      responsiblePeople: prev.responsiblePeople.filter(person => person !== personToRemove)
+      responsiblePeople: prev.responsiblePeople.filter(
+        (person) => person !== personToRemove
+      ),
     }));
     setHasChanges(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast({
         title: "Error en el formulario",
@@ -112,14 +135,34 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
     }
 
     const now = new Date().toISOString();
-    
+
     if (editingProject) {
       const updatedProject: Project = {
-        ...editingProject,
-        ...formData,
+        // keep original id
+        id: editingProject.id,
+        // map English/Spanish fields
+        name: formData.name,
+        nombre: formData.name ?? editingProject.nombre ?? '',
+        description: formData.description,
+        descripcion: formData.description ?? editingProject.descripcion ?? '',
+        objectives: formData.objectives,
+        objetivos: formData.objectives ?? editingProject.objetivos ?? '',
+
+        fechaEntrega: formData.deliveryDate ? new Date(formData.deliveryDate) : (editingProject.fechaEntrega ?? new Date()),
+        deliveryDate: formData.deliveryDate ?? editingProject.deliveryDate,
+
+        fechaCreacion: editingProject.fechaCreacion ? new Date(editingProject.fechaCreacion) : new Date(),
+        createdAt: editingProject.createdAt ?? toISOStringSafe(editingProject.creationDate) ?? now,
         updatedAt: now,
+        creadorId: editingProject.creadorId ?? '',
+        equipoId: editingProject.equipoId,
+        miembros: formData.responsiblePeople.length ? formData.responsiblePeople : (editingProject.miembros ?? []),
+        progreso: editingProject.progreso ?? 0,
+        totalTasks: editingProject.totalTasks ?? 0,
+        completedTasks: editingProject.completedTasks ?? 0,
       };
-      dispatch({ type: 'UPDATE_PROJECT', payload: updatedProject });
+
+      dispatch({ type: "UPDATE_PROJECT", payload: updatedProject });
       toast({
         title: "Proyecto actualizado",
         description: "El proyecto se ha actualizado correctamente",
@@ -128,32 +171,47 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
     } else {
       const newProject: Project = {
         id: Date.now().toString(),
-        ...formData,
+        name: formData.name,
+        nombre: formData.name,
+        description: formData.description,
+        descripcion: formData.description,
+        objectives: formData.objectives,
+        objetivos: formData.objectives,
+        fechaEntrega: formData.deliveryDate ? new Date(formData.deliveryDate) : new Date(),
+        deliveryDate: formData.deliveryDate,
+        fechaCreacion: new Date(),
         createdAt: now,
         updatedAt: now,
+        creadorId: '',
+        equipoId: undefined,
+        miembros: formData.responsiblePeople ?? [],
+        progreso: 0,
+        totalTasks: 0,
+        completedTasks: 0,
       };
-      dispatch({ type: 'ADD_PROJECT', payload: newProject });
+
+      dispatch({ type: "ADD_PROJECT", payload: newProject });
       toast({
         title: "Proyecto creado",
         description: "El proyecto se ha creado correctamente",
         variant: "default",
       });
     }
-    
-    navigate('/');
+
+    navigate("/");
   };
 
   const handleCancel = () => {
     if (hasChanges) {
       setShowCancelDialog(true);
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
 
   const confirmCancel = () => {
     setShowCancelDialog(false);
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -164,7 +222,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
           Volver
         </Button>
         <h1 className="text-2xl font-bold">
-          {editingProject ? 'Modificar Proyecto' : 'Crear Proyecto Nuevo'}
+          {editingProject ? "Modificar Proyecto" : "Crear Proyecto Nuevo"}
         </h1>
       </div>
 
@@ -179,9 +237,9 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
                 placeholder="Ingrese el nombre del proyecto"
-                className={errors.name ? 'border-destructive' : ''}
+                className={errors.name ? "border-destructive" : ""}
               />
               {errors.name && (
                 <p className="text-sm text-destructive">{errors.name}</p>
@@ -193,10 +251,12 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 placeholder="Describa el proyecto"
                 rows={4}
-                className={errors.description ? 'border-destructive' : ''}
+                className={errors.description ? "border-destructive" : ""}
               />
               {errors.description && (
                 <p className="text-sm text-destructive">{errors.description}</p>
@@ -208,10 +268,12 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
               <Textarea
                 id="objectives"
                 value={formData.objectives}
-                onChange={(e) => handleInputChange('objectives', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("objectives", e.target.value)
+                }
                 placeholder="Defina los objetivos del proyecto"
                 rows={4}
-                className={errors.objectives ? 'border-destructive' : ''}
+                className={errors.objectives ? "border-destructive" : ""}
               />
               {errors.objectives && (
                 <p className="text-sm text-destructive">{errors.objectives}</p>
@@ -224,11 +286,15 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
                 id="deliveryDate"
                 type="date"
                 value={formData.deliveryDate}
-                onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                className={errors.deliveryDate ? 'border-destructive' : ''}
+                onChange={(e) =>
+                  handleInputChange("deliveryDate", e.target.value)
+                }
+                className={errors.deliveryDate ? "border-destructive" : ""}
               />
               {errors.deliveryDate && (
-                <p className="text-sm text-destructive">{errors.deliveryDate}</p>
+                <p className="text-sm text-destructive">
+                  {errors.deliveryDate}
+                </p>
               )}
             </div>
 
@@ -239,22 +305,28 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
                   value={newPerson}
                   onChange={(e) => setNewPerson(e.target.value)}
                   placeholder="Nombre de la persona responsable"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPerson())}
+                  onKeyUp={(e) => e.key === "Enter" && e.preventDefault()}
                 />
-                <Button type="button" onClick={handleAddPerson} variant="outline" size="icon">
+                <Button
+                  type="button"
+                  onClick={handleAddPerson}
+                  variant="outline"
+                  size="icon"
+                >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               {formData.responsiblePeople.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {formData.responsiblePeople.map((person, index) => (
-                    <Badge key={index} variant="secondary" className="gap-1">
+                  {formData.responsiblePeople.map((person) => (
+                    <Badge key={person} variant="secondary" className="gap-1">
                       {person}
                       <button
                         type="button"
                         onClick={() => handleRemovePerson(person)}
                         className="ml-1 hover:text-destructive"
+                        aria-label={`Eliminar a ${person}`}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -262,16 +334,18 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ editingProject }) => {
                   ))}
                 </div>
               )}
-              
+
               {errors.responsiblePeople && (
-                <p className="text-sm text-destructive">{errors.responsiblePeople}</p>
+                <p className="text-sm text-destructive">
+                  {errors.responsiblePeople}
+                </p>
               )}
             </div>
 
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="gap-2 flex-1">
                 <Save className="h-4 w-4" />
-                {editingProject ? 'Actualizar Proyecto' : 'Crear Proyecto'}
+                {editingProject ? "Actualizar Proyecto" : "Crear Proyecto"}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancelar

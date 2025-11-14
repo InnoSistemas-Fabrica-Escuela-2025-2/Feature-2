@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.service.TaskService;
@@ -19,6 +21,8 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 @RequestMapping("/project/task")
 public class TaskController {
 
+
+    private static final Logger log = LoggerFactory.getLogger(TaskController.class);
 
     private final TaskService taskService;
 
@@ -49,6 +53,7 @@ public class TaskController {
     
     @PutMapping("updateState/{idTask}/{idState}")
     public ResponseEntity<Void> updateState(@PathVariable Long idTask, @PathVariable Long idState) {
+        log.info("[TaskController] updateState called with taskId={} stateId={}", idTask, idState);
         return handleUpdateState(idTask, idState);
     }
 
