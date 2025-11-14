@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
@@ -13,6 +15,8 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 
 @Service
 public class TaskServiceImpl implements TaskService {
+
+    private static final Logger log = LoggerFactory.getLogger(TaskServiceImpl.class);
 
     private final TaskRepository taskRepository;
 
@@ -55,8 +59,10 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void updateState(Long idTask, Long idState) {
+        log.info("[TaskService] updateState called with taskId={} stateId={}", idTask, idState);
         Task task = getTaskOrThrow(idTask);
         State state = getStateOrThrow(idState);
+        log.info("[TaskService] resolved state: id={} name={}", state.getId(), state.getName());
 
         task.setState(state);
         taskRepository.save(task);

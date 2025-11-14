@@ -96,7 +96,7 @@ const Login = () => {
 
             <div className="space-y-2">
               <Label htmlFor="email">
-                Correo Institucional
+                Correo{' '}Institucional
                 <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
               </Label>
               <div className="relative">
@@ -123,7 +123,7 @@ const Login = () => {
 
             <div className="space-y-2">
               <Label htmlFor="password">
-                Contraseña
+                Contraseña{''}
                 <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
               </Label>
               <div className="relative">

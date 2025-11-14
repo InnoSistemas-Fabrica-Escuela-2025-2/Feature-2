@@ -44,7 +44,7 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
       setIsDeleting(true);
       console.log('Deleting task:', task.id);
       
-      await tasksApi.delete(parseInt(task.id));
+      await tasksApi.delete(Number.parseInt(task.id));
       
       toast.success('Tarea eliminada correctamente');
       onDelete(task.id);
@@ -57,15 +57,12 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow" role="article" aria-label={`Tarea: ${task.titulo}`}>
+    <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base line-clamp-2">{task.titulo}</CardTitle>
           <span 
-            className={`status-badge status-${task.estado} shrink-0`}
-            role="status"
-            aria-label={`Estado de la tarea: ${displayStatus}`}
-          >
+            className={`status-badge status-${task.estado} shrink-0`}>
             {displayStatus}
           </span>
         </div>
@@ -82,8 +79,8 @@ const TaskCard = ({ task, project, onEdit, onDelete }: TaskCardProps) => {
         {hasValidDeadline && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" aria-hidden="true" />
-            <time dateTime={deadlineDate!.toISOString()}>
-              Vence: {deadlineDate!.toLocaleDateString('es-ES')}
+            <time dateTime={deadlineDate.toISOString()}>
+              Vence: {deadlineDate.toLocaleDateString('es-ES')}
             </time>
           </div>
         )}

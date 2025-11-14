@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, PlayCircle, CheckCircle } from 'lucide-react';
 
 interface TaskKanbanProps {
-  tasks: Task[];
-  onEdit: (task: Task) => void;
-  onDelete: (taskId: string) => void;
+  readonly tasks: readonly Task[];
+  readonly onEdit: (task: Task) => void;
+  readonly onDelete: (taskId: string) => void;
 }
 
 export function TaskKanban({ tasks, onEdit, onDelete }: TaskKanbanProps) {
@@ -42,7 +42,6 @@ export function TaskKanban({ tasks, onEdit, onDelete }: TaskKanbanProps) {
   return (
     <div 
       className="grid grid-cols-1 md:grid-cols-3 gap-6"
-      role="region"
       aria-label="Tablero Kanban de tareas"
     >
       {columns.map(column => (
@@ -64,9 +63,9 @@ export function TaskKanban({ tasks, onEdit, onDelete }: TaskKanbanProps) {
                 No hay tareas {column.title.toLowerCase()}
               </p>
             ) : (
-              <div className="space-y-3" role="list" aria-label={`Tareas ${column.title.toLowerCase()}`}>
+              <div className="space-y-3" aria-label={`Tareas ${column.title.toLowerCase()}`}>
                 {column.tasks.map(task => (
-                  <div key={task.id} role="listitem">
+                  <div key={task.id}>
                     <TaskCard
                       task={task}
                       project={undefined}

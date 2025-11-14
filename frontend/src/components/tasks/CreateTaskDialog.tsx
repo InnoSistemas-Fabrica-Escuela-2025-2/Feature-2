@@ -26,7 +26,6 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
   const [descripcion, setDescripcion] = useState('');
   const [fechaEntrega, setFechaEntrega] = useState('');
   const [proyectoId, setProyectoId] = useState('');
-  const [responsableId, setResponsableId] = useState(user?.id || '');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -60,7 +59,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
         description: descripcion.trim(),
         deadline: selectedDate.toISOString(),
         responsible: user?.correo || user?.nombre || 'Sin asignar', // Campo obligatorio en backend
-        project: { id: parseInt(proyectoId) }
+        project: { id: Number.parseInt(proyectoId) }
       };
 
       console.log('Creating task:', taskData);
@@ -105,7 +104,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
           )}
           <div className="space-y-2">
             <Label htmlFor="titulo">
-              Título
+              Título{''}
               <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
             </Label>
             <Input
@@ -120,7 +119,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
           </div>
           <div className="space-y-2">
             <Label htmlFor="descripcion">
-              Descripción
+              Descripción{''}
               <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
             </Label>
             <Textarea
@@ -136,7 +135,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
           </div>
           <div className="space-y-2">
             <Label htmlFor="proyecto">
-              Proyecto
+              Proyecto{''}
               <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
             </Label>
             <Select value={proyectoId} onValueChange={setProyectoId} required>
@@ -158,7 +157,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
           </div>
           <div className="space-y-2">
             <Label htmlFor="fecha">
-              Fecha de Entrega
+              Fecha{' '}de{' '}Entrega
               <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
             </Label>
             <Input

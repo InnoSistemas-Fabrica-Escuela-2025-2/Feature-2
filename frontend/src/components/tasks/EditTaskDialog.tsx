@@ -118,7 +118,7 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-titulo">
-                Título
+                Título{''}
                 <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
               </Label>
               <Input
@@ -144,7 +144,7 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
 
             <div className="space-y-2">
               <Label htmlFor="edit-fecha">
-                Fecha de Entrega
+                Fecha{' '}de{' '}Entrega
                 <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
               </Label>
               <Input
@@ -159,7 +159,7 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
 
             <div className="space-y-2">
               <Label htmlFor="edit-estado">
-                Estado
+                Estado{''}
                 <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
               </Label>
               <Select value={estado} onValueChange={handleStatusChange}>

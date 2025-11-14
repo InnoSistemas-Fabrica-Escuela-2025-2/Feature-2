@@ -4,7 +4,6 @@ import { mockNotifications } from '@/data/mockData';
 import { Bell, Check, Trash2, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
@@ -17,6 +16,17 @@ export default function Notificaciones() {
   );
 
   const unreadCount = notifications.filter(n => !n.leida).length;
+
+  const hasUnread = unreadCount > 0;
+  const isPlural = unreadCount === 1;
+
+  let notificationMessage: string;
+
+  if (hasUnread) {
+    notificationMessage = `Tienes ${unreadCount} notificación${isPlural ? '' : 'es'} sin leer`;
+  } else {
+    notificationMessage = 'No tienes notificaciones sin leer';
+  }
 
   const markAsRead = (id: string) => {
     setNotifications(prev =>
@@ -59,11 +69,7 @@ export default function Notificaciones() {
             <Bell className="h-8 w-8" aria-hidden="true" />
             Notificaciones
           </h1>
-          <p className="text-muted-foreground mt-1" role="status" aria-live="polite" aria-atomic="true">
-            {unreadCount > 0
-              ? `Tienes ${unreadCount} notificación${unreadCount !== 1 ? 'es' : ''} sin leer`
-              : 'No tienes notificaciones sin leer'}
-          </p>
+          <p className="text-muted-foreground mt-1">{notificationMessage}</p>
         </div>
         {unreadCount > 0 && (
           <Button
@@ -92,78 +98,85 @@ export default function Notificaciones() {
           </TabsTrigger>
         </TabsList>
 
-        {(['all', 'unread', 'read'] as const).map(filter => (
-          <TabsContent key={filter} value={filter} className="space-y-4">
-            {filteredNotifications(filter).length === 0 ? (
-              <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                  <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" aria-hidden="true" />
-                  <p>No hay notificaciones {filter === 'unread' ? 'sin leer' : filter === 'read' ? 'leídas' : ''}</p>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredNotifications(filter).map(notification => (
-                <Card
-                  key={notification.id}
-                  className={`transition-all ${
-                    !notification.leida ? 'border-l-4 border-l-primary bg-accent/5' : ''
-                  }`}
-                  role="article"
-                  aria-label={`Notificación: ${notification.mensaje}`}
-                  aria-live={!notification.leida ? 'polite' : 'off'}
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        <span className="text-2xl" role="img" aria-label={notification.tipo}>
-                          {getNotificationIcon(notification.tipo)}
-                        </span>
-                        <div className="flex-1">
-                          <CardTitle className="text-lg">
-                            {notification.mensaje}
-                            {!notification.leida && (
-                              <span className="sr-only"> (sin leer)</span>
-                            )}
-                          </CardTitle>
-                          <CardDescription className="mt-1">
-                            <time dateTime={notification.fecha.toISOString()}>
-                              {formatDistanceToNow(notification.fecha, {
-                                addSuffix: true,
-                                locale: es,
-                              })}
-                            </time>
-                          </CardDescription>
+        {(['all', 'unread', 'read'] as const).map(filter => {
+          let filterMessage = '';
+
+          if (filter === 'unread') {
+            filterMessage = 'sin leer';
+          } else if (filter === 'read') {
+            filterMessage = 'leídas';
+          }
+
+          return (
+            <TabsContent key={filter} value={filter} className="space-y-4">
+              {filteredNotifications(filter).length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" aria-hidden="true" />
+                    <p>No hay notificaciones {filterMessage}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredNotifications(filter).map(notification => (
+                  <Card
+                    key={notification.id}
+                    className={`transition-all ${
+                      notification.leida ? '' : 'border-l-4 border-l-primary bg-accent/5'
+                    }`}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <span className="text-2xl">
+                            {getNotificationIcon(notification.tipo)}
+                          </span>
+                          <div className="flex-1">
+                            <CardTitle className="text-lg">
+                              {notification.mensaje}
+                              {!notification.leida && (
+                                <span className="sr-only"> (sin leer)</span>
+                              )}
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                              <time dateTime={notification.fecha.toISOString()}>
+                                {formatDistanceToNow(notification.fecha, {
+                                  addSuffix: true,
+                                  locale: es,
+                                })}
+                              </time>
+                            </CardDescription>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!notification.leida && (
+                        <div className="flex items-center gap-2">
+                          {!notification.leida && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => markAsRead(notification.id)}
+                              aria-label={`Marcar como leída: ${notification.mensaje}`}
+                            >
+                              <Check className="h-4 w-4" aria-hidden="true" />
+                              <span className="sr-only">Marcar como leída</span>
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => markAsRead(notification.id)}
-                            aria-label={`Marcar como leída: ${notification.mensaje}`}
+                            onClick={() => deleteNotification(notification.id)}
+                            aria-label={`Eliminar notificación: ${notification.mensaje}`}
                           >
-                            <Check className="h-4 w-4" aria-hidden="true" />
-                            <span className="sr-only">Marcar como leída</span>
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            <span className="sr-only">Eliminar</span>
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => deleteNotification(notification.id)}
-                          aria-label={`Eliminar notificación: ${notification.mensaje}`}
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          <span className="sr-only">Eliminar</span>
-                        </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))
-            )}
-          </TabsContent>
-        ))}
+                    </CardHeader>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+          );
+        })}
       </Tabs>
     </div>
   );
