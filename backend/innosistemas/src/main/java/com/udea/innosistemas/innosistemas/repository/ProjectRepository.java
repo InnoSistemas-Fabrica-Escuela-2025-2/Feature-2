@@ -13,9 +13,9 @@ import com.udea.innosistemas.innosistemas.entity.Project;
 public interface ProjectRepository extends JpaRepository<Project,Long>{
     
     @Query(value = "SELECT * FROM project.getprojectsbyid(:student_id)", nativeQuery=true)
-    List<Long> getProjectsById(@Param("student_id") Long student_id);
+    List<Long> getProjectsById(@Param("student_id") Long studentId);
 
-    List<Project> findAllByIdIn(List<Long> id_projects);
+    List<Project> findAllByIdIn(List<Long> idProjects);
     
-    List<Project> findAllByTeamId(Long team_id);
+    List<Project> findAllByTeamId(Long teamId);
 }

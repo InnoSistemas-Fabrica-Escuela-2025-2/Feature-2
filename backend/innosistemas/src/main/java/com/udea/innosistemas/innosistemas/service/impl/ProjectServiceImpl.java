@@ -22,7 +22,7 @@ public class ProjectServiceImpl implements ProjectService{
     @Override
     public Project saveProject(Project project) {
         if (project == null) {
-            throw new IllegalArgumentException("Project must not be null");
+            throw new IllegalArgumentException("El proyecto no puede ser nulo.");
         }
         try {
             return projectRepository.save(project);

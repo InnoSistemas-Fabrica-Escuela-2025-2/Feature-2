@@ -75,8 +75,7 @@ public class ActiveSessionServiceImpl implements ActiveSessionService {
                 // jwtUtil.isTokenExpired may return boolean or Boolean; handle null-safely
                 Boolean expired = jwtUtil.isTokenExpired(token);
                 if (Boolean.TRUE.equals(expired)) {
-                    logger.warn("Token expirado para usuario: {}", person.getEmail());
-                    // optionally remove expired session
+                    logger.info("Token expirado para usuario: {}", person.getEmail());
                     activeSessionRepository.delete(session);
                     return false;
                 }

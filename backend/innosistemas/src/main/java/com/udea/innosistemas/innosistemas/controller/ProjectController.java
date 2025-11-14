@@ -3,6 +3,7 @@ package com.udea.innosistemas.innosistemas.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.udea.innosistemas.innosistemas.entity.Project;
 import com.udea.innosistemas.innosistemas.service.ProjectService;
+import java.util.Collections;
 
 
 
@@ -26,8 +28,12 @@ public class ProjectController {
     
     private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
     
-    @Autowired
-    private ProjectService projectService;
+    
+    private final ProjectService projectService;
+
+    public ProjectController(@Autowired ProjectService projectService) {
+        this.projectService = projectService;
+    }
 
     @GetMapping("/message")
     public ResponseEntity<String> showMesagge() {
@@ -60,7 +66,9 @@ public class ProjectController {
             return handleDefaultProjects();
         } catch (Exception e) {
             log.error("Error en listAll", e);
-            throw e;
+            return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Collections.emptyList());
         }
     }
 
@@ -79,7 +87,7 @@ public class ProjectController {
 
     private ResponseEntity<List<Project>> handleEstudianteProjects(String userId) {
         try {
-            Long studentId = Long.parseLong(userId);
+            Long studentId = Long.valueOf(userId);
             log.info("Usuario es estudiante con ID: {}, obteniendo sus proyectos", studentId);
             List<Project> projects = projectService.listAllById(studentId);
             log.info("Devolviendo {} proyectos para el estudiante {}", projects.size(), studentId);

@@ -8,7 +8,6 @@ import com.udea.innosistemas.innosistemas.service.StateService;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -17,8 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/project/state")
 public class StateController {
     
-    @Autowired
-    private StateService stateService;
+
+    private final StateService stateService;
+
+    public StateController(StateService stateService) {
+        this.stateService = stateService;
+    }
 
     @GetMapping("/listAll")
     public ResponseEntity<List<State>> allStates() {
