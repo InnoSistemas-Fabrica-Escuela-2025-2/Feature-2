@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
-import com.udea.innosistemas.innosistemas.repository.StateRepository;
+import com.udea.innosistemas.innosistemas.service.StateService;
 import com.udea.innosistemas.innosistemas.repository.TaskRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +34,7 @@ class TaskServiceImplTest {
     private TaskRepository taskRepository;
 
     @Mock
-    private StateRepository stateRepository;
+    private StateService stateService;
 
     @InjectMocks
     private TaskServiceImpl taskService;
@@ -66,7 +66,7 @@ class TaskServiceImplTest {
         defaultState.setName("Pendiente");
 
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(stateRepository.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
+    when(stateService.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
 
         Task savedTask = taskService.saveTask(task);
 
@@ -86,7 +86,7 @@ class TaskServiceImplTest {
         task.setState(initialState);
 
         when(taskRepository.save(task)).thenReturn(task);
-        when(stateRepository.findById(5L)).thenReturn(Optional.of(initialState));
+    when(stateService.findById(5L)).thenReturn(Optional.of(initialState));
 
         Task savedTask = taskService.saveTask(task);
 
@@ -100,7 +100,7 @@ class TaskServiceImplTest {
         State defaultState = new State();
         defaultState.setId(1L);
         defaultState.setName("Pendiente");
-        when(stateRepository.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
+    when(stateService.findByNameIgnoreCase("pendiente")).thenReturn(Optional.of(defaultState));
         when(taskRepository.save(any(Task.class))).thenThrow(new RuntimeException("DB error"));
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.saveTask(task));
@@ -126,7 +126,7 @@ class TaskServiceImplTest {
         newState.setId(4L);
 
         when(taskRepository.findById(1L)).thenReturn(Optional.of(existingTask));
-        when(stateRepository.findById(4L)).thenReturn(Optional.of(newState));
+    when(stateService.findById(4L)).thenReturn(Optional.of(newState));
 
         taskService.updateState(1L, 4L);
 
@@ -147,7 +147,7 @@ class TaskServiceImplTest {
         Task existingTask = new Task();
 
         when(taskRepository.findById(15L)).thenReturn(Optional.of(existingTask));
-        when(stateRepository.findById(99L)).thenReturn(Optional.empty());
+    when(stateService.findById(99L)).thenReturn(Optional.empty());
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> taskService.updateState(15L, 99L));
         assertNotNull(exception);

@@ -50,7 +50,6 @@ public class Task {
     @JoinColumn(name="id_state")
     private State state;
 
-    // Explicit getters/setters for CI/CD compatibility (Lombok not processing in build environment)
     public State getState() {
         return state;
     }

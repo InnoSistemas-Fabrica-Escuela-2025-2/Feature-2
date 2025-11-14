@@ -2,7 +2,6 @@ package com.udea.innosistemas.innosistemas.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +19,12 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 @RequestMapping("/project/task")
 public class TaskController {
 
-    @Autowired
-    private TaskService taskService;
+
+    private final TaskService taskService;
+
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
+    }
 
     @PostMapping("/save")
     public ResponseEntity<Task> saveTask(@RequestBody Task task) {
@@ -44,9 +47,9 @@ public class TaskController {
         return handleTaskSaveOrUpdate(() -> taskService.saveTask(task));
     }
     
-    @PutMapping("updateState/{id_task}/{id_state}")
-    public ResponseEntity<Void> updateState(@PathVariable Long id_task, @PathVariable Long id_state) {
-        return handleUpdateState(id_task, id_state);
+    @PutMapping("updateState/{idTask}/{idState}")
+    public ResponseEntity<Void> updateState(@PathVariable Long idTask, @PathVariable Long idState) {
+        return handleUpdateState(idTask, idState);
     }
 
     private ResponseEntity<Task> handleTaskSaveOrUpdate(TaskSupplier supplier) {

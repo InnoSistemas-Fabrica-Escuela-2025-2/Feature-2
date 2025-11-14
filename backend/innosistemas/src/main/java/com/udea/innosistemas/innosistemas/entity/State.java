@@ -27,7 +27,6 @@ public class State {
     @Column (name="name")
     private String name;
 
-    // Explicit getters/setters for CI/CD compatibility (Lombok not processing in build environment)
     public Long getId() {
         return id;
     }

@@ -1,28 +1,26 @@
 package com.udea.innosistemas.innosistemas.service.impl;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
-import com.udea.innosistemas.innosistemas.repository.StateRepository;
 import com.udea.innosistemas.innosistemas.repository.TaskRepository;
+import com.udea.innosistemas.innosistemas.service.StateService;
 import com.udea.innosistemas.innosistemas.service.TaskService;
 
 @Service
-public class TaskServiceImpl implements TaskService{
+public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
 
-    private final StateRepository stateRepository;
+    private final StateService stateService;
 
-    public TaskServiceImpl(TaskRepository taskRepository, StateRepository stateRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, StateService stateService) {
         this.taskRepository = taskRepository;
-        this.stateRepository = stateRepository;
+        this.stateService = stateService;
     }
 
     @Override
@@ -40,7 +38,7 @@ public class TaskServiceImpl implements TaskService{
 
     private Task handleSaveTask(Task task) {
         try {
-            State resolvedState = resolveState(task.getState());
+            State resolvedState = stateService.resolveState(task.getState());
             task.setState(resolvedState);
             return taskRepository.save(task);
         } catch (NoSuchElementException e) {
@@ -64,80 +62,19 @@ public class TaskServiceImpl implements TaskService{
         taskRepository.save(task);
     }
 
-    private State resolveState(State requestedState) {
-        return Optional.ofNullable(requestedState)
-            .flatMap(this::tryResolveExplicitState)
-            .orElseGet(this::resolveDefaultState);
-    }
-
-    private Optional<State> tryResolveExplicitState(State candidate) {
-        return resolveById(candidate).or(() -> resolveByName(candidate));
-    }
-
-    private Optional<State> resolveById(State candidate) {
-        Long requestedId = candidate.getId();
-        if (requestedId == null) {
-            return Optional.empty();
-        }
-        State state = stateRepository.findById(requestedId)
-            .orElseThrow(() -> new NoSuchElementException("El estado especificado no existe."));
-        return Optional.of(state);
-    }
-
-    private Optional<State> resolveByName(State candidate) {
-        String normalizedName = normalizeName(candidate.getName());
-        if (normalizedName.isEmpty()) {
-            return Optional.empty();
-        }
-        return findByNameIgnoreCase(normalizedName);
-    }
-
-    private State resolveDefaultState() {
-        Optional<State> pending = findByNameIgnoreCase("pendiente");
-        if (pending.isPresent()) {
-            return pending.get();
-        }
-
-        Optional<State> byDefaultId = stateRepository.findById(1L);
-        if (byDefaultId.isPresent()) {
-            return byDefaultId.get();
-        }
-
-        return findFirstStateOrThrow();
-    }
-
-    private State findFirstStateOrThrow() {
-        return stateRepository.findAll().stream()
-            .filter(s -> s.getId() != null)
-            .min(Comparator.comparing(State::getId))
-            .orElseThrow(() -> new NoSuchElementException("No hay estados configurados en el sistema."));
-    }
-
-    private String normalizeName(String name) {
-        return name == null ? "" : name.trim();
-    }
-
-    private Optional<State> findByNameIgnoreCase(String name) {
-        String normalizedName = normalizeName(name);
-        if (normalizedName.isEmpty()) {
-            return Optional.empty();
-        }
-        Optional<State> directMatch = stateRepository.findByNameIgnoreCase(normalizedName);
-        if (directMatch.isPresent()) {
-            return directMatch;
-        }
-        return stateRepository.findAll().stream()
-            .filter(state -> state.getName() != null && state.getName().equalsIgnoreCase(normalizedName))
-            .findFirst();
-    }
-
     private Task getTaskOrThrow(Long taskId) {
+        if (taskId == null) {
+            throw new IllegalArgumentException("El ID de la tarea no puede ser null");
+        }
         return taskRepository.findById(taskId)
-            .orElseThrow(() -> new NoSuchElementException("La tarea no existe."));
+                .orElseThrow(() -> new NoSuchElementException("La tarea no existe."));
     }
 
     private State getStateOrThrow(Long stateId) {
-        return stateRepository.findById(stateId)
-            .orElseThrow(() -> new NoSuchElementException("El estado no existe."));
+        if (stateId == null) {
+            throw new IllegalArgumentException("El ID del estado no puede ser null");
+        }
+        return stateService.findById(stateId)
+                .orElseThrow(() -> new NoSuchElementException("El estado no existe."));
     }
 }

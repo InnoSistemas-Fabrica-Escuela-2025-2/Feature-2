@@ -7,13 +7,11 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
 import java.util.List;
 
-//@Configuration  // DISABLED - Gateway handles CORS
 public class CorsConfig {
 
     @Value("${cors.allowed.origins:http://localhost:5173}")
     private String allowedOrigins;
 
-    //@Bean  // DISABLED - Gateway handles CORS
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
