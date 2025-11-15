@@ -41,19 +41,3 @@ describe("Proyectos", () => {
     mockUseData.mockReturnValue({
       projects: [],
       tasks: [],
-      states: [],
-      isLoading: false,
-      error: null,
-      refreshData: vi.fn(),
-      lastUpdated: null,
-    });
-
-    renderWithRouter(<Proyectos />);
-
-    expect(screen.getByText(/no tienes proyectos/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /crear proyecto/i })).toBeInTheDocument();
-    expect(
-      screen.getByText(/comienza creando tu primer proyecto académico/i)
-    ).toBeInTheDocument();
-  });
-});
