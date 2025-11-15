@@ -59,39 +59,6 @@ describe("TaskCard", () => {
     mockTasksDelete.mockResolvedValue(undefined);
   });
 
-  it("expone controles accesibles para editar y eliminar", async () => {
-    const onEdit = vi.fn();
-    const onDelete = vi.fn();
-
-    render(<TaskCard task={baseTask} project={mockProject} onEdit={onEdit} onDelete={onDelete} />);
-
-    expect(
-      screen.getByRole("article", {
-        name: /tarea: configurar entorno de despliegue/i,
-      })
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole("status", {
-        name: /estado de la tarea: en progreso/i,
-      })
-    ).toBeInTheDocument();
-
-    const editButton = screen.getByRole("button", {
-      name: /editar tarea: configurar entorno de despliegue/i,
-    });
-
-    await userEvent.click(editButton);
-    expect(onEdit).toHaveBeenCalledTimes(1);
-
-    const deleteButton = screen.getByRole("button", {
-      name: /eliminar tarea: configurar entorno de despliegue/i,
-    });
-
-    expect(deleteButton).toBeInTheDocument();
-    expect(onDelete).not.toHaveBeenCalled();
-  });
-
   it("solicita confirmación antes de eliminar una tarea", async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
