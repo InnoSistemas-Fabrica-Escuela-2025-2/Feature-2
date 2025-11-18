@@ -2,83 +2,70 @@ POST http://localhost:8080/authenticator/person/authenticate
 Content-Type: application/json
 
 {
-    "email": "julio@udea.edu.co",
-    "password": "julio"
+    "email": "emiliano@udea.edu.co",
+    "password": "emiliano"
 }
 
 ###
 
 GET http://localhost:8080/project/project/listAll
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoicHJvZmVzb3IiLCJpZCI6NSwic3ViIjoic2FtdWVsQHVkZWEuZWR1LmNvIiwiaWF0IjoxNzYxNzE1Mjk5LCJleHAiOjE3NjE3MTYxOTl9.bgY6-7c6S4IrRZ-bXO9zHJsIOysjyTVZQAzcc0nJljQ
-
-###
-
-POST http://localhost:8080/authenticator/person/authenticate 
-Content-Type: application/json
-
-{
-    "email": "geraldin@udea.edu.co",
-    "password": "geraldin"
-}
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjoxMCwic3ViIjoic2ViYXN0aWFuQHVkZWEuZWR1LmNvIiwiaWF0IjoxNzYyOTEyMzAxLCJleHAiOjE3NjI5MTMyMDF9.Aicw6jV8bT5htfeDYYR_IjRneIUOFvPqLHE4DlqpkqY
 
 ###
 
 POST http://localhost:8080/project/project/save
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTcxNTQ5NSwiZXhwIjoxNzYxNzE2Mzk1fQ.C_0roTB7ytPVNBlGQPEjCkjxrhh7kofxlVwQrsYwd1c
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjoxMywic3ViIjoiZW1pbGlhbm9AdWRlYS5lZHUuY28iLCJpYXQiOjE3NjI5MTQ0NjgsImV4cCI6MTc2MjkxNTM2OH0.SxuOKrgprB5xA772lhDWwe_HDps6Yu0vPqlsXP8WLMM
 Content-Type: application/json
 
 {
-    "name":"Proyecto 3",
+    "name":"Proyecto prueba",
     "description": "Proyecto bases de datos",
     "deadline": "2025-12-10",
     "team": {
-        "id": 1
+        "id": 2
     }
 }
 
 ###
 
-POST http://localhost:8080/project/project/save
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTY2NzMwOCwiZXhwIjoxNzYxNjY4MjA4fQ.UjCXh89Bl5zWPHoW5M6QMzP2b_zWSl5wvLROHTuSNLI
+POST http://localhost:8082/project/objective/save 
 Content-Type: application/json
 
 {
-    "name":"Proyecto 3",
-    "description": "Proyecto bases de datos",
-    "deadline": "2025-12-10",
-    "team": {
-        "id": 6
+    "description":"aprender mucho",
+    "project": {
+        "id": 54
+    }
+}
+
+###
+POST http://localhost:8082/project/task/save
+Content-Type: application/json
+
+{
+    "title":"Esquemas",
+    "description": "Probando diferentes esquemas",
+    "deadline":"2025-12-10",
+    "responsible":"Emiliano",
+    "project": {
+        "id": 54
     }
 }
 
 ###
 
-GET http://localhost:8080/project/project/message
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTcxNTQ5NSwiZXhwIjoxNzYxNzE2Mzk1fQ.C_0roTB7ytPVNBlGQPEjCkjxrhh7kofxlVwQrsYwd1c
-
-
-###
-
-POST http://localhost:8080/authenticator/person/authenticate 
-Content-Type: application/json
-
-{
-    "email": "samuel@udea.edu.co",
-    "password": "samuel"
-}
+DELETE http://localhost:8082/project/task/delete/28
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjoxMywic3ViIjoiZW1pbGlhbm9AdWRlYS5lZHUuY28iLCJpYXQiOjE3NjI5MTQ0NjgsImV4cCI6MTc2MjkxNTM2OH0.SxuOKrgprB5xA772lhDWwe_HDps6Yu0vPqlsXP8WLMM
 
 ###
 
-DELETE http://localhost:8082/project/task/delete/8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTcxNTQ5NSwiZXhwIjoxNzYxNzE2Mzk1fQ.C_0roTB7ytPVNBlGQPEjCkjxrhh7kofxlVwQrsYwd1c
-
-###
-
-PUT http://localhost:8082/project/task/updateState/3/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTcxNTQ5NSwiZXhwIjoxNzYxNzE2Mzk1fQ.C_0roTB7ytPVNBlGQPEjCkjxrhh7kofxlVwQrsYwd1c
+PUT http://localhost:8082/project/task/updateState/29/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjoxMywic3ViIjoiZW1pbGlhbm9AdWRlYS5lZHUuY28iLCJpYXQiOjE3NjI5MTQ0NjgsImV4cCI6MTc2MjkxNTM2OH0.SxuOKrgprB5xA772lhDWwe_HDps6Yu0vPqlsXP8WLMM
 
 ###
 
 GET http://localhost:8082/project/team/getStudentsName/1
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiZXN0dWRpYW50ZSIsImlkIjo0LCJzdWIiOiJnZXJhbGRpbkB1ZGVhLmVkdS5jbyIsImlhdCI6MTc2MTcxNTQ5NSwiZXhwIjoxNzYxNzE2Mzk1fQ.C_0roTB7ytPVNBlGQPEjCkjxrhh7kofxlVwQrsYwd1c
+
+###
 
