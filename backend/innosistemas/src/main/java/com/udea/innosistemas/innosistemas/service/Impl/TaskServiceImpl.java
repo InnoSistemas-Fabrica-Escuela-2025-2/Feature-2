@@ -1,11 +1,14 @@
 package com.udea.innosistemas.innosistemas.service.Impl;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.udea.innosistemas.innosistemas.entity.EmailEvent;
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.repository.StateRepository;
@@ -20,6 +23,9 @@ public class TaskServiceImpl implements TaskService{
 
     @Autowired
     private StateRepository stateRepository;
+
+    @Autowired
+    private NotificationProducerImpl notificationProducerImpl;
 
     @Override
     public void deleteTask(long id) {
@@ -60,5 +66,42 @@ public class TaskServiceImpl implements TaskService{
         task.setState(state);
         taskRepository.save(task);
     }
+
+    @Override
+    public List<Task> findByDate(LocalDate deadline) {
+        try{
+            return taskRepository.findByDeadline(deadline);
+        } catch(Exception e){
+            throw new UnsupportedOperationException("No fue posible listar las tareas." + e.getMessage());
+        }
+        
+    }
+
+    //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
+    @Override
+    @Scheduled(cron = "0 * * * * *")
+    public void sendNotification() {
+        LocalDate deadline = LocalDate.now().plusDays(3);
+        try{
+            List<Task> tasks = findByDate(deadline);
+
+            if (tasks == null || tasks.isEmpty()) {
+            System.out.print("No hay tareas");
+            return; 
+        }
+            for (Task task:tasks){
+                notificationProducerImpl.sendEmail(new EmailEvent(task.getResponsible(), "¡Acuérdate de realizar tu tarea!", 
+                "La tarea " + task.getTitle() + "vence el día " + deadline.getDayOfWeek() + "" + 
+                deadline.getDayOfMonth() + " de " + deadline.getMonth() + " , la cual pertenece al proyecto "+
+                task.getProject().getName()));
+                
+            } 
+        }catch(Exception e){
+            throw new UnsupportedOperationException("No es posible enviar la notificación: " + e.getMessage());
+        }
+    }
+
+
+        
 
 }
