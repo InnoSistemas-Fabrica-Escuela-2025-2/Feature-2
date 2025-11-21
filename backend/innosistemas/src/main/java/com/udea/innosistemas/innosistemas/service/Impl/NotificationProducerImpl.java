@@ -17,7 +17,7 @@ public class NotificationProducerImpl implements NotificationProducer {
     @Override
     public void sendEmail(EmailEvent email) {
         try{
-            kafkaTemplate.send("notifications-topic",email);
+            kafkaTemplate.send("notifications-topic", email);
         } catch (Exception e){
             throw new UnsupportedOperationException("No es posible enviar la notificación");
         }

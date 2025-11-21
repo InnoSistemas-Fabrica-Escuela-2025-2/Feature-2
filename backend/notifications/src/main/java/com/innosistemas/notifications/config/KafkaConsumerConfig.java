@@ -15,22 +15,23 @@ import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import com.innosistemas.notifications.entity.EmailEvent;
 
 
-
 @Configuration
 public class KafkaConsumerConfig {
     
     @Bean
+    //Crear la fábrica de consumidores de Kafka
     public ConsumerFactory<String, EmailEvent> consumerFactory() {
-        Map<String, Object> config = new HashMap<>();
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        Map<String, Object> config = new HashMap<>();   // Configuraciones del consumidor de Kafka
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // Dirección del port de Kafka
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class); //Deserializador de la key
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class); //Deserializador del valor (EmailEvent)
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
     @Bean
+    //Crear el factory de listeners de Kafka
     public ConcurrentKafkaListenerContainerFactory<String, EmailEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, EmailEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, EmailEvent> factory = new ConcurrentKafkaListenerContainerFactory<>(); // Crear una fábrica de listener de Kafka
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }

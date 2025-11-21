@@ -1,5 +1,6 @@
 package com.udea.innosistemas.innosistemas.service.Impl;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -73,7 +74,7 @@ public class TaskServiceImpl implements TaskService{
 
     //Buscar tareas por fecha de vencimiento
     @Override
-    public List<Task> findByDate(LocalDate deadline) {
+    public List<Task> findByDate(Timestamp deadline) {
         try{
             return taskRepository.findByDeadline(deadline);
         } catch(Exception e){
@@ -85,7 +86,8 @@ public class TaskServiceImpl implements TaskService{
     @Override
     @Scheduled(cron = "0 * * * * *")
     public void sendNotification() {
-        LocalDate deadline = LocalDate.now().plusDays(3);
+        Timestamp deadline = Timestamp.from(java.time.Instant.now().plusSeconds(3 * 24 * 60 * 60)); 
+        LocalDate localDate = deadline.toLocalDateTime().toLocalDate();
         try{
             List<Task> tasks = findByDate(deadline);
 
@@ -95,10 +97,11 @@ public class TaskServiceImpl implements TaskService{
         }
             for (Task task:tasks){
                 notificationProducerImpl.sendEmail(new EmailEvent(task.getResponsible_email(), "¡Acuérdate de realizar tu tarea!", 
-                "La tarea " + task.getTitle() + "vence el día " + deadline.getDayOfWeek() + "" + 
-                deadline.getDayOfMonth() + " de " + deadline.getMonth() + " , la cual pertenece al proyecto "+
+                "La tarea " + task.getTitle() + "vence el día " + localDate.getDayOfWeek() + "" + 
+                localDate.getDayOfMonth() + " de " + localDate.getMonth() + 
+                "a las " + deadline.toLocalDateTime().getHour() + ":" + deadline.toLocalDateTime().getMinute() +
+                " , la cual pertenece al proyecto "+
                 task.getProject().getName()));
-                
             } 
         }catch(Exception e){
             throw new UnsupportedOperationException("No es posible enviar la notificación: " + e.getMessage());

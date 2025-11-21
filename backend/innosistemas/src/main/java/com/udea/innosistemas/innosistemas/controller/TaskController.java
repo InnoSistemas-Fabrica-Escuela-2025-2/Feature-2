@@ -59,7 +59,5 @@ public class TaskController {
         taskService.updateState(id_task, id_state);
         return ResponseEntity.noContent().build();
     }
-
-
     
 }

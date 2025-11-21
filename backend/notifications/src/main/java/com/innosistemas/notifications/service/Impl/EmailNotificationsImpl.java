@@ -17,14 +17,16 @@ import com.sendgrid.helpers.mail.objects.Email;
 @Service
 public class EmailNotificationsImpl implements EmailNotifications{
 
+    //Clave API de SendGrid para autenticar el envío de correos
     @Value("${sendgrid.api.key}")
     private String sendGridApiKey;
 
     @Override
+    //Enviar un correo electrónico usando SendGrid
     public void sendEmail(String email, String subject, String content){
-        Email from = new Email ("noreply@innosistemas.com");
-        Email to = new Email(email);
-        Content newContent = new Content("text/plain", content);
+        Email from = new Email ("noreply@innosistemas.com"); //Correo remitente
+        Email to = new Email(email);    //Asunto
+        Content newContent = new Content("text/plain", content);    //Contenido del correo
         Mail mail = new Mail(from, subject, to, newContent);
 
         SendGrid sg = new SendGrid(sendGridApiKey);
