@@ -2,5 +2,12 @@
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python-envs.pythonProjects": [],
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.project.sourcePaths": [
+        "backend/notifications/src/main/java/com/innosistemas/notifications/service",
+        "backend/notifications/src/main/java",
+        "backend/notifications/src/main",
+        "backend/notifications/src",
+        "backend/notifications"
+    ]
 }

@@ -94,7 +94,7 @@ public class TaskServiceImpl implements TaskService{
             return; 
         }
             for (Task task:tasks){
-                notificationProducerImpl.sendEmail(new EmailEvent(task.getResponsible(), "¡Acuérdate de realizar tu tarea!", 
+                notificationProducerImpl.sendEmail(new EmailEvent(task.getResponsible_email(), "¡Acuérdate de realizar tu tarea!", 
                 "La tarea " + task.getTitle() + "vence el día " + deadline.getDayOfWeek() + "" + 
                 deadline.getDayOfMonth() + " de " + deadline.getMonth() + " , la cual pertenece al proyecto "+
                 task.getProject().getName()));

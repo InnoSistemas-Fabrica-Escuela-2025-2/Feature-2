@@ -23,7 +23,6 @@ public class StateServiceImpl implements StateService{
         } catch (Exception e){
             throw new UnsupportedOperationException("No hay estados que mostrar.");
         }
-        
     }
     
 }

@@ -38,8 +38,8 @@ public class Task {
     @Column(name="deadline", nullable = false )
     private Timestamp deadline;
 
-    @Column(name="responsible", nullable = false)
-    private String responsible;
+    @Column(name="responsible_email", nullable = false)
+    private String responsible_email;
 
     @ManyToOne
     @JoinColumn(name="id_project", nullable=false)
