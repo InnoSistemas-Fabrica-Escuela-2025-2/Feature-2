@@ -32,6 +32,6 @@ public class KafkaProducerConfig {
     @Bean
     //Crear el template de Kafka
     public KafkaTemplate<String, EmailEvent> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+        return new KafkaTemplate<>(producerFactory()); // Usar la fábrica de productores para crear el template de Kafka
     }
 }

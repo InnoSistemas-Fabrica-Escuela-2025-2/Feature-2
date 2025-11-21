@@ -13,10 +13,11 @@ public class NotificationProducerImpl implements NotificationProducer {
     @Autowired
     private KafkaTemplate<String, EmailEvent> kafkaTemplate;
 
-    //Enviar notificación por email usando un topico de Kafka
     @Override
+     //Enviar notificación por email usando un topico de Kafka
     public void sendEmail(EmailEvent email) {
         try{
+            // Enviar el evento de email al tópico de Kafka
             kafkaTemplate.send("notifications-topic", email);
         } catch (Exception e){
             throw new UnsupportedOperationException("No es posible enviar la notificación");
