@@ -2,6 +2,7 @@ package com.udea.innosistemas.innosistemas.service.Impl;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -14,6 +15,7 @@ import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.repository.StateRepository;
 import com.udea.innosistemas.innosistemas.repository.TaskRepository;
+import com.udea.innosistemas.innosistemas.service.NotificationProducer;
 import com.udea.innosistemas.innosistemas.service.TaskService;
 
 @Service
@@ -26,7 +28,7 @@ public class TaskServiceImpl implements TaskService{
     private StateRepository stateRepository;
 
     @Autowired
-    private NotificationProducerImpl notificationProducerImpl;
+    private NotificationProducer notificationProducer;
 
     //Eliminar una tarea por su id
     @Override
@@ -74,9 +76,9 @@ public class TaskServiceImpl implements TaskService{
 
     //Buscar tareas por fecha de vencimiento
     @Override
-    public List<Task> findByDate(Timestamp deadline) {
+    public List<Task> findByDate(Timestamp today, Timestamp limit) {
         try{
-            return taskRepository.findByDeadline(deadline);
+            return taskRepository.findByDeadlineBetween(today, limit);
         } catch(Exception e){
             throw new UnsupportedOperationException("No fue posible listar las tareas." + e.getMessage());
         }
@@ -84,24 +86,37 @@ public class TaskServiceImpl implements TaskService{
 
     //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
     @Override
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 10 * * *")
     public void sendNotification() {
-        Timestamp deadline = Timestamp.from(java.time.Instant.now().plusSeconds(3 * 24 * 60 * 60)); 
-        LocalDate localDate = deadline.toLocalDateTime().toLocalDate();
+        Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+        Timestamp limit = Timestamp.valueOf(LocalDate.now().plusDays(3).atStartOfDay());
+        LocalDate localDate = limit.toLocalDateTime().toLocalDate();
+        System.out.println("Hoy es: " + today + " y el límite es: " + limit);
         try{
-            List<Task> tasks = findByDate(deadline);
+            List<Task> tasks = findByDate(today, limit);
 
             if (tasks == null || tasks.isEmpty()) {
             System.out.print("No hay tareas");
             return; 
         }
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM"); 
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
             for (Task task:tasks){
-                notificationProducerImpl.sendEmail(new EmailEvent(task.getResponsible_email(), "¡Acuérdate de realizar tu tarea!", 
-                "La tarea " + task.getTitle() + "vence el día " + localDate.getDayOfWeek() + "" + 
-                localDate.getDayOfMonth() + " de " + localDate.getMonth() + 
-                "a las " + deadline.toLocalDateTime().getHour() + ":" + deadline.toLocalDateTime().getMinute() +
-                " , la cual pertenece al proyecto "+
-                task.getProject().getName()));
+                String fecha = localDate.format(dateFormatter);
+                String hora = limit.toLocalDateTime().format(timeFormatter);
+
+                String mensaje = "Hola, \n\nLa tarea " + task.getTitle() +
+                     " vence el día " + fecha +
+                     " a las " + hora +
+                     ", la cual pertenece al proyecto " + task.getProject().getName() + "." + 
+                     "\n\n¡No dejes todo para el final!";
+                
+                notificationProducer.sendEmail(new EmailEvent(
+                    task.getResponsible_email(),
+                    "¡Acuérdate de realizar tu tarea!",
+                    mensaje
+                ));
             } 
         }catch(Exception e){
             throw new UnsupportedOperationException("No es posible enviar la notificación: " + e.getMessage());

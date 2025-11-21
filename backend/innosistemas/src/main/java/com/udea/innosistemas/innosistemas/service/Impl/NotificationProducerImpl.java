@@ -19,8 +19,9 @@ public class NotificationProducerImpl implements NotificationProducer {
         try{
             // Enviar el evento de email al tópico de Kafka
             kafkaTemplate.send("notifications-topic", email);
+            System.out.println("El correo se envió con éxito" + email);
         } catch (Exception e){
-            throw new UnsupportedOperationException("No es posible enviar la notificación");
+            throw new UnsupportedOperationException("No es posible:" + e);
         }
     }
     

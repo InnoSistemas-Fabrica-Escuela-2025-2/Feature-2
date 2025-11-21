@@ -13,6 +13,6 @@ public interface TaskService {
     public Task saveTask(Task task);
     public List<Task> listAllTasks();
     public void updateState(Long id_task, Long id_state);
-    public List<Task> findByDate(Timestamp deadline);
+    public List<Task> findByDate(Timestamp today, Timestamp limit);
     public void sendNotification();
 }

@@ -24,19 +24,19 @@ public class EmailNotificationsImpl implements EmailNotifications{
     @Override
     //Enviar un correo electrónico usando SendGrid
     public void sendEmail(String email, String subject, String content){
-        Email from = new Email ("noreply@innosistemas.com"); //Correo remitente
-        Email to = new Email(email);    //Asunto
-        Content newContent = new Content("text/plain", content);    //Contenido del correo
+        Email from = new Email ("innosistemas5@gmail.com"); //Correo remitente
+        Email to = new Email(email); //Correo destinatario
+        Content newContent = new Content("text/plain", content); //Contenido del correo
         Mail mail = new Mail(from, subject, to, newContent);
 
         SendGrid sg = new SendGrid(sendGridApiKey);
         Request request = new Request();
         try{
             request.setMethod(Method.POST);
-            request.setEndpoint("send/mail");
+            request.setEndpoint("mail/send");
             request.setBody(mail.build());
             Response response = sg.api(request);
-
+            System.out.println(response.getStatusCode());
             System.out.println(response);
         } catch (IOException ex) {
             throw new RuntimeException("No fue posible enviar el correo.", ex);
