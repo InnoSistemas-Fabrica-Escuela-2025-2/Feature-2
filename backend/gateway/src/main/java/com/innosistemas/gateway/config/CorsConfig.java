@@ -15,13 +15,13 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowCredentials(true);
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        config.addAllowedHeader("*");
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowCredentials(true); // Permitir el envío de cookies y credenciales
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Orígenes permitidos
+        config.addAllowedHeader("*");   // Permitir todos los encabezados
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));    // Métodos HTTP permitidos
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", config); // Aplicar la configuración a todas las rutas
 
         return new CorsWebFilter(source);
     }

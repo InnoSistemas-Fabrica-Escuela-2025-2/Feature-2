@@ -25,6 +25,7 @@ public class ActiveSessionServiceImpl implements ActiveSessionService {
 
     @Override
     @Transactional
+    // Guardar la sesión activa de un usuario
     public synchronized void registerSession(Person person, String token) {
         activeSessionRepository.findByPerson(person)
             .ifPresent(activeSessionRepository::delete);
@@ -34,15 +35,18 @@ public class ActiveSessionServiceImpl implements ActiveSessionService {
         activeSession.setPerson(person);
         activeSession.setExpiresAt(Timestamp.from(
             java.time.Instant.now().plusMillis(jwtExpiration)));      
+            
         activeSessionRepository.save(activeSession);
     }
     
     @Override
+    // Eliminar la sesión de un usuario
     public void invalidateSession(ActiveSession session) {
         activeSessionRepository.delete(session);
     }
 
     @Override
+    // Verificar si la sesión de un usuario está activa por medio de la expiración del token
     public boolean isSessionActive(Person person) {
         return activeSessionRepository.findByPerson(person)
             .map(session -> {
