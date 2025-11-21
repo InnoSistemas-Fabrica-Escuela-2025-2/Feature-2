@@ -27,6 +27,7 @@ public class TaskServiceImpl implements TaskService{
     @Autowired
     private NotificationProducerImpl notificationProducerImpl;
 
+    //Eliminar una tarea por su id
     @Override
     public void deleteTask(long id) {
         if(taskRepository.existsById(id)){
@@ -36,6 +37,7 @@ public class TaskServiceImpl implements TaskService{
         }
     }
 
+    //Guardar una tarea en la base de datos
     @Override
     public Task saveTask(Task task) {
         try {
@@ -50,11 +52,13 @@ public class TaskServiceImpl implements TaskService{
         }
     }
 
+    //Obtener todas las tareas
     @Override
     public List<Task> listAllTasks() {
         return taskRepository.findAll();
     }
 
+    //Actualizar el estado de una tarea
     @Override
     public void updateState(Long id_task, Long id_state) {
         if (!taskRepository.findById(id_task).isPresent()){
@@ -67,6 +71,7 @@ public class TaskServiceImpl implements TaskService{
         taskRepository.save(task);
     }
 
+    //Buscar tareas por fecha de vencimiento
     @Override
     public List<Task> findByDate(LocalDate deadline) {
         try{
@@ -74,7 +79,6 @@ public class TaskServiceImpl implements TaskService{
         } catch(Exception e){
             throw new UnsupportedOperationException("No fue posible listar las tareas." + e.getMessage());
         }
-        
     }
 
     //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
@@ -100,8 +104,5 @@ public class TaskServiceImpl implements TaskService{
             throw new UnsupportedOperationException("No es posible enviar la notificación: " + e.getMessage());
         }
     }
-
-
-        
 
 }

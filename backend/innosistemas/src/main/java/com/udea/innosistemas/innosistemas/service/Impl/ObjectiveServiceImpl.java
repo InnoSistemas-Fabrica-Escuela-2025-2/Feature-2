@@ -13,6 +13,7 @@ public class ObjectiveServiceImpl implements ObjectiveService{
     @Autowired
     private ObjectiveRepository objectiveRepository;
 
+    //Guardar un objetivo en la base de datos
     @Override
     public Objective saveObjective(Objective objective){
         return objectiveRepository.save(objective);

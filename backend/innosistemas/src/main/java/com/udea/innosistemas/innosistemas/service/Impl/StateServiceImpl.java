@@ -15,6 +15,7 @@ public class StateServiceImpl implements StateService{
     @Autowired
     private StateRepository stateRepository;
 
+    //Obtener todos los estados
     @Override
     public List<State> allStates() {
         try {

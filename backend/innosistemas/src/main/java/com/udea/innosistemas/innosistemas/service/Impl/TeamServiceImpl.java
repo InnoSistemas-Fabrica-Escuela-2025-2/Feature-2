@@ -14,6 +14,7 @@ public class TeamServiceImpl implements TeamService{
     @Autowired
     private TeamRepository teamRepository;
 
+    //Obtener el nombre del equipo de un estudiante por su id
     @Override
     public String nameTeam(Long id_student) {
         try{
@@ -23,6 +24,7 @@ public class TeamServiceImpl implements TeamService{
         }
     }
 
+    //Obtener los nombres de los estudiantes de un equipo por el id de un estudiante
     @Override
     public List<String> getStudentsNameById(Long id_student) {
         try{

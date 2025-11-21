@@ -16,16 +16,20 @@ public class ProjectServiceImpl implements ProjectService{
     @Autowired
     private ProjectRepository projectRepository;
 
+
+    //Guardar un proyecto en la base de datos
     @Override
     public Project saveProject(Project project) {
         return projectRepository.save(project);
     }
 
+    //Obtener todos los proyectos
     @Override
     public List<Project> listAllProjects(){
         return projectRepository.findAll();
     }
 
+    //Obtener los ids de los proyectos de un estudiante por su id
     @Override
     public List<Long> getProjectsById(Long student_id) {
         try{
@@ -35,6 +39,7 @@ public class ProjectServiceImpl implements ProjectService{
         }
     }
 
+    //Obtener todos los proyectos de un estudiante por su id
     @Override
     public List<Project> listAllById(Long student_id) {
         try{
