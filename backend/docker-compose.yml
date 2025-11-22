@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: backend-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-innosistemas_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Authenticator Service
+  authenticator:
+    build:
+      context: ./authenticator
+      dockerfile: Dockerfile
+    container_name: authenticator-service
+    environment:
+      PORT: 8081
+      JWT_SECRET: ${JWT_SECRET:-b7XfP9aQ2rL0sZ8wV3nC6mJ1yT4dE5kR}
+      AUTH_URL: ${AUTH_URL:-jdbc:postgresql://postgres:5432/${POSTGRES_DB:-innosistemas_db}}
+      AUTH_USERNAME: ${POSTGRES_USER:-postgres}
+      AUTH_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  # Innosistemas Service
+  innosistemas:
+    build:
+      context: ./innosistemas
+      dockerfile: Dockerfile
+    container_name: innosistemas-service
+    environment:
+      PORT: 8082
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/${POSTGRES_DB:-innosistemas_db}}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  # Gateway Service
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    environment:
+      PORT: 8080
+      AUTHENTICATOR_URL: ${AUTHENTICATOR_URL:-http://authenticator:8081}
+      INNOSISTEMAS_URL: ${INNOSISTEMAS_URL:-http://innosistemas:8082}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - authenticator
+      - innosistemas
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

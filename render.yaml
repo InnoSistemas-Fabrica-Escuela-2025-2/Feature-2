@@ -1,0 +1,84 @@
+# render.yaml - Infrastructure as Code for Render
+services:
+  # Gateway Service
+  - type: web
+    name: innosistemas-gateway
+    runtime: docker
+    dockerfilePath: ./backend/gateway/Dockerfile
+    dockerContext: ./backend/gateway
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: AUTHENTICATOR_URL
+        fromService:
+          type: web
+          name: innosistemas-authenticator
+          property: host
+      - key: INNOSISTEMAS_URL
+        fromService:
+          type: web
+          name: innosistemas-service
+          property: host
+      - key: ALLOWED_ORIGINS
+        value: https://your-frontend-url.onrender.com
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    healthCheckPath: /actuator/health
+
+  # Authenticator Service
+  - type: web
+    name: innosistemas-authenticator
+    runtime: docker
+    dockerfilePath: ./backend/authenticator/Dockerfile
+    dockerContext: ./backend/authenticator
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AUTH_URL
+        fromDatabase:
+          name: innosistemas-db
+          property: connectionString
+      - key: AUTH_USERNAME
+        fromDatabase:
+          name: innosistemas-db
+          property: user
+      - key: AUTH_PASSWORD
+        fromDatabase:
+          name: innosistemas-db
+          property: password
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    healthCheckPath: /actuator/health
+
+  # Innosistemas Service
+  - type: web
+    name: innosistemas-service
+    runtime: docker
+    dockerfilePath: ./backend/innosistemas/Dockerfile
+    dockerContext: ./backend/innosistemas
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: innosistemas-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: innosistemas-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: innosistemas-db
+          property: password
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    healthCheckPath: /actuator/health
+
+databases:
+  - name: innosistemas-db
+    databaseName: innosistemas_db
+    user: innosistemas_user
+    plan: free

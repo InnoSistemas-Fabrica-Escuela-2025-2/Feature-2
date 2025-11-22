@@ -1,0 +1,195 @@
+name: Backend - Docker Build & Render Validation
+
+on:
+  push:
+    branches: [main, integracios2_docker]
+    paths: 
+      - 'backend/**'
+      - 'render.yaml'
+      - '.github/workflows/backend-render.yml'
+  pull_request:
+    branches: [main]
+    paths: 
+      - 'backend/**'
+      - 'render.yaml'
+  workflow_dispatch:
+
+jobs:
+  # Run tests for all backend services
+  test-services:
+    name: Test ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [authenticator, gateway, innosistemas]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          
+      - name: Run tests for ${{ matrix.service }}
+        working-directory: backend/${{ matrix.service }}
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD: ""
+          AUTH_URL: jdbc:h2:mem:testdb
+          AUTH_USERNAME: sa
+          AUTH_PASSWORD: ""
+        run: |
+          chmod +x ./mvnw
+          ./mvnw test
+
+  # Build Docker images for each service
+  docker-build:
+    name: Build Docker - ${{ matrix.service }}
+    needs: test-services
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [authenticator, gateway, innosistemas]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build ${{ matrix.service }} image
+        working-directory: backend/${{ matrix.service }}
+        run: |
+          echo "Building Docker image for ${{ matrix.service }}..."
+          docker build -t innosistemas-${{ matrix.service }}:${{ github.sha }} -t innosistemas-${{ matrix.service }}:latest .
+          
+      - name: Test Docker image
+        run: |
+          echo "Testing ${{ matrix.service }} Docker image..."
+          
+          # Set port based on service
+          if [ "${{ matrix.service }}" == "gateway" ]; then
+            PORT=8080
+          elif [ "${{ matrix.service }}" == "authenticator" ]; then
+            PORT=8081
+          else
+            PORT=8082
+          fi
+          
+          # Run container
+          docker run -d --name test-${{ matrix.service }} \
+            -e PORT=$PORT \
+            -e SPRING_PROFILES_ACTIVE=test \
+            -e SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb \
+            -e AUTH_URL=jdbc:h2:mem:testdb \
+            innosistemas-${{ matrix.service }}:latest
+          
+          # Wait for startup
+          echo "Waiting for service to start..."
+          sleep 45
+          
+          # Check if container is still running
+          if docker ps | grep -q test-${{ matrix.service }}; then
+            echo "✅ Container is running"
+            docker logs test-${{ matrix.service }} | tail -50
+          else
+            echo "❌ Container failed to start"
+            docker logs test-${{ matrix.service }}
+            exit 1
+          fi
+          
+          # Cleanup
+          docker stop test-${{ matrix.service }} || true
+          docker rm test-${{ matrix.service }} || true
+
+  # Validate Docker Compose
+  validate-compose:
+    name: Validate Docker Compose
+    needs: docker-build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Validate docker-compose.yml
+        working-directory: backend
+        run: |
+          echo "Validating docker-compose.yml..."
+          docker-compose config
+          echo "✅ docker-compose.yml is valid"
+
+  # Validate Render configuration
+  validate-render:
+    name: Validate Render Configuration
+    needs: docker-build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Check render.yaml exists
+        run: |
+          if [ ! -f render.yaml ]; then
+            echo "❌ render.yaml not found!"
+            exit 1
+          fi
+          echo "✅ render.yaml found"
+          cat render.yaml
+          
+      - name: Validate Dockerfiles exist
+        run: |
+          services=(authenticator gateway innosistemas)
+          all_found=true
+          
+          for service in "${services[@]}"; do
+            if [ ! -f "backend/${service}/Dockerfile" ]; then
+              echo "❌ Dockerfile not found for ${service}"
+              all_found=false
+            else
+              echo "✅ Dockerfile found for ${service}"
+            fi
+          done
+          
+          if [ "$all_found" = false ]; then
+            exit 1
+          fi
+          
+      - name: Validate .dockerignore
+        run: |
+          if [ ! -f backend/.dockerignore ]; then
+            echo "⚠️  .dockerignore not found (recommended but optional)"
+          else
+            echo "✅ .dockerignore found"
+          fi
+      
+      - name: Deployment Summary
+        run: |
+          echo "🎉 All validation checks passed!"
+          echo ""
+          echo "📦 Docker Images Ready:"
+          echo "  - innosistemas-authenticator"
+          echo "  - innosistemas-gateway"
+          echo "  - innosistemas-innosistemas"
+          echo ""
+          echo "🚀 Deployment Status:"
+          echo "  - Docker images built successfully"
+          echo "  - All tests passed"
+          echo "  - Ready for Render deployment"
+          echo ""
+          echo "📋 Next Steps:"
+          echo "  1. Render will auto-deploy via Blueprint (render.yaml)"
+          echo "  2. Or deploy manually following RENDER_DEPLOYMENT.md"
+          echo "  3. Update frontend URLs after deployment"
