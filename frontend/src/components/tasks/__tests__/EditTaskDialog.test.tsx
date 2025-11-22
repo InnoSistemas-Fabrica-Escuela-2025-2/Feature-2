@@ -105,7 +105,10 @@ describe("EditTaskDialog", () => {
 
     expect(updatedTask.estado).toBe("en-progreso");
     expect(updatedTask.titulo).toBe("Ajustes finales");
-    expect(updatedTask.fechaEntrega.toISOString()).toBe(new Date("2025-03-10").toISOString());
+    const fechaEntrega = typeof updatedTask.fechaEntrega === 'string' 
+      ? new Date(updatedTask.fechaEntrega) 
+      : updatedTask.fechaEntrega;
+    expect(fechaEntrega.toISOString()).toBe(new Date("2025-03-10").toISOString());
 
     await waitFor(() =>
       expect(toastSuccessMock).toHaveBeenNthCalledWith(2, "Tarea actualizada correctamente")

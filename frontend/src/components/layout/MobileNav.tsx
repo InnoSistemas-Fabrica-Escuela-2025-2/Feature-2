@@ -24,7 +24,6 @@ export function MobileNav() {
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/proyectos', icon: FolderKanban, label: 'Proyectos' },
-    { to: '/tareas', icon: CheckSquare, label: 'Tareas' },
     { to: '/notificaciones', icon: Bell, label: 'Notificaciones' },
     { to: '/perfil', icon: User, label: 'Perfil' },
   ];

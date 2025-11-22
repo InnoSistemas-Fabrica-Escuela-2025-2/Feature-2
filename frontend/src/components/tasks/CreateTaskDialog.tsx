@@ -26,11 +26,16 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
   const [descripcion, setDescripcion] = useState('');
   const [fechaEntrega, setFechaEntrega] = useState('');
   const [proyectoId, setProyectoId] = useState('');
+  const [responsableId, setResponsableId] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Show all projects for now (no filtering)
   const userProjects = projects;
+
+  // Get project members based on selected project
+  const selectedProject = projects.find(p => p.id.toString() === proyectoId);
+  const projectMembers = selectedProject?.miembros || [];
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -58,7 +63,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
         title: titulo.trim(),
         description: descripcion.trim(),
         deadline: selectedDate.toISOString(),
-        responsible: user?.correo || user?.nombre || 'Sin asignar', // Campo obligatorio en backend
+        responsible: responsableId || user?.correo || user?.nombre || 'Sin asignar',
         project: { id: Number.parseInt(proyectoId) }
       };
 
@@ -79,6 +84,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
       setDescripcion('');
       setFechaEntrega('');
       setProyectoId('');
+      setResponsableId('');
     } catch (error: any) {
       console.error('Error creating task:', error);
       setError(error.response?.data?.message || 'Error al crear la tarea');
@@ -149,6 +155,27 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
                   userProjects.map(p => (
                     <SelectItem key={p.id} value={p.id.toString()}>
                       {p.name || p.nombre}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="responsable">Responsable(s)</Label>
+            <Select value={responsableId} onValueChange={setResponsableId} disabled={!proyectoId}>
+              <SelectTrigger id="responsable">
+                <SelectValue placeholder={proyectoId ? "Selecciona un responsable" : "Primero selecciona un proyecto"} />
+              </SelectTrigger>
+              <SelectContent>
+                {projectMembers.length === 0 ? (
+                  <SelectItem value="sin-miembros" disabled>
+                    No hay miembros en el proyecto
+                  </SelectItem>
+                ) : (
+                  projectMembers.map((miembroId: string) => (
+                    <SelectItem key={miembroId} value={miembroId}>
+                      {miembroId}
                     </SelectItem>
                   ))
                 )}
