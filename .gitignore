@@ -3,6 +3,8 @@
 **/.env
 !backend/.env.example
 !.env.example
+backend/.env.neon
+RENDER_ENV_VARS.txt
 
 # Deployment configs (use render.yaml instead)
 railway.json

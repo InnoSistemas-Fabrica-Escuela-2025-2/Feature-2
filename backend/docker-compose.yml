@@ -30,15 +30,12 @@ services:
     environment:
       PORT: 8081
       JWT_SECRET: ${JWT_SECRET:-b7XfP9aQ2rL0sZ8wV3nC6mJ1yT4dE5kR}
-      AUTH_URL: ${AUTH_URL:-jdbc:postgresql://postgres:5432/${POSTGRES_DB:-innosistemas_db}}
-      AUTH_USERNAME: ${POSTGRES_USER:-postgres}
-      AUTH_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/${POSTGRES_DB:-innosistemas_db}}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-${POSTGRES_USER:-postgres}}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-${POSTGRES_PASSWORD:-postgres}}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
     ports:
       - "8081:8081"
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - backend-network
     restart: unless-stopped
@@ -52,14 +49,11 @@ services:
     environment:
       PORT: 8082
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/${POSTGRES_DB:-innosistemas_db}}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-${POSTGRES_USER:-postgres}}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-${POSTGRES_PASSWORD:-postgres}}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
     ports:
       - "8082:8082"
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - backend-network
     restart: unless-stopped
