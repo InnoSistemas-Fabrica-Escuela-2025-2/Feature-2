@@ -5,13 +5,18 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.innosistemas.notifications.entity.EmailEvent;
+import com.innosistemas.notifications.service.EmailNotifications;
+import com.innosistemas.notifications.service.NotificationService;
 import com.innosistemas.notifications.service.NotificationsConsumer;
 
 @Service
 public class NotificationsConsumerImpl implements NotificationsConsumer{
 
     @Autowired
-    private EmailNotificationsImpl emailNotificationsImpl;
+    private EmailNotifications emailNotifications;
+
+    @Autowired
+    private NotificationService notificationService;
 
     //Como usamos la anotación @KafkaListener, este método se ejecutará automáticamente cuando llegue un nuevo mensaje al tópico "notifications-topic"
     //Esto usa automaticamente el kafkaListenerContainerFactory definido en KafkaConsumerConfig 
@@ -21,7 +26,8 @@ public class NotificationsConsumerImpl implements NotificationsConsumer{
     @Override
     public void consumer(EmailEvent email){
         System.out.print("Sí llegó");
-        emailNotificationsImpl.sendEmail(email.getTo(), email.getSubject(), email.getBody());
+        emailNotifications.sendEmail(email.getTo(), email.getSubject(), email.getBody());
+        notificationService.sendNotification(email.getTo(), email.getSubject(), email.getBody());
     }
     
 }
