@@ -1,5 +1,5 @@
 server:
-    port: 8080
+    port: ${PORT:8080}
 spring:
     session:
       store-type: none
@@ -7,19 +7,19 @@ spring:
         gateway:
             routes:
             - id: authenticator
-              uri: http://localhost:8081
+              uri: ${AUTHENTICATOR_URL:http://localhost:8081}
               predicates:
               - Path=/authenticator/**
               filters:
               - StripPrefix=1
             - id: innosistemas
-              uri: http://localhost:8082
+              uri: ${INNOSISTEMAS_URL:http://localhost:8082}
               predicates:
               - Path=/project/**
             globalcors:
                 corsConfigurations:
                     '[/**]':
-                        allowedOrigins: "http://localhost:5173"
+                        allowedOrigins: ${ALLOWED_ORIGINS:http://localhost:5173}
                         allowedMethods:
                             - GET
                             - POST
@@ -28,3 +28,18 @@ spring:
                             - OPTIONS
                         allowedHeaders: "*"
                         allowCredentials: true
+
+# Actuator configuration
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,info
+    endpoint:
+        health:
+            show-details: when-authorized
+    health:
+        livenessState:
+            enabled: true
+        readinessState:
+            enabled: true

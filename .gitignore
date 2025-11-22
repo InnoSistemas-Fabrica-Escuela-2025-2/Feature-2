@@ -1,6 +1,23 @@
 # Environment and secrets
 *.env
 **/.env
+!backend/.env.example
+!.env.example
+backend/.env.neon
+RENDER_ENV_VARS.txt
+
+# Deployment configs (use render.yaml instead)
+railway.json
+railway.toml
+nixpacks.toml
+Procfile
+
+# Deployment documentation (internal only)
+RENDER_DEPLOYMENT.md
+RAILWAY_TO_RENDER_MIGRATION.md
+backend/DOCKER_DEPLOYMENT.md
+backend/QUICK_START.md
+.github/SECRETS_SETUP.md
 
 # Generated coverage reports
 qa/reports/

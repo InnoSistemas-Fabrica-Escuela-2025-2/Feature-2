@@ -26,41 +26,37 @@
 # Feel free to take a look at our documentation (https://docs.sonarcloud.io/getting-started/github/)
 # or reach out to our community forum if you need some help (https://community.sonarsource.com/c/help/sc/9)
 
-name: SonarCloud analysis
+name: SonarCloud Analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main, integracios2_docker]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   pull-requests: read 
 
 jobs:
-  Analysis:
+  sonarcloud:
+    name: SonarCloud Code Analysis
     runs-on: ubuntu-latest
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-
+    
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Shallow clones should be disabled for better analysis
 
-      - name: Set up Java
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -70,22 +66,38 @@ jobs:
       - name: Prepare coverage directories
         run: |
           rm -rf qa/reports/backend qa/reports/frontend
-          mkdir -p qa/reports/backend qa/reports/frontend
+          mkdir -p qa/reports/backend/{authenticator,gateway,innosistemas}
+          mkdir -p qa/reports/frontend
 
-      - name: Backend coverage (Maven)
+      # Backend Coverage - Test each service with coverage
+      - name: Backend Tests with Coverage - Authenticator
+        working-directory: backend/authenticator
         env:
           SPRING_PROFILES_ACTIVE: test
-          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
           SPRING_DATASOURCE_USERNAME: sa
           SPRING_DATASOURCE_PASSWORD: ""
-          SPRING_DATASOURCE_DRIVERCLASSNAME: org.h2.Driver
-        run: |
-          set -euo pipefail
-          modules=(authenticator gateway innosistemas)
-          for module in "${modules[@]}"; do
-            mvn -B -Pcoverage -f "backend/${module}/pom.xml" clean verify
-          done
+          AUTH_URL: jdbc:h2:mem:testdb
+          AUTH_USERNAME: sa
+          AUTH_PASSWORD: ""
+        run: ./mvnw -B -Pcoverage clean verify
 
+      - name: Backend Tests with Coverage - Gateway
+        working-directory: backend/gateway
+        env:
+          SPRING_PROFILES_ACTIVE: test
+        run: ./mvnw -B -Pcoverage clean verify
+
+      - name: Backend Tests with Coverage - Innosistemas
+        working-directory: backend/innosistemas
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD: ""
+        run: ./mvnw -B -Pcoverage clean verify
+
+      # Frontend Coverage
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
@@ -94,17 +106,22 @@ jobs:
         working-directory: frontend
         run: npm run test:coverage
 
+      # SonarCloud Analysis
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args:
             -Dsonar.projectKey=InnoSistemas-Fabrica-Escuela-2025-2_Feature-2
             -Dsonar.organization=innosistemas-fabrica-escuela-2025-2-1
+            -Dsonar.sources=backend/authenticator/src/main,backend/gateway/src/main,backend/innosistemas/src/main,frontend/src
+            -Dsonar.tests=backend/authenticator/src/test,backend/gateway/src/test,backend/innosistemas/src/test,frontend/src/**/__tests__
             -Dsonar.java.binaries=backend/authenticator/target/classes,backend/gateway/target/classes,backend/innosistemas/target/classes
             -Dsonar.coverage.jacoco.xmlReportPaths=qa/reports/backend/authenticator/jacoco.xml,qa/reports/backend/gateway/jacoco.xml,qa/reports/backend/innosistemas/jacoco.xml
             -Dsonar.javascript.lcov.reportPaths=qa/reports/frontend/lcov.info
-            -Dsonar.coverage.exclusions=frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/**/__tests__/**,frontend/src/test/**,backend/**/src/test/**
-            -Dsonar.exclusions=qa/reports/**,backend/**/target/**,backend/**/generated-sources/**,backend/**/generated-test-sources/**,backend/**/.mvn/**,frontend/dist/**,frontend/src/components/ui/**,frontend/src/hooks/use-toast.ts,frontend/src/**/__tests__/**,frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/test/**,frontend/src/data/mockData.ts,frontend/src/lib/apiExamples.ts,docs/**,qa/**,integrations/**,deployment/**,project-management/**,*.md
-            -Dsonar.test.exclusions=backend/**/src/test/**,frontend/src/**/__tests__/**,frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts,frontend/src/test/**
-            -Dsonar.test.exclusions=frontend/src/data/**,frontend/src/**/mocks/**,frontend/src/**/__tests__/**/utils/**,frontend/src/**/__tests__/**,frontend/src/test/**,backend/**/src/test/**,frontend/src/**/*.test.tsx,frontend/src/**/*.test.ts
+            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,**/__tests__/**,**/test/**,frontend/src/components/ui/**,frontend/src/data/mockData.ts,frontend/src/lib/apiExamples.ts
+            -Dsonar.exclusions=qa/reports/**,**/target/**,**/generated-sources/**,**/generated-test-sources/**,**/.mvn/**,frontend/dist/**,frontend/node_modules/**,frontend/src/components/ui/**,frontend/src/hooks/use-toast.ts,docs/**,qa/**,integrations/**,deployment/**,project-management/**,*.md,**/*.md,backend/**/.dockerignore,backend/**/Dockerfile,backend/docker-compose.yml,backend/**/*.ps1,render.yaml
+            -Dsonar.test.inclusions=**/src/test/**/*.java,**/__tests__/**/*.tsx,**/__tests__/**/*.ts,**/*.test.tsx,**/*.test.ts
+            -Dsonar.cpd.exclusions=**/test/**,**/__tests__/**,**/mockData.ts
           projectBaseDir: .
