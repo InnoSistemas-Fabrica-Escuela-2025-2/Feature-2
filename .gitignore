@@ -33,6 +33,9 @@ qa/reports/
 **/.gradle/
 **/build/
 
+# Maven/Java build outputs
+**/target/
+
 # OS and editor
 .DS_Store
 Thumbs.db
