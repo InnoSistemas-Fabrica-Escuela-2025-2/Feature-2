@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .pathMatchers("/project/objective/**").hasAuthority(role)
                 .pathMatchers("/project/task/**").hasAuthority(role)
                 .pathMatchers("/project/state/**").hasAuthority(role)
+                .pathMatchers("/actuator/prometheus").permitAll()
+                .pathMatchers("/actuator/**").permitAll()
                 .anyExchange().authenticated()
             )
             .build();

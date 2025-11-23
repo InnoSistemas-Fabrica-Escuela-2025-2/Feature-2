@@ -50,4 +50,5 @@ public class Task {
     @JoinColumn(name="id_state")
     private State state;
 
+
 }

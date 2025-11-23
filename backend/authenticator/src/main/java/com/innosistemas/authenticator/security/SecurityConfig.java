@@ -30,6 +30,8 @@ public class SecurityConfig {
                     .requestMatchers("project/state/**").hasRole(role)
                     .requestMatchers("authenticator/person/authenticate").permitAll()
                     .requestMatchers("authenticator/person/message").permitAll()
+                    .requestMatchers("/actuator/prometheus").permitAll()
+                    .requestMatchers("/actuator/**").permitAll()
                     )
                     
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

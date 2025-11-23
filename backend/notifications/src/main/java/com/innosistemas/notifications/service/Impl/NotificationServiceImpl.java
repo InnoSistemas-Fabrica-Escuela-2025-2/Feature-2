@@ -20,7 +20,6 @@ public class NotificationServiceImpl implements NotificationService {
         } catch(Exception e){
             throw new UnsupportedOperationException("No se pudo encontrar el estudiante: " + e);
         }
-        
     }
         
     @Override

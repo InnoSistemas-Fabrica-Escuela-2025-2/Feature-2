@@ -21,6 +21,7 @@ public class NotificationProducerImpl implements NotificationProducer {
             kafkaTemplate.send("notifications-topic", email);
             System.out.println("El correo se envió con éxito" + email);
         } catch (Exception e){
+            e.printStackTrace();
             throw new UnsupportedOperationException("No es posible:" + e);
         }
     }

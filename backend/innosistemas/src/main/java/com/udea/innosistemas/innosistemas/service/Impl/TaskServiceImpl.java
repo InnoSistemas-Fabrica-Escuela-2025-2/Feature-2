@@ -2,8 +2,10 @@ package com.udea.innosistemas.innosistemas.service.Impl;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,25 +88,28 @@ public class TaskServiceImpl implements TaskService{
 
     //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
     @Override
-    @Scheduled(cron = "0 0 10 * * *")
+    @Scheduled(cron = "0 */2 * * * *")
     public void sendNotification() {
-        Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
-        Timestamp limit = Timestamp.valueOf(LocalDate.now().plusDays(3).atStartOfDay());
-        LocalDate localDate = limit.toLocalDateTime().toLocalDate();
-        System.out.println("Hoy es: " + today + " y el límite es: " + limit);
+        LocalDateTime threeDaysFromNowStart = LocalDate.now().plusDays(3).atStartOfDay();  // 00:00 del día +3
+        LocalDateTime threeDaysFromNowEnd = threeDaysFromNowStart.plusDays(1).minusNanos(1);  // 23:59:59 del día +3
+        Timestamp start = Timestamp.valueOf(threeDaysFromNowStart);
+        Timestamp end = Timestamp.valueOf(threeDaysFromNowEnd);
+        System.out.println("Buscando tareas que venzan exactamente entre: " + start + " y " + end);
         try{
-            List<Task> tasks = findByDate(today, limit);
+            List<Task> tasks = findByDate(start, end);
 
             if (tasks == null || tasks.isEmpty()) {
             System.out.print("No hay tareas");
             return; 
-        }
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM"); 
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+            }
+            
+            Locale locale = new Locale("es", "ES");
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM", locale); 
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm", locale);
 
             for (Task task:tasks){
-                String fecha = localDate.format(dateFormatter);
-                String hora = limit.toLocalDateTime().format(timeFormatter);
+                String fecha = threeDaysFromNowStart.toLocalDate().format(dateFormatter);
+                String hora = threeDaysFromNowStart.format(timeFormatter); 
 
                 String mensaje = "Hola, \n\nLa tarea " + task.getTitle() +
                      " vence el día " + fecha +

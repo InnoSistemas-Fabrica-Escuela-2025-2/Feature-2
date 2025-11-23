@@ -22,7 +22,7 @@ public class NotificationsConsumerImpl implements NotificationsConsumer{
     //Esto usa automaticamente el kafkaListenerContainerFactory definido en KafkaConsumerConfig 
     //El topic se refiere al canal de comunicación en Kafka donde se envían y reciben los mensajes
     //El groupId identifica de manera única al consumidor dentro de un grupo de consumidores
-    @KafkaListener(topics = "notifications-topic", groupId = "notification-group")
+    @KafkaListener(topics = "notifications-topic", groupId = "notification-group", containerFactory = "kafkaListenerContainerFactory")
     @Override
     public void consumer(EmailEvent email){
         System.out.print("Sí llegó");
