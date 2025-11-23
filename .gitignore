@@ -23,7 +23,6 @@ backend/QUICK_START.md
 qa/reports/
 .vscode/settings.json
 .sonarlint/connectedMode.json
-.vscode/settings.json
 
 # --- Añadidos: IDE, build y caches ---
 # IntelliJ / JetBrains
