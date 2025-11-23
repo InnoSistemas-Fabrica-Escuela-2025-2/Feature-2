@@ -29,14 +29,12 @@ export default function Notificaciones() {
   }
 
   const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, leida: true } : n))
-    );
+    setNotifications(prev => prev.filter(n => n.id !== id));
     toast.success('Notificación marcada como leída');
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, leida: true })));
+    setNotifications([]);
     toast.success('Todas las notificaciones marcadas como leídas');
   };
 

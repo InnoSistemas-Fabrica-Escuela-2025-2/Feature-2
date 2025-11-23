@@ -5,10 +5,11 @@ import { CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { ErrorState } from '@/components/ErrorState';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { projects, tasks } = useData();
+  const { projects, tasks, isLoading, error, refreshData } = useData();
 
   // Filter data - show all for now
   const userProjects = projects;
@@ -44,6 +45,29 @@ const Dashboard = () => {
     const isNotCompleted = status !== 'finalizado';
     return deadline >= today && deadline <= nextWeek && isNotCompleted;
   });
+
+  // Show error state if data loading failed
+  if (error && !isLoading) {
+    return (
+      <ErrorState
+        message="No fue posible cargar la información del proyecto. Intente nuevamente."
+        onRetry={refreshData}
+        isRetrying={isLoading}
+      />
+    );
+  }
+
+  // Show loading state
+  if (isLoading && projects.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -129,30 +153,37 @@ const Dashboard = () => {
                 No tienes proyectos activos
               </p>
             ) : (
-              userProjects.map((project) => {
-                const progressValue = project.progreso ?? 0;
-                const clampedProgress = Math.min(100, Math.max(0, Math.round(progressValue)));
+              <>
+                {userProjects.slice(0, 5).map((project) => {
+                  const progressValue = project.progreso ?? 0;
+                  const clampedProgress = Math.min(100, Math.max(0, Math.round(progressValue)));
 
-                return (
-                  <div key={project.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Link
-                        to={`/proyectos/${project.id}`}
-                        className="font-medium hover:text-primary transition-colors"
-                      >
-                        {project.name || project.nombre}
-                      </Link>
-                      <span className="text-sm text-muted-foreground">
-                        {clampedProgress}%
-                      </span>
+                  return (
+                    <div key={project.id} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Link
+                          to={`/proyectos/${project.id}`}
+                          className="font-medium hover:text-primary transition-colors"
+                        >
+                          {project.name || project.nombre}
+                        </Link>
+                        <span className="text-sm text-muted-foreground">
+                          {clampedProgress}%
+                        </span>
+                      </div>
+                      <Progress
+                        value={clampedProgress}
+                        aria-label={`Progreso del proyecto ${project.name || project.nombre}: ${clampedProgress}%`}
+                      />
                     </div>
-                    <Progress
-                      value={clampedProgress}
-                      aria-label={`Progreso del proyecto ${project.name || project.nombre}: ${clampedProgress}%`}
-                    />
-                  </div>
-                );
-              })
+                  );
+                })}
+                {userProjects.length > 5 && (
+                  <p className="text-sm text-muted-foreground text-center pt-2">
+                    +{userProjects.length - 5} proyectos más
+                  </p>
+                )}
+              </>
             )}
             <Button asChild className="w-full mt-4">
               <Link to="/proyectos">Ver Todos los Proyectos</Link>

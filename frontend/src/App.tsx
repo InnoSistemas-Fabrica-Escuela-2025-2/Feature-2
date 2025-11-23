@@ -8,11 +8,10 @@ import { DataProvider } from "@/contexts/DataContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import Login from "./pages/Login";
+import RecuperarCuenta from "./pages/RecuperarCuenta";
 import Dashboard from "./pages/Dashboard";
 import Proyectos from "./pages/Proyectos";
 import ProjectDetail from "./pages/ProjectDetail";
-import Tareas from "./pages/Tareas";
-import TaskDetail from "./pages/TaskDetail";
 import Notificaciones from "./pages/Notificaciones";
 import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
@@ -30,6 +29,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/recuperar-cuenta" element={<RecuperarCuenta />} />
             
             {/* Protected Routes */}
             <Route
@@ -58,26 +58,6 @@ const App = () => (
                 <ProtectedRoute>
                   <AppLayout>
                     <ProjectDetail />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tareas"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Tareas />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tareas/:taskId"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <TaskDetail />
                   </AppLayout>
                 </ProtectedRoute>
               }

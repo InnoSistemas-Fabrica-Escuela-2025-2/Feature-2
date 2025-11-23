@@ -39,11 +39,15 @@ export const TaskForm: React.FC<TaskFormProps> = ({ editingTask }) => {
 
   useEffect(() => {
     if (editingTask) {
+      const deliveryDateStr = typeof editingTask.deliveryDate === 'string' 
+        ? editingTask.deliveryDate 
+        : (editingTask.deliveryDate instanceof Date ? editingTask.deliveryDate.toISOString().split('T')[0] : '');
+      
       setFormData({
-        title: editingTask.title,
-        description: editingTask.description,
-        deliveryDate: editingTask.deliveryDate,
-        responsiblePeople: [...editingTask.responsiblePeople],
+        title: editingTask.title || '',
+        description: editingTask.description || '',
+        deliveryDate: deliveryDateStr,
+        responsiblePeople: editingTask.responsiblePeople ? [...editingTask.responsiblePeople] : [],
       });
     }
   }, [editingTask]);
@@ -135,11 +139,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ editingTask }) => {
     } else {
       const newTask: Task = {
         id: Date.now().toString(),
-        projectId,
-        ...formData,
-        status: 'pending',
+        proyectoId: projectId,
+        titulo: formData.title,
+        descripcion: formData.description,
+        fechaEntrega: formData.deliveryDate,
+        fechaCreacion: now,
+        responsableId: 'current-user',
+        estado: 'pendiente',
+        title: formData.title,
+        description: formData.description,
+        deliveryDate: formData.deliveryDate,
         createdAt: now,
         updatedAt: now,
+        status: 'pending',
+        responsiblePeople: formData.responsiblePeople,
       };
       dispatch({ type: 'ADD_TASK', payload: newTask });
       toast({
