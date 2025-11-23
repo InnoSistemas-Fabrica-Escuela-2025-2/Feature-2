@@ -1,0 +1,3 @@
+plugins {
+    id "io.github.jumosqu12.screenplayarchitecture" version "2.0.1"
+}
