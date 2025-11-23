@@ -16,9 +16,11 @@ import com.udea.innosistemas.innosistemas.service.ObjectiveService;
 public class ObjectiveController {
 
     @Autowired
+    // Servicio para manejar objetivos
     private ObjectiveService objectiveService;
 
     @PostMapping("/save")
+    // Endpoint para guardar un objetivo
     public ResponseEntity<Objective> saveObjective(@RequestBody Objective objective) {
         try {
             Objective saved = objectiveService.saveObjective(objective);

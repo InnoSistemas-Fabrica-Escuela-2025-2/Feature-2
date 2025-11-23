@@ -11,6 +11,7 @@ import com.udea.innosistemas.innosistemas.service.ObjectiveService;
 public class ObjectiveServiceImpl implements ObjectiveService{
     
     @Autowired
+    // Repositorio para manejar objetivos
     private ObjectiveRepository objectiveRepository;
 
     @Override

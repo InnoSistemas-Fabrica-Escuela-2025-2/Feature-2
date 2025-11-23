@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class StateController {
     
     @Autowired
+    // Servicio para manejar estados
     private StateService stateService;
 
     @GetMapping("/listAll")
+    // Endpoint para listar todos los estados
     public ResponseEntity<List<State>> allStates() {
         return ResponseEntity.ok(stateService.allStates());
     }

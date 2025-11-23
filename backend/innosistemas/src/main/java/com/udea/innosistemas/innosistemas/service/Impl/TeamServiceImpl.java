@@ -12,10 +12,11 @@ import com.udea.innosistemas.innosistemas.service.TeamService;
 public class TeamServiceImpl implements TeamService{
 
     @Autowired
+    // Repositorio para manejar equipos
     private TeamRepository teamRepository;
 
-    //Obtener el nombre del equipo de un estudiante por su id
     @Override
+    //Obtener el nombre del equipo de un estudiante por su id
     public String nameTeam(Long id_student) {
         try{
             return teamRepository.findNameByIdStudent(id_student);
@@ -24,8 +25,8 @@ public class TeamServiceImpl implements TeamService{
         }
     }
 
-    //Obtener los nombres de los estudiantes de un equipo por el id de un estudiante
     @Override
+    //Obtener los nombres de los estudiantes de un equipo por el id de un estudiante
     public List<String> getStudentsNameById(Long id_student) {
         try{
             String teamName = nameTeam(id_student);

@@ -12,25 +12,24 @@ import com.udea.innosistemas.innosistemas.service.ProjectService;
 @Service
 public class ProjectServiceImpl implements ProjectService{
 
-
     @Autowired
+    // Repositorio para manejar proyectos
     private ProjectRepository projectRepository;
 
-
-    //Guardar un proyecto en la base de datos
     @Override
+    //Guardar un proyecto en la base de datos
     public Project saveProject(Project project) {
         return projectRepository.save(project);
     }
 
-    //Obtener todos los proyectos
     @Override
+    //Obtener todos los proyectos
     public List<Project> listAllProjects(){
         return projectRepository.findAll();
     }
 
-    //Obtener los ids de los proyectos de un estudiante por su id
     @Override
+    //Obtener los ids de los proyectos de un estudiante por su id
     public List<Long> getProjectsById(Long student_id) {
         try{
             return projectRepository.getProjectsById(student_id);
@@ -39,8 +38,8 @@ public class ProjectServiceImpl implements ProjectService{
         }
     }
 
-    //Obtener todos los proyectos de un estudiante por su id
     @Override
+    //Obtener todos los proyectos de un estudiante por su id
     public List<Project> listAllById(Long student_id) {
         try{
             List<Long> id_projects = getProjectsById(student_id);

@@ -21,14 +21,17 @@ import com.udea.innosistemas.innosistemas.service.ProjectService;
 public class ProjectController {
     
     @Autowired
+    // Servicio para manejar proyectos
     private ProjectService projectService;
 
     @GetMapping("/message")
+    // Endpoint para mostrar un mensaje de estado del servicio
     public ResponseEntity<String> showMesagge() {
         return ResponseEntity.ok("servicio 2 funcionando");
     }
 
     @PostMapping("/save")
+    // Endpoint para guardar un proyecto
     public ResponseEntity<Project> saveProject(@RequestBody Project project) {
        try {
             Project saved = projectService.saveProject(project);
@@ -39,11 +42,13 @@ public class ProjectController {
     }
 
     @GetMapping("/listAll")
+    // Endpoint para listar todos los proyectos
     public ResponseEntity<List<Project>> listAllProjects() {
         return ResponseEntity.ok(projectService.listAllProjects());
     }
 
     @GetMapping("/listAllById/{id}")
+    // Endpoint para listar todos los proyectos de un estudiante por su id
     public ResponseEntity<List<Project>> listAllProjectsById(@PathVariable Long id) {
         return ResponseEntity.ok(projectService.listAllById(id));
     }

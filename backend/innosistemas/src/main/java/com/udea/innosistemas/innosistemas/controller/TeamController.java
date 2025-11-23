@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class TeamController {
     
     @Autowired
+    // Servicio para manejar equipos
     private TeamService teamService;
     
     @GetMapping("/getStudentsName/{id}")
+    // Endpoint para obtener los nombres de los estudiantes por id de equipo
     public ResponseEntity<List<String>> getStudentsNameById(@PathVariable Long id) {
         return ResponseEntity.ok(teamService.getStudentsNameById(id));
     }

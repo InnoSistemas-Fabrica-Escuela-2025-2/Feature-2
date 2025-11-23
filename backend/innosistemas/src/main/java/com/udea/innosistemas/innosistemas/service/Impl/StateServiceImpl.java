@@ -13,10 +13,11 @@ import com.udea.innosistemas.innosistemas.service.StateService;
 public class StateServiceImpl implements StateService{
 
     @Autowired
+    // Repositorio para manejar estados
     private StateRepository stateRepository;
 
-    //Obtener todos los estados
     @Override
+    //Obtener todos los estados
     public List<State> allStates() {
         try {
             return stateRepository.findAll();

@@ -13,9 +13,11 @@ import com.innosistemas.notifications.service.NotificationsConsumer;
 public class NotificationsConsumerImpl implements NotificationsConsumer{
 
     @Autowired
+    //Inyectar la dependencia del servicio de notificaciones por correo electrónico
     private EmailNotifications emailNotifications;
 
     @Autowired
+    //Inyectar la dependencia del servicio de notificaciones
     private NotificationService notificationService;
 
     //Como usamos la anotación @KafkaListener, este método se ejecutará automáticamente cuando llegue un nuevo mensaje al tópico "notifications-topic"

@@ -28,9 +28,9 @@ public class KafkaProducerConfig {
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers); // Dirección del port de Kafka
         config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
         return new DefaultKafkaProducerFactory<>(
-            config,
-            () -> new StringSerializer(), 
-            () -> new JsonSerializer<EmailEvent>()  
+            config,     // Se retorna el map
+            () -> new StringSerializer(),       // Serializador de la clave
+            () -> new JsonSerializer<EmailEvent>()  // Serializador del valor
         );
         
     }

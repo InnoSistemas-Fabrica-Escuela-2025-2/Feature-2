@@ -40,7 +40,7 @@ public class KafkaConsumerConfig {
     //Crear el factory de listeners de Kafka
     public ConcurrentKafkaListenerContainerFactory<String, EmailEvent> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, EmailEvent> factory = new ConcurrentKafkaListenerContainerFactory<>(); // Crear una fábrica de listener de Kafka
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerFactory()); // Asignar la fábrica de consumidores creada anteriormente
         return factory;
     }
 }
