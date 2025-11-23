@@ -25,16 +25,17 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // Dirección del port de Kafka
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class); //Deserializador de la key
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class); //Deserializador del valor (EmailEvent)
-        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), 
-        new JsonDeserializer<>(EmailEvent.class));
+        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*"); // Permitir deserializar cualquier paquete
+        return new DefaultKafkaConsumerFactory<>(config,  // Se retorna el map
+        new StringDeserializer(),  // Deserializador de la key (topic)
+        new JsonDeserializer<>(EmailEvent.class));  // Deserializador del valor (EmailEvent)
     }
 
     @Bean
     //Crear el factory de listeners de Kafka
     public ConcurrentKafkaListenerContainerFactory<String, EmailEvent> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, EmailEvent> factory = new ConcurrentKafkaListenerContainerFactory<>(); // Crear una fábrica de listener de Kafka
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerFactory()); // Asignar la fábrica de consumidores creada anteriormente
         return factory;
     }
 }

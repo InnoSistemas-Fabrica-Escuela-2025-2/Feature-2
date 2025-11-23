@@ -11,9 +11,11 @@ import com.innosistemas.notifications.service.NotificationService;
 public class NotificationServiceImpl implements NotificationService {
 
     @Autowired
+    //Inyectar la dependencia del repositorio de notificaciones
     public NotificationRepository notificationRepository;
 
     @Override
+    //Obtener el ID del estudiante por su correo electrónico
     public Long getIdByEmail(String email) {
         try{
             return notificationRepository.findIdByEmail(email);
@@ -24,6 +26,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
         
     @Override
+    //Enviar una notificación y guardarla en la base de datos
     public void sendNotification(String responsible, String name, String content) {
         try{
             Long id_student = getIdByEmail(responsible);

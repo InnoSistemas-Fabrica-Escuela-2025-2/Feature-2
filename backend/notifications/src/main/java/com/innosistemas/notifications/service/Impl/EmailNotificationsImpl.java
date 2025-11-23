@@ -27,15 +27,15 @@ public class EmailNotificationsImpl implements EmailNotifications{
         Email from = new Email ("innosistemas5@gmail.com"); //Correo remitente
         Email to = new Email(email); //Correo destinatario
         Content newContent = new Content("text/plain", content); //Contenido del correo
-        Mail mail = new Mail(from, subject, to, newContent);
+        Mail mail = new Mail(from, subject, to, newContent);  //Crear el objeto Mail con los detalles del correo
 
-        SendGrid sg = new SendGrid(sendGridApiKey);
-        Request request = new Request();
+        SendGrid sg = new SendGrid(sendGridApiKey);  //Crear una instancia de SendGrid con la clave API
+        Request request = new Request();  //Crear una solicitud para enviar el correo
         try{
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
-            Response response = sg.api(request);
+            Response response = sg.api(request);  //Enviar la solicitud y obtener la respuesta
             System.out.println(response.getStatusCode());
             System.out.println(response);
         } catch (IOException ex) {

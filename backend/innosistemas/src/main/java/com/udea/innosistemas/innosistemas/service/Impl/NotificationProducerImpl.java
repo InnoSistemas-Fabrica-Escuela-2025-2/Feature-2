@@ -11,6 +11,7 @@ import com.udea.innosistemas.innosistemas.service.NotificationProducer;
 public class NotificationProducerImpl implements NotificationProducer {
 
     @Autowired
+    // Plantilla de Kafka para enviar mensajes, acepta clave de tipo String (topic) y valor de tipo EmailEvent
     private KafkaTemplate<String, EmailEvent> kafkaTemplate;
 
     @Override

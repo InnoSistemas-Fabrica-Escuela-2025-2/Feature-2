@@ -21,9 +21,11 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 public class TaskController {
 
     @Autowired
+    // Servicio para manejar tareas
     private TaskService taskService;
 
     @PostMapping("/save")
+    // Endpoint para guardar una tarea
     public ResponseEntity<Task> saveTask(@RequestBody Task task) {
         try {
             Task saved = taskService.saveTask(task);
@@ -34,17 +36,20 @@ public class TaskController {
     }
 
     @GetMapping("/listAll")
+    // Endpoint para listar todas las tareas
     public ResponseEntity<List<Task>> listAllTasks() {
         return ResponseEntity.ok(taskService.listAllTasks());
     }
 
     @DeleteMapping("/delete/{id}")
+    // Endpoint para eliminar una tarea por su id
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/update")
+    // Endpoint para actualizar una tarea
     public ResponseEntity<Task> updatedTask(@RequestBody Task task) {
         try {
             Task updated = taskService.saveTask(task);
@@ -55,6 +60,7 @@ public class TaskController {
     }
     
     @PutMapping("updateState/{id_task}/{id_state}")
+    // Endpoint para actualizar el estado de una tarea
     public ResponseEntity<Void> updateState(@PathVariable Long id_task, @PathVariable Long id_state) {
         taskService.updateState(id_task, id_state);
         return ResponseEntity.noContent().build();

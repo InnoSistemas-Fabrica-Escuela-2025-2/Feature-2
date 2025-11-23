@@ -16,12 +16,14 @@ public class SecurityConfig {
     private static final String role = "STUDENT";
 
     @Autowired
+    // Filtro de autenticación JWT
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
+    // Configuración de la cadena de filtros de seguridad
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
             .authorizeHttpRequests(authz -> authz
                     .requestMatchers("/project/project/**").hasRole(role)
                     .requestMatchers("/project/project/listAll").hasRole("PROFESOR")
@@ -31,7 +33,7 @@ public class SecurityConfig {
                     .requestMatchers("authenticator/person/authenticate").permitAll()
                     .requestMatchers("authenticator/person/message").permitAll()
                     )
-                    
+            // Agregar el filtro de autenticación JWT antes del filtro de nombre de usuario y contraseña
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
     }

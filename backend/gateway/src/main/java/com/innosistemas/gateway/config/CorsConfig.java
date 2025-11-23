@@ -12,8 +12,9 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 public class CorsConfig {
 
     @Bean
+    // Configuración de CORS para permitir solicitudes desde el frontend
     public CorsWebFilter corsWebFilter() {
-        CorsConfiguration config = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();  // Crear una nueva configuración de CORS
 
         config.setAllowCredentials(true); // Permitir el envío de cookies y credenciales
         config.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Orígenes permitidos

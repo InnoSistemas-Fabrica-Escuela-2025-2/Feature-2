@@ -19,9 +19,11 @@ import com.innosistemas.authenticator.service.AuthenticatorService;
 public class AuthenticatorController {
     
     @Autowired
+    // Servicio de autenticación
     private AuthenticatorService authenticatorService;
     
     @PostMapping("/authenticate")
+    // Endpoint para autenticar usuarios
     public ResponseEntity<AuthenticatorResponse> login(@RequestBody AuthenticatorRequest request) {
         try {
             AuthenticatorResponse response = authenticatorService.login(request);
@@ -32,6 +34,7 @@ public class AuthenticatorController {
     }
 
     @GetMapping("/message")
+    // Endpoint de prueba para verificar que el servicio está funcionando
     public ResponseEntity<String> showMesagge() {
         return ResponseEntity.ok("servicio 1 funcionando");
     }

@@ -23,11 +23,11 @@ public class KafkaProducerConfig {
     public ProducerFactory<String, EmailEvent> producerFactory() {
         Map<String, Object> config = new HashMap<>(); // Configuraciones del productor de Kafka
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // Dirección del port de Kafka
-        config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);  // Permite no agregar información de tipo en los encabezados
         return new DefaultKafkaProducerFactory<>(
-            config,
-            () -> new StringSerializer(), 
-            () -> new JsonSerializer<EmailEvent>()  
+            config,     // Se retorna el map
+            () -> new StringSerializer(),       // Serializador de la clave
+            () -> new JsonSerializer<EmailEvent>()  // Serializador del valor
         );
         
     }

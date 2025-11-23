@@ -13,15 +13,17 @@ import com.innosistemas.notifications.service.NotificationsConsumer;
 public class NotificationsConsumerImpl implements NotificationsConsumer{
 
     @Autowired
+    //Inyectar la dependencia del servicio de notificaciones por correo electrónico
     private EmailNotifications emailNotifications;
 
     @Autowired
+    //Inyectar la dependencia del servicio de notificaciones
     private NotificationService notificationService;
 
-    //Como usamos la anotación @KafkaListener, este método se ejecutará automáticamente cuando llegue un nuevo mensaje al tópico "notifications-topic"
-    //Esto usa automaticamente el kafkaListenerContainerFactory definido en KafkaConsumerConfig 
-    //El topic se refiere al canal de comunicación en Kafka donde se envían y reciben los mensajes
-    //El groupId identifica de manera única al consumidor dentro de un grupo de consumidores
+    /*Como usamos la anotación @KafkaListener, este método se ejecutará automáticamente cuando llegue un nuevo mensaje al tópico "notifications-topic"
+    Esto usa automaticamente el kafkaListenerContainerFactory definido en KafkaConsumerConfig 
+    El topic se refiere al canal de comunicación en Kafka donde se envían y reciben los mensajes
+    El groupId identifica de manera única al consumidor dentro de un grupo de consumidores */
     @KafkaListener(topics = "notifications-topic", groupId = "notification-group")
     @Override
     public void consumer(EmailEvent email){

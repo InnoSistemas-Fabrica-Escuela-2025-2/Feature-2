@@ -22,16 +22,19 @@ import com.udea.innosistemas.innosistemas.service.TaskService;
 public class TaskServiceImpl implements TaskService{
 
     @Autowired
+    // Repositorio para manejar tareas
     private TaskRepository taskRepository;
 
     @Autowired
+    // Repositorio para manejar estados
     private StateRepository stateRepository;
 
     @Autowired
+    // Servicio para manejar notificaciones
     private NotificationProducer notificationProducer;
 
-    //Eliminar una tarea por su id
     @Override
+    //Eliminar una tarea por su id
     public void deleteTask(long id) {
         if(taskRepository.existsById(id)){
             taskRepository.deleteById(id);
@@ -40,8 +43,8 @@ public class TaskServiceImpl implements TaskService{
         }
     }
 
-    //Guardar una tarea en la base de datos
     @Override
+    //Guardar una tarea en la base de datos
     public Task saveTask(Task task) {
         try {
             if (task.getState() == null){
@@ -55,14 +58,14 @@ public class TaskServiceImpl implements TaskService{
         }
     }
 
-    //Obtener todas las tareas
     @Override
+    //Obtener todas las tareas
     public List<Task> listAllTasks() {
         return taskRepository.findAll();
     }
 
-    //Actualizar el estado de una tarea
     @Override
+    //Actualizar el estado de una tarea
     public void updateState(Long id_task, Long id_state) {
         if (!taskRepository.findById(id_task).isPresent()){
             throw new UnsupportedOperationException("La tarea no existe.");
@@ -74,8 +77,8 @@ public class TaskServiceImpl implements TaskService{
         taskRepository.save(task);
     }
 
-    //Buscar tareas por fecha de vencimiento
     @Override
+    //Buscar tareas por fecha de vencimiento
     public List<Task> findByDate(Timestamp today, Timestamp limit) {
         try{
             return taskRepository.findByDeadlineBetween(today, limit);
@@ -84,9 +87,9 @@ public class TaskServiceImpl implements TaskService{
         }
     }
 
-    //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
     @Override
     @Scheduled(cron = "0 0 10 * * *")
+    //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
     public void sendNotification() {
         Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
         Timestamp limit = Timestamp.valueOf(LocalDate.now().plusDays(3).atStartOfDay());
