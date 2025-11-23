@@ -46,6 +46,13 @@ public class ActiveSessionServiceImpl implements ActiveSessionService {
     }
 
     @Override
+    // Eliminar la sesión por token
+    public void invalidateSessionByToken(String token) {
+        activeSessionRepository.findByToken(token)
+            .ifPresent(activeSessionRepository::delete);
+    }
+
+    @Override
     // Verificar si la sesión de un usuario está activa por medio de la expiración del token
     public boolean isSessionActive(Person person) {
         return activeSessionRepository.findByPerson(person)

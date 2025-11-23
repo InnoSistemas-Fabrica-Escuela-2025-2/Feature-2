@@ -1,21 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockNotifications } from '@/data/mockData';
+import { notificationsApi } from '@/lib/api';
 import { Bell, Check, Trash2, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+
+interface Notification {
+  id: number;
+  id_student: number;
+  name: string;
+  content: string;
+}
 
 export default function Notificaciones() {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState(
-    mockNotifications.filter(n => n.userId === user?.id)
-  );
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const unreadCount = notifications.filter(n => !n.leida).length;
+  useEffect(() => {
+    if (user?.id) {
+      loadNotifications();
+    }
+  }, [user?.id]);
+
+  const loadNotifications = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      const response = await notificationsApi.getByStudentId(user.id);
+      setNotifications(response.data || []);
+    } catch (error) {
+      console.error('Error al cargar notificaciones:', error);
+      toast.error('No se pudieron cargar las notificaciones');
+      setNotifications([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const unreadCount = notifications.length;
 
   const hasUnread = unreadCount > 0;
   const isPlural = unreadCount === 1;
@@ -28,35 +54,38 @@ export default function Notificaciones() {
     notificationMessage = 'No tienes notificaciones sin leer';
   }
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    toast.success('Notificación marcada como leída');
+  const markAsRead = async (id: number) => {
+    try {
+      await notificationsApi.delete(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      toast.success('Notificación marcada como leída');
+    } catch (error) {
+      console.error('Error al marcar como leída:', error);
+      toast.error('No se pudo marcar la notificación como leída');
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications([]);
-    toast.success('Todas las notificaciones marcadas como leídas');
+  const markAllAsRead = async () => {
+    try {
+      // Eliminar todas las notificaciones
+      await Promise.all(notifications.map(n => notificationsApi.delete(n.id)));
+      setNotifications([]);
+      toast.success('Todas las notificaciones marcadas como leídas');
+    } catch (error) {
+      console.error('Error al marcar todas como leídas:', error);
+      toast.error('No se pudieron marcar todas las notificaciones');
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    toast.success('Notificación eliminada');
-  };
-
-  const getNotificationIcon = (tipo: string) => {
-    const icons: Record<string, string> = {
-      'tarea-proxima': '⏰',
-      'tarea-vencida': '❌',
-      'proyecto-actualizado': '📋',
-      'asignacion-nueva': '📌',
-    };
-    return icons[tipo] || '🔔';
-  };
-
-  const filteredNotifications = (filter: 'all' | 'unread' | 'read') => {
-    if (filter === 'unread') return notifications.filter(n => !n.leida);
-    if (filter === 'read') return notifications.filter(n => n.leida);
-    return notifications;
+  const deleteNotification = async (id: number) => {
+    try {
+      await notificationsApi.delete(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      toast.success('Notificación eliminada');
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      toast.error('No se pudo eliminar la notificación');
+    }
   };
 
   return (
@@ -83,98 +112,74 @@ export default function Notificaciones() {
       </div>
 
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6" role="tablist" aria-label="Filtros de notificaciones">
+        <TabsList className="grid w-full grid-cols-1 mb-6" role="tablist" aria-label="Filtros de notificaciones">
           <TabsTrigger value="all" className="gap-2" role="tab" aria-label="Ver todas las notificaciones">
             <Filter className="h-4 w-4" aria-hidden="true" />
             <span>Todas ({notifications.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="unread" className="gap-2" role="tab" aria-label="Ver notificaciones sin leer">
-            <span>Sin leer ({unreadCount})</span>
-          </TabsTrigger>
-          <TabsTrigger value="read" className="gap-2" role="tab" aria-label="Ver notificaciones leídas">
-            <span>Leídas ({notifications.length - unreadCount})</span>
-          </TabsTrigger>
         </TabsList>
 
-        {(['all', 'unread', 'read'] as const).map(filter => {
-          let filterMessage = '';
-
-          if (filter === 'unread') {
-            filterMessage = 'sin leer';
-          } else if (filter === 'read') {
-            filterMessage = 'leídas';
-          }
-
-          return (
-            <TabsContent key={filter} value={filter} className="space-y-4">
-              {filteredNotifications(filter).length === 0 ? (
-                <Card>
-                  <CardContent className="pt-6 text-center text-muted-foreground">
-                    <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" aria-hidden="true" />
-                    <p>No hay notificaciones {filterMessage}</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredNotifications(filter).map(notification => (
-                  <Card
-                    key={notification.id}
-                    className={`transition-all ${
-                      notification.leida ? '' : 'border-l-4 border-l-primary bg-accent/5'
-                    }`}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                          <span className="text-2xl">
-                            {getNotificationIcon(notification.tipo)}
-                          </span>
-                          <div className="flex-1">
-                            <CardTitle className="text-lg">
-                              {notification.mensaje}
-                              {!notification.leida && (
-                                <span className="sr-only"> (sin leer)</span>
-                              )}
-                            </CardTitle>
-                            <CardDescription className="mt-1">
-                              <time dateTime={notification.fecha.toISOString()}>
-                                {formatDistanceToNow(notification.fecha, {
-                                  addSuffix: true,
-                                  locale: es,
-                                })}
-                              </time>
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {!notification.leida && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => markAsRead(notification.id)}
-                              aria-label={`Marcar como leída: ${notification.mensaje}`}
-                            >
-                              <Check className="h-4 w-4" aria-hidden="true" />
-                              <span className="sr-only">Marcar como leída</span>
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => deleteNotification(notification.id)}
-                            aria-label={`Eliminar notificación: ${notification.mensaje}`}
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            <span className="sr-only">Eliminar</span>
-                          </Button>
-                        </div>
+        <TabsContent value="all" className="space-y-4">
+          {loading ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-muted-foreground">
+                <p>Cargando notificaciones...</p>
+              </CardContent>
+            </Card>
+          ) : notifications.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-muted-foreground">
+                <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" aria-hidden="true" />
+                <p>No hay notificaciones</p>
+              </CardContent>
+            </Card>
+          ) : (
+            notifications.map(notification => (
+              <Card
+                key={notification.id}
+                className="transition-all border-l-4 border-l-primary bg-accent/5"
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <span className="text-2xl">
+                        🔔
+                      </span>
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">
+                          {notification.name}
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          {notification.content}
+                        </CardDescription>
                       </div>
-                    </CardHeader>
-                  </Card>
-                ))
-              )}
-            </TabsContent>
-          );
-        })}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => markAsRead(notification.id)}
+                        aria-label="Marcar como leída"
+                      >
+                        <Check className="h-4 w-4" aria-hidden="true" />
+                        <span className="sr-only">Marcar como leída</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deleteNotification(notification.id)}
+                        aria-label="Eliminar notificación"
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );

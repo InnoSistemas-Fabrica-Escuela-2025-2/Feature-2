@@ -269,6 +269,25 @@ export const statesApi = {
     apiGateway.get('/project/state/listAll'),
 };
 
+// ==================== API DE NOTIFICACIONES ====================
+// Usa el microservicio de Notifications (puerto 8083) a través del Gateway
+
+export const notificationsApi = {
+  /**
+   * Obtener todas las notificaciones de un estudiante
+   * GET /notifications/listAll/{id}
+   */
+  getByStudentId: (studentId: number) => 
+    apiGateway.get(`/notifications/listAll/${studentId}`),
+  
+  /**
+   * Eliminar (marcar como leída) una notificación
+   * PUT /notifications/delete/{id}
+   */
+  delete: (notificationId: number) => 
+    apiGateway.put(`/notifications/delete/${notificationId}`),
+};
+
 // ==================== FUNCIONES DE UTILIDAD ====================
 
 /**

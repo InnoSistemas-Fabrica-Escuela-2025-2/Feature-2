@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockNotifications } from '@/data/mockData';
+import { notificationsApi } from '@/lib/api';
 import { Bell, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,41 +12,57 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
+
+interface Notification {
+  id: number;
+  id_student: number;
+  name: string;
+  content: string;
+}
 
 export function NotificationsDropdown() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState(
-    mockNotifications.filter(n => n.userId === user?.id && !n.leida)
-  );
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const unreadCount = notifications.length;
+  useEffect(() => {
+    if (user?.id && open) {
+      loadNotifications();
+    }
+  }, [user?.id, open]);
 
-  const getNotificationIcon = (tipo: string) => {
-    const icons: Record<string, string> = {
-      'tarea-proxima': '⏰',
-      'tarea-vencida': '❌',
-      'proyecto-actualizado': '📋',
-      'asignacion-nueva': '📌',
-    };
-    return icons[tipo] || '🔔';
-  };
-
-  const handleNotificationClick = (relacionadoId?: string) => {
-    if (relacionadoId) {
-      setOpen(false);
-      navigate(`/tareas/${relacionadoId}`);
+  const loadNotifications = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      const response = await notificationsApi.getByStudentId(user.id);
+      setNotifications(response.data || []);
+    } catch (error) {
+      console.error('Error al cargar notificaciones:', error);
+      // No mostrar error al usuario, simplemente mostrar lista vacía
+      setNotifications([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const markAsRead = (id: string, e: React.MouseEvent) => {
+  const unreadCount = notifications.length;
+
+  const markAsRead = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    toast.success('Notificación marcada como leída');
+    
+    try {
+      await notificationsApi.delete(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      toast.success('Notificación marcada como leída');
+    } catch (error) {
+      console.error('Error al marcar como leída:', error);
+      toast.error('No se pudo marcar la notificación como leída');
+    }
   };
 
   return (
@@ -78,7 +94,11 @@ export function NotificationsDropdown() {
         </div>
 
         <ScrollArea className="h-[400px]">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+              <p className="text-sm text-muted-foreground">Cargando notificaciones...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
               <Bell className="h-12 w-12 text-muted-foreground/50 mb-3" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">
@@ -91,21 +111,17 @@ export function NotificationsDropdown() {
                 <div
                   key={notification.id}
                   className="p-4 hover:bg-accent/50 cursor-pointer transition-colors"
-                  onClick={() => handleNotificationClick(notification.relacionadoId)}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl flex-shrink-0">
-                      {getNotificationIcon(notification.tipo)}
+                      🔔
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium leading-tight mb-1">
-                        {notification.mensaje}
+                        {notification.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(notification.fecha, {
-                          addSuffix: true,
-                          locale: es,
-                        })}
+                        {notification.content}
                       </p>
                     </div>
                     <Button
