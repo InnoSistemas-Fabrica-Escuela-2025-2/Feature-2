@@ -48,6 +48,12 @@ public class ProjectServiceImpl implements ProjectService{
             throw new UnsupportedOperationException("No fue posible mostrar todos los projectos.");
 
         }
-    }  
+    }
+
+    @Override
+    //Obtener todos los proyectos por team id
+    public List<Project> listAllByTeamId(Long teamId) {
+        return projectRepository.findAllByTeamId(teamId);
+    }
     
 }

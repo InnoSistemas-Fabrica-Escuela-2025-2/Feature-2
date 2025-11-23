@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.udea.innosistemas.innosistemas.entity.Team;
 import com.udea.innosistemas.innosistemas.repository.TeamRepository;
 import com.udea.innosistemas.innosistemas.service.TeamService;
 
@@ -35,5 +36,24 @@ public class TeamServiceImpl implements TeamService{
             throw new UnsupportedOperationException("No existe el estudiante.");
         }
         
+    }
+
+    @Override
+    public List<Team> listAllTeams() {
+        return teamRepository.findAll();
+    }
+
+    @Override
+    public Long getTeamIdByStudent(Long idStudent) {
+        try {
+            String teamName = nameTeam(idStudent);
+            return listAllTeams().stream()
+                .filter(team -> team.getName().equals(teamName))
+                .map(Team::getId)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Equipo no encontrado."));
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("No fue posible encontrar el equipo del estudiante.");
+        }
     }
 }

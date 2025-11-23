@@ -1,6 +1,7 @@
 package com.udea.innosistemas.innosistemas.service.Impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,28 @@ public class StateServiceImpl implements StateService{
         } catch (Exception e){
             throw new UnsupportedOperationException("No hay estados que mostrar.");
         }
+    }
+
+    @Override
+    public Optional<State> findById(Long id) {
+        return stateRepository.findById(id);
+    }
+
+    @Override
+    public Optional<State> findByNameIgnoreCase(String name) {
+        return stateRepository.findByNameIgnoreCase(name);
+    }
+
+    @Override
+    public State findDefaultState() {
+        return stateRepository.findAll().stream()
+            .findFirst()
+            .orElseThrow(() -> new UnsupportedOperationException("No hay estados configurados."));
+    }
+
+    @Override
+    public State resolveState(State requested) {
+        return requested != null ? requested : findDefaultState();
     }
     
 }

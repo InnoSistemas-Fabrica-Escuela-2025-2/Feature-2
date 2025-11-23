@@ -84,7 +84,8 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
             // Registrar la nueva sesión activa
             activeSessionService.registerSession(person, token);
 
-            AuthenticatorResponse response = new AuthenticatorResponse(token, 
+            AuthenticatorResponse response = new AuthenticatorResponse(person.getId(),
+            token, 
             person.getEmail(),
             person.getRole());
 
