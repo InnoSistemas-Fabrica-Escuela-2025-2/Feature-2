@@ -89,11 +89,12 @@ public class TaskServiceImpl implements TaskService{
         }
     }
 
+    //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
     @Override
-    @Scheduled(cron = "0 */2 * * * *")
+    @Scheduled(cron = "0 0 10 * * *")
     public void sendNotification() {
-        LocalDateTime threeDaysFromNowStart = LocalDate.now().plusDays(3).atStartOfDay();  // 00:00 del día +3
-        LocalDateTime threeDaysFromNowEnd = threeDaysFromNowStart.plusDays(1).minusNanos(1);  // 23:59:59 del día +3
+        LocalDateTime threeDaysFromNowStart = LocalDate.now().plusDays(3).atStartOfDay();  
+        LocalDateTime threeDaysFromNowEnd = threeDaysFromNowStart.plusDays(1).minusNanos(1);  
         Timestamp start = Timestamp.valueOf(threeDaysFromNowStart);
         Timestamp end = Timestamp.valueOf(threeDaysFromNowEnd);
         System.out.println("Buscando tareas que venzan exactamente entre: " + start + " y " + end);
