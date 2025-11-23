@@ -2,18 +2,20 @@ package com.innosistemas.authenticator.config;
 
 import java.util.Arrays;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-// DESACTIVADO: El Gateway ya maneja CORS
-// @Configuration
+@Configuration
 public class CorsConfig {
 
-    // @Bean
+    @Bean
+    // Configuración CORS personalizada
     public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();  // Fuente de configuración CORS
+        CorsConfiguration config = new CorsConfiguration();  // Nueva configuración CORS
         
         // Permitir credenciales (cookies, headers de autenticación)
         config.setAllowCredentials(true);

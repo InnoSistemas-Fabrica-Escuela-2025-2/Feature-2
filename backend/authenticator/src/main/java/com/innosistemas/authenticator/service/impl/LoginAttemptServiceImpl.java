@@ -20,12 +20,14 @@ public class LoginAttemptServiceImpl implements LoginAttemptService{
     }
 
     @Override
+    // Elimina el registro de intentos al iniciar sesión correctamente
     public void loginSucceeded(Person person) {
         loginAttempsRepository.findByPerson(person)
             .ifPresent(loginAttempsRepository::delete);
     }
 
     @Override
+    // Registra un intento fallido de inicio de sesión
     public void loginFailed(Person person) {
         LoginAttempt loginAttempt = loginAttempsRepository.findByPerson(person)
              .orElseGet(() -> {
@@ -34,7 +36,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService{
                 newAttempt.setAttempts(0);
                 return newAttempt;
                 });
-
+    
         if (loginAttempt.getBlockUntil() != null &&
             loginAttempt.getBlockUntil().toLocalDateTime().isAfter(LocalDateTime.now())) {
             throw new AccountBlockedException("Usuario bloqueado hasta: " + loginAttempt.getBlockUntil());
@@ -51,10 +53,11 @@ public class LoginAttemptServiceImpl implements LoginAttemptService{
                 LocalDateTime.now().plusYears(100)));
         }
 
-        loginAttempsRepository.save(loginAttempt);
+        loginAttempsRepository.save(loginAttempt); // Guardar o actualizar el intento de inicio de sesión
     }
 
     @Override
+    // Verifica si un usuario está bloqueado debido a múltiples intentos fallidos
     public boolean isBlocked(Person person) {
         return loginAttempsRepository.findByPerson(person)
         .filter(attempt -> attempt.getBlockUntil() != null &&

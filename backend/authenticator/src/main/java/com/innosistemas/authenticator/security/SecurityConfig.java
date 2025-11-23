@@ -1,5 +1,6 @@
 package com.innosistemas.authenticator.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,31 +13,29 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String ROLE_STUDENT = "STUDENT";
-    private static final String ROLE_PROFESSOR = "PROFESOR";
+    private static final String role = "STUDENT";
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+    @Autowired
+    // Filtro de autenticación JWT
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
+    // Configuración de la cadena de filtros de seguridad
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.disable())  // Deshabilitar CORS de Spring Security (usamos CorsConfig)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
             .authorizeHttpRequests(authz -> authz
-                    // Rutas del authenticator (después de StripPrefix) - PÚBLICAS
-                    .requestMatchers("/person/authenticate", "/person/message", "/person/**").permitAll()
-                    // Rutas de proyectos (si se enrutan a través de este servicio)
-                    .requestMatchers("/project/project/**").hasRole(ROLE_STUDENT)
-                    .requestMatchers("/project/project/listAll").hasRole(ROLE_PROFESSOR)
-                    .requestMatchers("/project/objective/**").hasRole(ROLE_STUDENT)
-                    .requestMatchers("/project/task/**").hasRole(ROLE_STUDENT)
-                    .requestMatchers("/project/state/**").hasRole(ROLE_STUDENT)
+                    .requestMatchers("/project/project/**").hasRole(role)
+                    .requestMatchers("/project/project/listAll").hasRole("PROFESOR")
+                    .requestMatchers("project/objective/**").hasRole(role)
+                    .requestMatchers("project/task/**").hasRole(role)
+                    .requestMatchers("project/state/**").hasRole(role)
+                    .requestMatchers("authenticator/person/authenticate").permitAll()
+                    .requestMatchers("authenticator/person/message").permitAll()
+                    .requestMatchers("/actuator/prometheus").permitAll()
+                    .requestMatchers("/actuator/**").permitAll()
                     )
-                    
+            // Agregar el filtro de autenticación JWT antes del filtro de nombre de usuario y contraseña
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
     }

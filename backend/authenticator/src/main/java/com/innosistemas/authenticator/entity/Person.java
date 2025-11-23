@@ -26,6 +26,9 @@ public class Person{
     @Column(name = "name", nullable = false, unique = true)
     private String username;
 
+    @Column(name = "id_type", nullable = false)
+    private String id_type;
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 

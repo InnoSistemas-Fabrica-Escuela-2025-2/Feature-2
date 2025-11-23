@@ -12,12 +12,10 @@ import com.udea.innosistemas.innosistemas.entity.Team;
 @Repository
 public interface TeamRepository extends JpaRepository<Team,Long>{
     
-    @Query(value = "SELECT t.name FROM project.teams t WHERE t.id_student = :id_student", nativeQuery=true)
-    String findNameByIdStudent(@Param("id_student") Long idStudent);
-    
-    @Query(value = "SELECT t.id FROM project.teams t WHERE t.id_student = :id_student", nativeQuery=true)
-    Long findTeamIdByStudent(@Param("id_student") Long idStudent);
+    @Query(value = "SELECT * FROM project.getnamebyidstudent(:id)", nativeQuery=true)
+    String findNameByIdStudent(@Param("id") Long id);
     
     @Query(value = "SELECT * FROM public.getstudentsnamebyid(:teamName)", nativeQuery=true)
     List<String> getStudentsNameById(@Param("teamName") String teamName);
 }
+    

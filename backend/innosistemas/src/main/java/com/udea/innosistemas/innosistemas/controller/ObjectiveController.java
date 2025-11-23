@@ -1,5 +1,6 @@
 package com.udea.innosistemas.innosistemas.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,13 +15,12 @@ import com.udea.innosistemas.innosistemas.service.ObjectiveService;
 @RequestMapping("/project/objective")
 public class ObjectiveController {
 
-    private final ObjectiveService objectiveService;
-
-    public ObjectiveController(ObjectiveService objectiveService) {
-        this.objectiveService = objectiveService;
-    }
+    @Autowired
+    // Servicio para manejar objetivos
+    private ObjectiveService objectiveService;
 
     @PostMapping("/save")
+    // Endpoint para guardar un objetivo
     public ResponseEntity<Objective> saveObjective(@RequestBody Objective objective) {
         try {
             Objective saved = objectiveService.saveObjective(objective);
