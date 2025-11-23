@@ -1,5 +1,8 @@
 package com.innosistemas.notifications.service.Impl;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,25 @@ public class NotificationServiceImpl implements NotificationService {
             throw new UnsupportedOperationException("No fue posible enviar la notificación: " + e);
         }
         
+    }
+
+    @Override
+    public void deleteNotification(Long id) {
+        try{
+            notificationRepository.deleteById(id);
+        } catch (Exception e){
+            throw new UnsupportedOperationException("No fue posible eliminar la notificación: " + e);
+        }
+    }
+
+    @Override
+    public List<Notification> getById(Long id) {
+        try{
+            List<Notification> notifications = notificationRepository.findByIdStudent(id);
+            return notifications;
+        } catch (Exception e){
+            throw new UnsupportedOperationException("No fue posible obtener las notificaciones: " + e);
+        }
     }
 
     
