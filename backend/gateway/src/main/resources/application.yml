@@ -29,6 +29,8 @@ spring:
                             - "http://localhost:*"
                             - "https://*.vercel.app"
                             - "https://feature-2.vercel.app"
+                        allowedOrigins:
+                            - "https://feature-2.vercel.app"
                         allowedMethods:
                             - GET
                             - POST
@@ -36,7 +38,8 @@ spring:
                             - DELETE
                             - OPTIONS
                             - PATCH
-                        allowedHeaders: "*"
+                        allowedHeaders:
+                            - "*"
                         allowCredentials: true
                         maxAge: 3600
 
