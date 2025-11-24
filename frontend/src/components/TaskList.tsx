@@ -68,7 +68,7 @@ export const TaskList: React.FC = () => {
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>Entrega: {formatDate(selectedProject.deliveryDate)}</span>
+            <span>Entrega: {formatDate(typeof selectedProject.deliveryDate === 'string' ? selectedProject.deliveryDate : (selectedProject.deliveryDate instanceof Date ? selectedProject.deliveryDate.toISOString().split('T')[0] : ''))}</span>
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -121,7 +121,7 @@ export const TaskList: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>{formatDate(task.deliveryDate)}</span>
+                    <span>{formatDate(typeof task.deliveryDate === 'string' ? task.deliveryDate : (task.deliveryDate instanceof Date ? task.deliveryDate.toISOString().split('T')[0] : ''))}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">

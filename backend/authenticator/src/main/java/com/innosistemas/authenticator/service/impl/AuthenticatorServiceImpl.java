@@ -1,15 +1,9 @@
 package com.innosistemas.authenticator.service.impl;
 
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.innosistemas.authenticator.dto.AuthenticatorRequest;
 import com.innosistemas.authenticator.dto.AuthenticatorResponse;
 import com.innosistemas.authenticator.entity.ActiveSession;
@@ -23,75 +17,81 @@ import com.innosistemas.authenticator.service.LoginAttemptService;
 
 @Service
 public class AuthenticatorServiceImpl implements AuthenticatorService {
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticatorServiceImpl.class);
-
-    private final JwtUtil jwtUtil;
-    private final PersonRepository personRepository;
-    private final ActiveSessionRepository activeSessionRepository;
-    private final LoginAttemptService loginAttemptService;
-    private final ActiveSessionService activeSessionService;
 
     @Autowired
-    public AuthenticatorServiceImpl(
-            JwtUtil jwtUtil,
-            PersonRepository personRepository,
-            ActiveSessionRepository activeSessionRepository,
-            LoginAttemptService loginAttemptService,
-            ActiveSessionService activeSessionService) {
-        this.jwtUtil = jwtUtil;
-        this.personRepository = personRepository;
-        this.activeSessionRepository = activeSessionRepository;
-        this.loginAttemptService = loginAttemptService;
-        this.activeSessionService = activeSessionService;
-    }
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private PersonRepository personRepository;
+
+    @Autowired
+    private ActiveSessionRepository activeSessionRepository;
+
+    @Autowired
+    private LoginAttemptService loginAttemptService;
+
+    @Autowired
+    private ActiveSessionService activeSessionService;
 
     @Override
+    // Manejar el proceso de inicio de sesión
     public AuthenticatorResponse login(AuthenticatorRequest request) {
     Optional<Person> present = personRepository.findByEmail(request.getEmail());
 
+        // Si el usuario existe, proceder con la autenticación
         if (present.isPresent()){
             Person person = present.get();
 
+            // Verificar si el usuario está bloqueado por múltiples intentos fallidos
             if (loginAttemptService.isBlocked(person)){
-                logger.warn("Usuario bloqueado por múltiples intentos fallidos: {}", person.getEmail());
-                throw new ResponseStatusException(HttpStatus.LOCKED, "Usuario bloqueado por múltiples intentos fallidos");
+                System.out.println("Usuario bloqueado por múltiples intentos fallidos: " + person.getEmail());
+                throw new RuntimeException("Usuario bloqueado por múltiples intentos fallidos");
             }
 
+            // Verificar si ya existe una sesión activa para el usuario
             Optional<ActiveSession> session = activeSessionRepository.findByPerson(person);
             if (session.isPresent()) {
                 ActiveSession existingSession = session.get();
-                logger.info("Verificando sesión activa para: {}", person.getEmail());
+                System.out.println("Verificando sesión activa para: " + person.getEmail());
                 
-                // Siempre invalidar la sesión anterior y crear una nueva
-                logger.info("Invalidando sesión anterior y creando nueva: {}", person.getEmail());
-                activeSessionService.invalidateSession(existingSession);
-                activeSessionRepository.flush();
+                // Validar el token de la sesión existente
+                if (jwtUtil.validateToken(existingSession.getToken())) {
+                    System.out.println("El usuario ya tiene una sesión activa y válida: " + person.getEmail());
+                    throw new RuntimeException("El usuario ya tiene una sesión activa.");
+                } else {
+                    System.out.println("Token expirado, se eliminará la sesión anterior: " + person.getEmail());
+                    activeSessionService.invalidateSession(existingSession);
+                    activeSessionRepository.flush();  // Asegurar que la sesión se elimine antes de continuar
+                }
             }
 
+            // Validar la contraseña proporcionada con la almacenada
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             boolean isPasswordValid = encoder.matches(request.getPassword(), person.getPassword());
             
             if (!isPasswordValid) {
                 loginAttemptService.loginFailed(person);
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos.");
+                throw new RuntimeException("Contraseña incorrecta");
             }
 
+            // Registro de un inicio de sesión exitoso
             loginAttemptService.loginSucceeded(person);
 
             String token = jwtUtil.generateToken(person.getId(), 
             person.getEmail(), 
             person.getRole());
 
+            // Registrar la nueva sesión activa
             activeSessionService.registerSession(person, token);
 
-            return new AuthenticatorResponse(
-                person.getId(),
-                token,
-                person.getEmail(),
-                person.getRole()
-            ) ;
+            AuthenticatorResponse response = new AuthenticatorResponse(person.getId(),
+            token, 
+            person.getEmail(),
+            person.getRole());
+
+            return response;
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No encontramos una cuenta registrada con ese correo.");
+            throw new UnsupportedOperationException ("Correo no encontrado");
         }
     }
 }

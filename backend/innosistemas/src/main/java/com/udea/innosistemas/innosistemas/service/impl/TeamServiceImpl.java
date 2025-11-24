@@ -2,6 +2,7 @@ package com.udea.innosistemas.innosistemas.service.impl;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.udea.innosistemas.innosistemas.entity.Team;
@@ -11,62 +12,48 @@ import com.udea.innosistemas.innosistemas.service.TeamService;
 @Service
 public class TeamServiceImpl implements TeamService{
 
-    private final TeamRepository teamRepository;
-
-    public TeamServiceImpl(TeamRepository teamRepository) {
-        this.teamRepository = teamRepository;
-    }
+    @Autowired
+    // Repositorio para manejar equipos
+    private TeamRepository teamRepository;
 
     @Override
-    public String nameTeam(Long idStudent) {
-        return handleNameTeam(idStudent);
-    }
-
-    @Override
-    public Long getTeamIdByStudent(Long idStudent) {
-        return handleGetTeamIdByStudent(idStudent);
-    }
-
-    @Override
-    public List<String> getStudentsNameById(Long idStudent) {
-        return handleGetStudentsNameById(idStudent);
-    }
-
-    @Override
-    public List<Team> listAllTeams() {
-        return handleListAllTeams();
-    }
-
-    private String handleNameTeam(Long idStudent) {
-        try {
-            return teamRepository.findNameByIdStudent(idStudent);
-        } catch (Exception e) {
+    //Obtener el nombre del equipo de un estudiante por su id
+    public String nameTeam(Long id_student) {
+        try{
+            return teamRepository.findNameByIdStudent(id_student);
+        } catch (Exception e){
             throw new UnsupportedOperationException("No fue posible encontrar el equipo.");
         }
     }
 
-    private Long handleGetTeamIdByStudent(Long idStudent) {
-        try {
-            return teamRepository.findTeamIdByStudent(idStudent);
-        } catch (Exception e) {
-            throw new UnsupportedOperationException("No fue posible encontrar el equipo del estudiante.");
-        }
-    }
-
-    private List<String> handleGetStudentsNameById(Long idStudent) {
-        try {
-            String teamName = handleNameTeam(idStudent);
+    @Override
+    //Obtener los nombres de los estudiantes de un equipo por el id de un estudiante
+    public List<String> getStudentsNameById(Long id_student) {
+        try{
+            String teamName = nameTeam(id_student);
             return teamRepository.getStudentsNameById(teamName);
-        } catch (Exception e) {
+        } catch (Exception e){
             throw new UnsupportedOperationException("No existe el estudiante.");
         }
+        
     }
 
-    private List<Team> handleListAllTeams() {
+    @Override
+    public List<Team> listAllTeams() {
+        return teamRepository.findAll();
+    }
+
+    @Override
+    public Long getTeamIdByStudent(Long idStudent) {
         try {
-            return teamRepository.findAll();
+            String teamName = nameTeam(idStudent);
+            return listAllTeams().stream()
+                .filter(team -> team.getName().equals(teamName))
+                .map(Team::getId)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Equipo no encontrado."));
         } catch (Exception e) {
-            throw new UnsupportedOperationException("No fue posible obtener la lista de equipos.");
+            throw new UnsupportedOperationException("No fue posible encontrar el equipo del estudiante.");
         }
     }
 }

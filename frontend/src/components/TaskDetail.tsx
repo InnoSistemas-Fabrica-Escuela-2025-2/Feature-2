@@ -112,7 +112,7 @@ export const TaskDetail: React.FC = () => {
                   <div>
                     <p className="text-sm font-medium">Fecha de Entrega</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatDate(selectedTask.deliveryDate)}
+                      {formatDate(typeof selectedTask.deliveryDate === 'string' ? selectedTask.deliveryDate : (selectedTask.deliveryDate instanceof Date ? selectedTask.deliveryDate.toISOString().split('T')[0] : ''))}
                     </p>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ export const TaskDetail: React.FC = () => {
                   <div>
                     <p className="text-sm font-medium">Creada</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatDate(selectedTask.createdAt)}
+                      {formatDate(typeof selectedTask.createdAt === 'string' ? selectedTask.createdAt : (selectedTask.createdAt instanceof Date ? selectedTask.createdAt.toISOString().split('T')[0] : ''))}
                     </p>
                   </div>
                 </div>
@@ -183,7 +183,7 @@ export const TaskDetail: React.FC = () => {
               <div>
                 <p className="text-sm font-medium">Entrega del Proyecto</p>
                 <p className="text-sm text-muted-foreground">
-                  {formatDate(selectedProject.deliveryDate)}
+                  {formatDate(typeof selectedProject.deliveryDate === 'string' ? selectedProject.deliveryDate : (selectedProject.deliveryDate instanceof Date ? selectedProject.deliveryDate.toISOString().split('T')[0] : ''))}
                 </p>
               </div>
               <div>

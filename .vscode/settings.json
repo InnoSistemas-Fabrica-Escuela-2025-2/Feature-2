@@ -3,8 +3,11 @@
     "python-envs.pythonProjects": [],
     "java.configuration.updateBuildConfiguration": "interactive",
     "java.compile.nullAnalysis.mode": "automatic",
-    "sonarlint.connectedMode.project": {
-        "connectionId": "innosistemas-fabrica-escuela-2025-2-1",
-        "projectKey": "InnoSistemas-Fabrica-Escuela-2025-2_Feature-2"
-    }
+    "java.project.sourcePaths": [
+        "backend/notifications/src/main/java/com/innosistemas/notifications/service",
+        "backend/notifications/src/main/java",
+        "backend/notifications/src/main",
+        "backend/notifications/src",
+        "backend/notifications"
+    ]
 }

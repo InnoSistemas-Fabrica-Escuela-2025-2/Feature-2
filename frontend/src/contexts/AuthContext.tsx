@@ -35,27 +35,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Restaurar sesión desde localStorage al cargar
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
       try {
-        const res = await authApi.me();
-        const data = res.data;
-        const displayName = deriveDisplayName(data);
-        const loggedInUser: User = {
-          id: data.id ? String(data.id) : data.email,
-          nombre: displayName,
-          correo: data.email,
-          rol: data.role as 'estudiante' | 'profesor',
-          fechaRegistro: new Date(),
-        };
-        setUser(loggedInUser);
+        const parsedUser = JSON.parse(storedUser);
+        // Convertir fechaRegistro de string a Date
+        parsedUser.fechaRegistro = new Date(parsedUser.fechaRegistro);
+        setUser(parsedUser);
       } catch (err) {
-        console.error('Error restoring session:', err);
+        console.error('Error restoring session from localStorage:', err);
+        localStorage.removeItem('user');
         setUser(null);
-        toast.error('No se pudo restaurar la sesión. Por favor, inicia sesión nuevamente.');
       }
-    };
-    void fetchCurrentUser();
+    }
     setIsLoading(false);
   }, []);
 
@@ -67,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearTimeout(inactivityTimer);
       inactivityTimer = setTimeout(() => {
         setUser(null);
+        localStorage.removeItem('user');
         toast.error('Tu sesión ha sido cerrada por inactividad. Por favor, inicia sesión nuevamente.');
       }, INACTIVITY_TIMEOUT);
     };
@@ -96,6 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fechaRegistro: new Date()
       };
       setUser(loggedInUser);
+      // Guardar en localStorage para persistencia
+      localStorage.setItem('user', JSON.stringify(loggedInUser));
       setIsLoading(false);
       toast.success(`Bienvenido, ${loggedInUser.nombre}`);
       return { success: true as const };
@@ -122,10 +119,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    void authApi.logout().catch((error: unknown) => {
-      console.error('Error al cerrar sesión en el servidor:', error);
-    });
+    // Limpiar sesión localmente (backend usa JWT stateless)
     setUser(null);
+    localStorage.removeItem('user');
     toast.info('Sesión cerrada correctamente');
   };
 

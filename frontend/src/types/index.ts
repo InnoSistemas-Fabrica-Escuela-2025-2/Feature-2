@@ -54,16 +54,30 @@ export interface Task {
   id: string;
   proyectoId: string | number;
   titulo: string;
+  title?: string;
   descripcion: string;
+  description?: string;
   fechaEntrega: Date | string;
+  deliveryDate?: Date | string;
   fechaCreacion: Date | string;
+  createdAt?: Date | string;
   responsableId: string;
   responsable?: string;
+  responsiblePeople?: string[];
   estado: TaskStatus;
+  status?: 'pending' | 'in-progress' | 'completed';
   estadoLabel?: string;
   estadoId?: number;
   prioridad?: 'baja' | 'media' | 'alta';
   projectName?: string;
+  updatedAt?: string;
+}
+
+export interface TaskFormData {
+  title: string;
+  description: string;
+  deliveryDate: string;
+  responsiblePeople: string[];
 }
 
 export interface TaskState {

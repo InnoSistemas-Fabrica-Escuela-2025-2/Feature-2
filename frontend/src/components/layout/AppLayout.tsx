@@ -12,6 +12,8 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NotificationsDropdown } from './NotificationsDropdown';
+import { MobileNav } from './MobileNav';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,11 +34,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       name: 'Proyectos',
       href: '/proyectos',
       icon: FolderKanban,
-    },
-    {
-      name: 'Mis Tareas',
-      href: '/tareas',
-      icon: CheckSquare,
     },
     {
       name: 'Notificaciones',
@@ -66,6 +63,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <nav className="container flex h-16 items-center justify-between" role="navigation" aria-label="Navegación principal">
           <div className="flex items-center gap-2">
+            <MobileNav />
             <GraduationCap className="h-6 w-6 text-primary" aria-hidden="true" />
             <h1 className="text-xl font-bold">
               <Link to="/dashboard" className="hover:text-primary transition-colors">
@@ -74,8 +72,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <NotificationsDropdown />
+            <span className="text-sm text-muted-foreground hidden sm:inline">
               {user?.nombre} ({user?.rol})
             </span>
             <Button
@@ -83,6 +82,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               size="sm"
               onClick={handleLogout}
               aria-label="Cerrar sesión"
+              className="hidden sm:flex"
             >
               <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
               Salir

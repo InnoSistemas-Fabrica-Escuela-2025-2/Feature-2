@@ -57,23 +57,20 @@ const CreateProjectDialog = ({
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
 
-  // Load teams from API
+  // Initialize teams with hardcoded list (backend no tiene endpoint /project/team/listAll)
   useEffect(() => {
-    const loadTeams = async () => {
-      try {
-        setIsLoadingTeams(true);
-        const response = await teamsApi.getAll();
-        setTeams(response.data || []);
-      } catch (error) {
-        console.error('Error loading teams:', error);
-        toast.error('No se pudieron cargar los equipos');
-      } finally {
-        setIsLoadingTeams(false);
-      }
-    };
-
     if (open) {
-      loadTeams();
+      // Lista de equipos predefinida ya que el backend no expone GET /project/team/listAll
+      // Los equipos deben existir en la base de datos
+      const predefinedTeams: Team[] = [
+        { id: 1, name: 'Equipo 1' },
+        { id: 2, name: 'Equipo 2' },
+        { id: 3, name: 'Equipo 3' },
+        { id: 4, name: 'Equipo 4' },
+        { id: 5, name: 'Equipo 5' },
+      ];
+      setTeams(predefinedTeams);
+      setIsLoadingTeams(false);
     }
   }, [open]);
 

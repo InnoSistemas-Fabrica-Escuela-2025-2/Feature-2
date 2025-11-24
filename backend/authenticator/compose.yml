@@ -1,0 +1,17 @@
+services:
+  authenticator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    environment:
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_USERNAME=${AUTH_USERNAME}
+      - AUTH_PASSWORD=${AUTH_PASSWORD}
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    external: true

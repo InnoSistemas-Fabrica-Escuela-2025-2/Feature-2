@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { Task, TaskStatus } from '@/types';
+import { useData } from '@/contexts/DataContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,15 +27,21 @@ interface EditTaskDialogProps {
 }
 
 const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDialogProps) => {
+  const { projects } = useData();
   const [titulo, setTitulo] = useState(task.titulo);
   const [descripcion, setDescripcion] = useState(task.descripcion);
   const [fechaEntrega, setFechaEntrega] = useState(
     new Date(task.fechaEntrega).toISOString().split('T')[0]
   );
   const [estado, setEstado] = useState<TaskStatus>(task.estado);
+  const [responsableId, setResponsableId] = useState(task.responsableId || '');
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<TaskStatus | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Get project members
+  const currentProject = projects.find(p => p.id === task.proyectoId);
+  const projectMembers = currentProject?.miembros || [];
 
   const handleStatusChange = (newStatus: TaskStatus) => {
     if (newStatus !== estado) {
@@ -90,7 +97,8 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
       titulo: titulo.trim(),
       descripcion: descripcion.trim(),
       fechaEntrega: new Date(fechaEntrega),
-      estado
+      estado,
+      responsableId: responsableId || task.responsableId
     };
 
     try {
@@ -175,6 +183,28 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
               <p className="text-xs text-muted-foreground">
                 Cambiar el estado requerirá confirmación
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-responsable">Responsable(s)</Label>
+              <Select value={responsableId} onValueChange={setResponsableId}>
+                <SelectTrigger id="edit-responsable">
+                  <SelectValue placeholder="Selecciona un responsable" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projectMembers.length === 0 ? (
+                    <SelectItem value="sin-miembros" disabled>
+                      No hay miembros en el proyecto
+                    </SelectItem>
+                  ) : (
+                    projectMembers.map((miembroId: string) => (
+                      <SelectItem key={miembroId} value={miembroId}>
+                        {miembroId}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             <DialogFooter>

@@ -15,7 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -23,68 +22,64 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
+    // Utilidad para manejar JWT
     private JwtUtil jwtUtil;
 
     @Override
+    /*  Filtro que se ejecuta una vez por solicitud para autenticar el JWT
+     chain permite continuar con la cadena de filtros */
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
             @NonNull FilterChain chain) throws ServletException, IOException {
 
-        String jwt = resolveToken(request);
-        if (jwt == null) {
+        String path = request.getRequestURI();
+
+        if (path.startsWith("/actuator")) {
             chain.doFilter(request, response);
             return;
         }
+        
+        final String authorizationHeader = request.getHeader("Authorization");
 
-        String email = extractEmailSafely(jwt);
-        if (email == null || SecurityContextHolder.getContext().getAuthentication() != null) {
-            chain.doFilter(request, response);
-            return;
+        String email = null;
+        String jwt = null;
+
+        // Extraer el correo electrónico del token JWT
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
+            jwt = authorizationHeader.substring(7);
+            try {
+                email = jwtUtil.extractEmail(jwt);
+            } catch (Exception e) {
+                // Invalid token
+            }
         }
 
-        if (!jwtUtil.validateToken(jwt, email)) {
-            chain.doFilter(request, response);
-            return;
+
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            
+            // Validar que el token JWT es válido
+            if (jwtUtil.validateToken(jwt)) {
+                String role = jwtUtil.extractRole(jwt);
+
+                // Crea una lista de roles autorizados basados en el rol extraído del token
+                List<SimpleGrantedAuthority> authorities;
+                if (role != null && role.equals("profesor")) {
+                    authorities = List.of(
+                            new SimpleGrantedAuthority("ROLE_PROFESOR"));
+                } else {
+                    authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT"));
+                }
+
+                // Crear un token de autenticación con el correo electrónico y los roles
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null,
+                        authorities);
+
+                // Establecer detalles de la solicitud en el token de autenticación
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
         }
-
-        List<SimpleGrantedAuthority> authorities = buildAuthorities(jwtUtil.extractRole(jwt));
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null, authorities);
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
+        // Continuar con la cadena de filtros
         chain.doFilter(request, response);
     }
 
-    private String resolveToken(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-
-        for (Cookie cookie : cookies) {
-            if ("access_token".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
-
-    private String extractEmailSafely(String jwt) {
-        try {
-            return jwtUtil.extractEmail(jwt);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private List<SimpleGrantedAuthority> buildAuthorities(String role) {
-        if (role != null && role.equalsIgnoreCase("profesor")) {
-            return List.of(new SimpleGrantedAuthority("ROLE_PROFESOR"));
-        }
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT"));
-    }
 }
