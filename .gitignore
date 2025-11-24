@@ -19,6 +19,12 @@ backend/DOCKER_DEPLOYMENT.md
 backend/QUICK_START.md
 .github/SECRETS_SETUP.md
 
+# Analysis and verification documents (internal only)
+ENDPOINT_ANALYSIS.md
+ENDPOINT_VERIFICATION.md
+*.ANALYSIS.md
+*.VERIFICATION.md
+
 # Generated coverage reports
 qa/reports/
 .vscode/settings.json
