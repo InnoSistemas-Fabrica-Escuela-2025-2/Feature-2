@@ -147,6 +147,14 @@ const Login = () => {
                   minLength={6}
                 />
               </div>
+              <div className="flex justify-end mt-2">
+                <a 
+                  href="/recuperar-cuenta" 
+                  className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
+                >
+                  ¿Olvidó su contraseña?
+                </a>
+              </div>
             </div>
 
             <Button

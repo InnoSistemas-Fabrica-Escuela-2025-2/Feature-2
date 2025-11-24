@@ -38,8 +38,8 @@ public class Task {
     @Column(name="deadline", nullable = false )
     private Timestamp deadline;
 
-    @Column(name="responsible", nullable = false)
-    private String responsible;
+    @Column(name="responsible_email", nullable = false)
+    private String responsible_email;
 
     @ManyToOne
     @JoinColumn(name="id_project", nullable=false)
@@ -50,12 +50,5 @@ public class Task {
     @JoinColumn(name="id_state")
     private State state;
 
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
 
 }

@@ -7,7 +7,7 @@ import { Clock, PlayCircle, CheckCircle } from 'lucide-react';
 interface TaskKanbanProps {
   readonly tasks: readonly Task[];
   readonly onEdit: (task: Task) => void;
-  readonly onDelete: (taskId: string) => void;
+  readonly onDelete: (taskId: string | number) => void;
 }
 
 export function TaskKanban({ tasks, onEdit, onDelete }: TaskKanbanProps) {

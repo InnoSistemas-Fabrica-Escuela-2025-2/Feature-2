@@ -1,86 +1,134 @@
 package com.udea.innosistemas.innosistemas.service.impl;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.udea.innosistemas.innosistemas.entity.EmailEvent;
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.entity.Task;
+import com.udea.innosistemas.innosistemas.repository.StateRepository;
 import com.udea.innosistemas.innosistemas.repository.TaskRepository;
-import com.udea.innosistemas.innosistemas.service.StateService;
+import com.udea.innosistemas.innosistemas.service.NotificationProducer;
 import com.udea.innosistemas.innosistemas.service.TaskService;
 
 @Service
-public class TaskServiceImpl implements TaskService {
+public class TaskServiceImpl implements TaskService{
 
-    private static final Logger log = LoggerFactory.getLogger(TaskServiceImpl.class);
+    @Autowired
+    // Repositorio para manejar tareas
+    private TaskRepository taskRepository;
 
-    private final TaskRepository taskRepository;
+    @Autowired
+    // Repositorio para manejar estados
+    private StateRepository stateRepository;
 
-    private final StateService stateService;
-
-    public TaskServiceImpl(TaskRepository taskRepository, StateService stateService) {
-        this.taskRepository = taskRepository;
-        this.stateService = stateService;
-    }
+    @Autowired
+    // Servicio para manejar notificaciones
+    private NotificationProducer notificationProducer;
 
     @Override
+    //Eliminar una tarea por su id
     public void deleteTask(long id) {
-        if (!taskRepository.existsById(id)) {
+        if(taskRepository.existsById(id)){
+            taskRepository.deleteById(id);
+        } else {
             throw new NoSuchElementException("El usuario no existe.");
         }
-        taskRepository.deleteById(id);
     }
 
     @Override
+    //Guardar una tarea en la base de datos
     public Task saveTask(Task task) {
-        return handleSaveTask(task);
-    }
-
-    private Task handleSaveTask(Task task) {
         try {
-            State resolvedState = stateService.resolveState(task.getState());
-            task.setState(resolvedState);
+            if (task.getState() == null){
+                State newState = new State();
+                newState.setId(3L);
+                task.setState(newState);
+            }
             return taskRepository.save(task);
-        } catch (NoSuchElementException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (Exception e){
             throw new NoSuchElementException("No fue posible guardar la tarea.");
         }
     }
 
     @Override
+    //Obtener todas las tareas
     public List<Task> listAllTasks() {
         return taskRepository.findAll();
     }
 
     @Override
-    public void updateState(Long idTask, Long idState) {
-        log.info("[TaskService] updateState called with taskId={} stateId={}", idTask, idState);
-        Task task = getTaskOrThrow(idTask);
-        State state = getStateOrThrow(idState);
-        log.info("[TaskService] resolved state: id={} name={}", state.getId(), state.getName());
+    //Actualizar el estado de una tarea
+    public void updateState(Long id_task, Long id_state) {
+        if (!taskRepository.findById(id_task).isPresent()){
+            throw new UnsupportedOperationException("La tarea no existe.");
+        }
 
+        Task task = taskRepository.findById(id_task).get();
+        State state = stateRepository.findById(id_state).get();
         task.setState(state);
         taskRepository.save(task);
     }
 
-    private Task getTaskOrThrow(Long taskId) {
-        if (taskId == null) {
-            throw new IllegalArgumentException("El ID de la tarea no puede ser null");
+    @Override
+    //Buscar tareas por fecha de vencimiento
+    public List<Task> findByDate(Timestamp today, Timestamp limit) {
+        try{
+            return taskRepository.findByDeadlineBetween(today, limit);
+        } catch(Exception e){
+            throw new UnsupportedOperationException("No fue posible listar las tareas." + e.getMessage());
         }
-        return taskRepository.findById(taskId)
-                .orElseThrow(() -> new NoSuchElementException("La tarea no existe."));
     }
 
-    private State getStateOrThrow(Long stateId) {
-        if (stateId == null) {
-            throw new IllegalArgumentException("El ID del estado no puede ser null");
+    //Método que se ejecuta todos los días a las 10am para verificar que tareas están próximas a vencer
+    @Override
+    @Scheduled(cron = "0 0 10 * * *")
+    public void sendNotification() {
+        LocalDateTime threeDaysFromNowStart = LocalDate.now().plusDays(3).atStartOfDay();  
+        LocalDateTime threeDaysFromNowEnd = threeDaysFromNowStart.plusDays(1).minusNanos(1);  
+        Timestamp start = Timestamp.valueOf(threeDaysFromNowStart);
+        Timestamp end = Timestamp.valueOf(threeDaysFromNowEnd);
+        System.out.println("Buscando tareas que venzan exactamente entre: " + start + " y " + end);
+        try{
+            List<Task> tasks = findByDate(start, end);
+
+            if (tasks == null || tasks.isEmpty()) {
+            System.out.print("No hay tareas");
+            return; 
+            }
+            
+            Locale locale = new Locale("es", "ES");
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM", locale); 
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm", locale);
+
+            for (Task task:tasks){
+                String fecha = threeDaysFromNowStart.toLocalDate().format(dateFormatter);
+                String hora = threeDaysFromNowStart.format(timeFormatter); 
+
+                String mensaje = "Hola, \n\nLa tarea " + task.getTitle() +
+                     " vence el día " + fecha +
+                     " a las " + hora +
+                     ", la cual pertenece al proyecto " + task.getProject().getName() + "." + 
+                     "\n\n¡No dejes todo para el final!";
+                
+                notificationProducer.sendEmail(new EmailEvent(
+                    task.getResponsible_email(),
+                    "¡Acuérdate de realizar tu tarea!",
+                    mensaje
+                ));
+            } 
+        }catch(Exception e){
+            throw new UnsupportedOperationException("No es posible enviar la notificación: " + e.getMessage());
         }
-        return stateService.findById(stateId)
-                .orElseThrow(() -> new NoSuchElementException("El estado no existe."));
     }
+
 }

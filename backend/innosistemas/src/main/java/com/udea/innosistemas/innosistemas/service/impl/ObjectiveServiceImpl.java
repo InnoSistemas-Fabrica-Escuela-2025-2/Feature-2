@@ -8,20 +8,15 @@ import com.udea.innosistemas.innosistemas.repository.ObjectiveRepository;
 import com.udea.innosistemas.innosistemas.service.ObjectiveService;
 
 @Service
-public class ObjectiveServiceImpl implements ObjectiveService {
-
-    private final ObjectiveRepository objectiveRepository;
-
-    public ObjectiveServiceImpl(@Autowired ObjectiveRepository objectiveRepository) {
-        this.objectiveRepository = objectiveRepository;
-    }
+public class ObjectiveServiceImpl implements ObjectiveService{
+    
+    @Autowired
+    // Repositorio para manejar objetivos
+    private ObjectiveRepository objectiveRepository;
 
     @Override
-    public Objective saveObjective(Objective objective) {
-
-        if (objective == null) {
-            throw new IllegalArgumentException("No fue posible guardar el objetivo.");
-        }
+    //Guardar un objetivo en la base de datos
+    public Objective saveObjective(Objective objective){
         return objectiveRepository.save(objective);
     }
 

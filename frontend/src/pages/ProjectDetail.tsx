@@ -1,75 +1,140 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { projectsApi } from '@/lib/api';
+import { useParams, useNavigate } from 'react-router-dom';
+import { projectsApi, tasksApi } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar, Users, Target, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Calendar, 
+  Users, 
+  Target, 
+  CheckCircle2, 
+  Clock, 
+  AlertCircle,
+  Plus,
+  Filter,
+  LayoutList,
+  LayoutGrid,
+  Edit,
+  Trash2,
+  User as UserIcon,
+  AlertTriangle
+} from 'lucide-react';
+import { ErrorState } from '@/components/ErrorState';
+import { TaskKanban } from '@/components/tasks/TaskKanban';
+import TaskCard from '@/components/tasks/TaskCard';
+import CreateTaskDialog from '@/components/tasks/CreateTaskDialog';
+import EditTaskDialog from '@/components/tasks/EditTaskDialog';
+import { Task, TaskStatus } from '@/types';
+import { format, isPast, isWithinInterval, addDays } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+type ViewMode = 'list' | 'kanban';
+type FilterStatus = 'all' | 'pendiente' | 'en-progreso' | 'finalizado';
+type FilterPriority = 'all' | 'alta' | 'media' | 'baja';
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { tasks: allTasks, projects, refreshData, states } = useData();
+  
   const [project, setProject] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
+  const [filterPriority, setFilterPriority] = useState<FilterPriority>('all');
+  const [filterResponsable, setFilterResponsable] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [selectedTaskDetail, setSelectedTaskDetail] = useState<Task | null>(null);
+
+  const loadProject = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await projectsApi.getAll();
+      const projects = response.data || [];
+      const foundProject = projects.find((p: any) => p.id === Number.parseInt(id || '0'));
+      
+      if (foundProject) {
+        setProject(foundProject);
+      } else {
+        setError('Proyecto no encontrado');
+      }
+    } catch (error) {
+      console.error('Error loading project:', error);
+      setError('No se pudo cargar el proyecto');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadProject = async () => {
-      try {
-        setIsLoading(true);
-        const response = await projectsApi.getAll();
-        const projects = response.data || [];
-        const foundProject = projects.find((p: any) => p.id === Number.parseInt(id || '0'));
-        
-        if (foundProject) {
-          setProject(foundProject);
-        } else {
-          toast({
-            title: 'Error',
-            description: 'Proyecto no encontrado',
-            variant: 'destructive'
-          });
-          navigate('/proyectos');
-        }
-      } catch (error) {
-        console.error('Error loading project:', error);
-        toast({
-          title: 'Error',
-          description: 'No se pudo cargar el proyecto',
-          variant: 'destructive'
-        });
-        navigate('/proyectos');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (id) {
       loadProject();
     }
-  }, [id, navigate, toast]);
+  }, [id]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando proyecto...</p>
-        </div>
-      </div>
-    );
-  }
+  // Filter tasks for this project
+  const projectTasks = allTasks.filter((task: any) => 
+    String(task.proyectoId) === String(project?.id)
+  );
 
-  if (!project) {
-    return null;
-  }
+  // Filter "My Tasks" - tasks assigned to current user
+  const myTasks = projectTasks.filter((task: any) => 
+    String(task.responsableId) === String(user?.id)
+  );
 
-  const tasks = project.tasks || [];
-  const completedTasks = tasks.filter((t: any) => t.status === 'finalizado').length;
-  const inProgressTasks = tasks.filter((t: any) => t.status === 'en-progreso').length;
-  const pendingTasks = tasks.filter((t: any) => t.status === 'pendiente').length;
+  // Apply filters
+  const getFilteredTasks = (tasksList: any[]) => {
+    return tasksList.filter((task: any) => {
+      // Status filter
+      if (filterStatus !== 'all' && task.estado !== filterStatus) {
+        return false;
+      }
+      
+      // Priority filter
+      if (filterPriority !== 'all' && task.prioridad?.toLowerCase() !== filterPriority) {
+        return false;
+      }
+      
+      // Responsable filter
+      if (filterResponsable !== 'all' && String(task.responsableId) !== filterResponsable) {
+        return false;
+      }
+      
+      // Search query
+      if (searchQuery && !task.titulo?.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      
+      return true;
+    });
+  };
 
+  const filteredProjectTasks = getFilteredTasks(projectTasks);
+  const filteredMyTasks = getFilteredTasks(myTasks);
+
+  // Get unique responsables for filter
+  const uniqueResponsables = Array.from(new Set(projectTasks.map((t: any) => t.responsableId)))
+    .filter(Boolean)
+    .map(id => ({
+      id,
+      name: projectTasks.find((t: any) => String(t.responsableId) === String(id))?.responsable || `Usuario ${id}`
+    }));
+
+  // Task status helpers
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'finalizado':
@@ -96,6 +161,225 @@ export default function ProjectDetail() {
     }
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'alta':
+        return 'bg-red-500/10 text-red-700 border-red-200';
+      case 'media':
+        return 'bg-orange-500/10 text-orange-700 border-orange-200';
+      case 'baja':
+        return 'bg-green-500/10 text-green-700 border-green-200';
+      default:
+        return 'bg-gray-500/10 text-gray-700 border-gray-200';
+    }
+  };
+
+  // Check if task is overdue or close to deadline
+  const getTaskUrgency = (task: any) => {
+    if (!task.fechaEntrega) return null;
+    const deadline = new Date(task.fechaEntrega);
+    const now = new Date();
+    const threeDaysFromNow = addDays(now, 3);
+
+    if (isPast(deadline) && task.estado !== 'finalizado') {
+      return 'overdue';
+    }
+    if (isWithinInterval(deadline, { start: now, end: threeDaysFromNow }) && task.estado !== 'finalizado') {
+      return 'soon';
+    }
+    return null;
+  };
+
+  // Handle task actions
+  const handleTaskCreated = async (task: Task) => {
+    await refreshData();
+    setShowCreateDialog(false);
+    toast({ title: 'Tarea creada exitosamente' });
+  };
+
+  const handleTaskUpdated = async (updatedTask: Task) => {
+    try {
+      const stateIdMap: Record<TaskStatus, number> = {
+        'pendiente': 1,
+        'en-progreso': 2,
+        'finalizado': 3
+      };
+
+      const payload = {
+        id: updatedTask.id,
+        titulo: updatedTask.titulo,
+        descripcion: updatedTask.descripcion,
+        fechaEntrega: updatedTask.fechaEntrega,
+        responsableId: updatedTask.responsableId,
+        estadoId: stateIdMap[updatedTask.estado] || 1,
+        prioridad: updatedTask.prioridad,
+      };
+
+      await tasksApi.update(payload);
+      await refreshData();
+      setEditingTask(null);
+      toast({ title: 'Tarea actualizada exitosamente' });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast({ 
+        title: 'Error al actualizar tarea',
+        description: 'Por favor intenta nuevamente',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleTaskDeleted = async (taskId: string | number) => {
+    try {
+      await tasksApi.delete(Number(taskId));
+      await refreshData();
+      toast({ title: 'Tarea eliminada exitosamente' });
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast({ 
+        title: 'Error al eliminar tarea',
+        description: 'Por favor intenta nuevamente',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // Render task item
+  const renderTaskItem = (task: any) => {
+    const urgency = getTaskUrgency(task);
+    
+    return (
+      <Card 
+        key={task.id}
+        className={`hover:shadow-md transition-shadow ${
+          urgency === 'overdue' ? 'border-l-4 border-l-red-500' : 
+          urgency === 'soon' ? 'border-l-4 border-l-orange-500' : ''
+        }`}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  onClick={() => setSelectedTaskDetail(task)}
+                  className="font-semibold text-lg hover:text-primary transition-colors text-left"
+                >
+                  {task.titulo}
+                </button>
+                {urgency === 'overdue' && (
+                  <Badge variant="destructive" className="gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    Vencida
+                  </Badge>
+                )}
+                {urgency === 'soon' && (
+                  <Badge variant="outline" className="gap-1 bg-orange-50 border-orange-300 text-orange-700">
+                    <Clock className="h-3 w-3" />
+                    Próxima a vencer
+                  </Badge>
+                )}
+              </div>
+              
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                {task.descripcion}
+              </p>
+              
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className={getStatusColor(task.estado)}>
+                  {getStatusLabel(task.estado)}
+                </Badge>
+                
+                {task.prioridad && (
+                  <Badge variant="outline" className={getPriorityColor(task.prioridad)}>
+                    {task.prioridad}
+                  </Badge>
+                )}
+                
+                {task.responsable && (
+                  <Badge variant="outline" className="gap-1">
+                    <UserIcon className="h-3 w-3" />
+                    {task.responsable}
+                  </Badge>
+                )}
+                
+                {task.fechaEntrega && (
+                  <Badge variant="outline" className="gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {format(new Date(task.fechaEntrega), "d 'de' MMM", { locale: es })}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setEditingTask(task)}
+                aria-label="Editar tarea"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  if (confirm('¿Estás seguro de eliminar esta tarea?')) {
+                    handleTaskDeleted(task.id);
+                  }
+                }}
+                aria-label="Eliminar tarea"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Show error state
+  if (error && !isLoading) {
+    return (
+      <div className="container mx-auto py-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/proyectos')}
+          className="mb-4"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <ErrorState
+          message="No fue posible cargar la información del proyecto. Intente nuevamente."
+          onRetry={loadProject}
+          isRetrying={isLoading}
+        />
+      </div>
+    );
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando proyecto...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return null;
+  }
+
+  const completedTasks = projectTasks.filter((t: any) => t.estado === 'finalizado').length;
+  const inProgressTasks = projectTasks.filter((t: any) => t.estado === 'en-progreso').length;
+  const pendingTasks = projectTasks.filter((t: any) => t.estado === 'pendiente').length;
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
@@ -104,6 +388,7 @@ export default function ProjectDetail() {
           variant="ghost"
           size="icon"
           onClick={() => navigate('/proyectos')}
+          aria-label="Volver a proyectos"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -117,21 +402,17 @@ export default function ProjectDetail() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Tareas
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total Tareas</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{tasks.length}</div>
+            <div className="text-2xl font-bold">{projectTasks.length}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Completadas
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Completadas</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -141,9 +422,7 @@ export default function ProjectDetail() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              En Progreso
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">En Progreso</CardTitle>
             <Clock className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
@@ -153,9 +432,7 @@ export default function ProjectDetail() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Pendientes
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
             <AlertCircle className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
@@ -164,140 +441,157 @@ export default function ProjectDetail() {
         </Card>
       </div>
 
-      {/* Project Details */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del Proyecto</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <Target className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <p className="font-medium">Objetivos</p>
-                {project.objectives && project.objectives.length > 0 ? (
-                  <ul className="text-sm text-muted-foreground space-y-1 mt-1">
-                    {project.objectives.map((obj: any, index: number) => (
-                      <li key={obj.id || index} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>{obj.description}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No especificados</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <p className="font-medium">Fecha de Entrega</p>
-                <p className="text-sm text-muted-foreground">
-                  {project.deadline ? new Date(project.deadline).toLocaleDateString('es-ES', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  }) : 'No especificada'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <p className="font-medium">Equipo</p>
-                <p className="text-sm text-muted-foreground">
-                  {project.team?.name || 'Sin equipo asignado'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Progress Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Progreso del Proyecto</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">Progreso General</span>
-                <span className="text-sm font-medium">{project.progress || 0}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className="bg-primary h-2.5 rounded-full transition-all" 
-                  style={{ width: `${project.progress || 0}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Finalizadas</span>
-                <span className="text-sm font-medium">{completedTasks} / {tasks.length}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">En progreso</span>
-                <span className="text-sm font-medium">{inProgressTasks}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Pendientes</span>
-                <span className="text-sm font-medium">{pendingTasks}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tasks List */}
+      {/* Tareas Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Tareas del Proyecto</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {tasks.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No hay tareas en este proyecto
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {tasks.map((task: any) => (
-                <div 
-                  key={task.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-medium">{task.name}</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-1">
-                      {task.description}
-                    </p>
-                    <div className="flex gap-2 mt-2">
-                      <Badge variant="outline" className={getStatusColor(task.status)}>
-                        {getStatusLabel(task.status)}
-                      </Badge>
-                      {task.assignedTo && (
-                        <Badge variant="outline">
-                          <Users className="h-3 w-3 mr-1" />
-                          Asignada
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to={`/tareas/${task.id}`}>
-                      Ver Detalle
-                    </Link>
-                  </Button>
-                </div>
-              ))}
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <CardTitle className="text-2xl">Tareas del Proyecto</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                aria-label="Vista de lista"
+              >
+                <LayoutList className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'kanban' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('kanban')}
+                aria-label="Vista kanban"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nueva Tarea
+              </Button>
             </div>
-          )}
+          </div>
+
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">
+            <Input
+              placeholder="Buscar tareas..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full"
+            />
+            
+            <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="pendiente">Pendiente</SelectItem>
+                <SelectItem value="en-progreso">En Progreso</SelectItem>
+                <SelectItem value="finalizado">Finalizado</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterPriority} onValueChange={(v) => setFilterPriority(v as FilterPriority)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Prioridad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las prioridades</SelectItem>
+                <SelectItem value="alta">Alta</SelectItem>
+                <SelectItem value="media">Media</SelectItem>
+                <SelectItem value="baja">Baja</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterResponsable} onValueChange={setFilterResponsable}>
+              <SelectTrigger>
+                <SelectValue placeholder="Responsable" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los responsables</SelectItem>
+                {uniqueResponsables.map((r: any) => (
+                  <SelectItem key={r.id} value={String(r.id)}>
+                    {r.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="all">
+                Todas las Tareas ({filteredProjectTasks.length})
+              </TabsTrigger>
+              <TabsTrigger value="mine" className="gap-2">
+                <UserIcon className="h-4 w-4" />
+                Mis Tareas ({filteredMyTasks.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="mt-6">
+              {viewMode === 'kanban' ? (
+                <TaskKanban
+                  tasks={filteredProjectTasks}
+                  onEdit={(task) => setEditingTask(task)}
+                  onDelete={handleTaskDeleted}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {filteredProjectTasks.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No hay tareas que coincidan con los filtros
+                    </p>
+                  ) : (
+                    filteredProjectTasks.map(renderTaskItem)
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="mine" className="mt-6">
+              {viewMode === 'kanban' ? (
+                <TaskKanban
+                  tasks={filteredMyTasks}
+                  onEdit={(task) => setEditingTask(task)}
+                  onDelete={handleTaskDeleted}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {filteredMyTasks.length === 0 ? (
+                    <div className="text-center py-12">
+                      <UserIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                      <p className="text-muted-foreground">
+                        No tienes tareas asignadas en este proyecto
+                      </p>
+                    </div>
+                  ) : (
+                    filteredMyTasks.map(renderTaskItem)
+                  )}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <CreateTaskDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onTaskCreated={handleTaskCreated}
+      />
+
+      {editingTask && (
+        <EditTaskDialog
+          task={editingTask}
+          open={!!editingTask}
+          onOpenChange={(open) => !open && setEditingTask(null)}
+          onTaskUpdated={handleTaskUpdated}
+        />
+      )}
     </div>
   );
 }
