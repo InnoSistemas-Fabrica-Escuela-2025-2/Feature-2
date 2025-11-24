@@ -19,6 +19,11 @@ services:
           type: web
           name: innosistemas-service
           property: host
+      - key: NOTIFICATIONS_URL
+        fromService:
+          type: web
+          name: innosistemas-notifications
+          property: host
       - key: ALLOWED_ORIGINS
         value: https://your-frontend-url.onrender.com
       - key: SPRING_PROFILES_ACTIVE
@@ -73,6 +78,39 @@ services:
         fromDatabase:
           name: innosistemas-db
           property: password
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        sync: false
+        value: your-kafka-server:9092
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    healthCheckPath: /actuator/health
+
+  # Notifications Service (NEW - Sprint 2)
+  - type: web
+    name: innosistemas-notifications
+    runtime: docker
+    dockerfilePath: ./backend/notifications/Dockerfile
+    dockerContext: ./backend/notifications
+    envVars:
+      - key: PORT
+        value: 8083
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: innosistemas-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: innosistemas-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: innosistemas-db
+          property: password
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        sync: false
+        value: your-kafka-server:9092
+      - key: SENDGRID_API_KEY
+        sync: false
       - key: SPRING_PROFILES_ACTIVE
         value: prod
     healthCheckPath: /actuator/health
