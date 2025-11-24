@@ -2,6 +2,7 @@ package com.innosistemas.gateway.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -27,6 +28,7 @@ public class SecurityConfig {
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .authorizeExchange(exchanges -> exchanges
+                .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Allow CORS preflight
                 .pathMatchers("/authenticator/person/authenticate", "/authenticator/person/message").permitAll()
                 .pathMatchers("/project/project/listAll").hasAuthority("profesor")
                 .pathMatchers("/project/project/**").hasAuthority(role)
