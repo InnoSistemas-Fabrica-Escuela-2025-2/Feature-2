@@ -81,10 +81,14 @@ export const createProject = async (projectData: any) => {
 
 /**
  * Ejemplo 5: Actualizar un proyecto
+ * NOTA: Este endpoint NO está implementado en el backend actualmente.
+ * El backend solo tiene POST /project/project/save para crear.
+ * Para actualizar, usaríamos el mismo endpoint save con un ID existente.
  */
 export const updateProject = async (projectData: any) => {
   try {
-    const response = await projectsApi.update({
+    // Usar el endpoint save para actualizar (debe incluir id)
+    const response = await projectsApi.create({
       id: projectData.id,
       name: projectData.name,
       description: projectData.description,
@@ -102,15 +106,22 @@ export const updateProject = async (projectData: any) => {
 
 /**
  * Ejemplo 6: Eliminar un proyecto
+ * NOTA: Este endpoint NO está implementado en el backend actualmente.
+ * El backend no tiene DELETE /project/project/delete/{id}
  */
 export const deleteProject = async (projectId: number) => {
-  try {
-    await projectsApi.delete(projectId);
-    console.log('✅ Proyecto eliminado:', projectId);
-  } catch (error: any) {
-    console.error('❌ Error al eliminar proyecto:', error.response?.data);
-    throw error;
-  }
+  console.warn('⚠️ Endpoint DELETE /project/project/delete/{id} no implementado en backend');
+  console.log('Para eliminar proyectos, se requiere implementar el endpoint en ProjectController.java');
+  throw new Error('Delete project endpoint not implemented in backend');
+  
+  // Código comentado hasta que el backend implemente el endpoint:
+  // try {
+  //   await projectsApi.delete(projectId);
+  //   console.log('✅ Proyecto eliminado:', projectId);
+  // } catch (error: any) {
+  //   console.error('❌ Error al eliminar proyecto:', error.response?.data);
+  //   throw error;
+  // }
 };
 
 // ==================== TAREAS ====================

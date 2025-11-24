@@ -136,19 +136,12 @@ export const authApi = {
   login: (credentials: { email: string; password: string }) => 
     apiGateway.post('/authenticator/person/authenticate', credentials),
   
-  logout: () => apiGateway.post('/authenticator/person/logout'),
-  
   /**
    * Verificar estado del servicio de autenticación
    * GET /authenticator/person/message
    */
   checkService: () => 
     apiGateway.get('/authenticator/person/message'),
-  /**
-   * Obtener perfil del usuario autenticado (usa cookie HttpOnly en el backend)
-   * GET /authenticator/person/me
-   */
-  me: () => apiGateway.get('/authenticator/person/me'),
 };
 
 // ==================== API DE PROYECTOS ====================
@@ -175,20 +168,6 @@ export const projectsApi = {
    */
   create: (projectData: any) => 
     apiGateway.post('/project/project/save', projectData),
-  
-  /**
-   * Actualizar un proyecto (usa PUT pero no recibe ID en la URL)
-   * PUT /project/project/update
-   */
-  update: (projectData: any) => 
-    apiGateway.put('/project/project/update', projectData),
-  
-  /**
-   * Eliminar un proyecto
-   * DELETE /project/project/delete/{id}
-   */
-  delete: (id: number) => 
-    apiGateway.delete(`/project/project/delete/${id}`),
   
   /**
    * Verificar estado del servicio
@@ -242,13 +221,6 @@ export const tasksApi = {
 // Usa el microservicio de InnoSistemas (puerto 8082) a través del Gateway
 
 export const teamsApi = {
-  /**
-   * Obtener todos los equipos
-   * GET /project/team/listAll
-   */
-  getAll: () => 
-    apiGateway.get('/project/team/listAll'),
-
   /**
    * Obtener nombres de estudiantes por ID de equipo
    * GET /project/team/getStudentsName/{id}
