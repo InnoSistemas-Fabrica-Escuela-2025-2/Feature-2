@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.udea.innosistemas.innosistemas.entity.Task;
 import com.udea.innosistemas.innosistemas.service.TaskService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("/project/task")
 public class TaskController {
@@ -24,8 +26,10 @@ public class TaskController {
     // Servicio para manejar tareas
     private TaskService taskService;
 
+    @Operation(
+    summary = "Guardar una tarea"
+    )
     @PostMapping("/save")
-    // Endpoint para guardar una tarea
     public ResponseEntity<Task> saveTask(@RequestBody Task task) {
         try {
             Task saved = taskService.saveTask(task);
@@ -35,21 +39,27 @@ public class TaskController {
         }
     }
 
+    @Operation(
+    summary = "Listar todas las tareas"
+    )
     @GetMapping("/listAll")
-    // Endpoint para listar todas las tareas
     public ResponseEntity<List<Task>> listAllTasks() {
         return ResponseEntity.ok(taskService.listAllTasks());
     }
 
+    @Operation(
+    summary = "Eliminar una tarea por su id"
+    )
     @DeleteMapping("/delete/{id}")
-    // Endpoint para eliminar una tarea por su id
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+    summary = "Actualizar una tarea"
+    )
     @PutMapping("/update")
-    // Endpoint para actualizar una tarea
     public ResponseEntity<Task> updatedTask(@RequestBody Task task) {
         try {
             Task updated = taskService.saveTask(task);
@@ -59,8 +69,10 @@ public class TaskController {
         }
     }
     
+    @Operation(
+    summary = "Actualizar el estado de una tarea"
+    )
     @PutMapping("updateState/{id_task}/{id_state}")
-    // Endpoint para actualizar el estado de una tarea
     public ResponseEntity<Void> updateState(@PathVariable Long id_task, @PathVariable Long id_state) {
         taskService.updateState(id_task, id_state);
         return ResponseEntity.noContent().build();

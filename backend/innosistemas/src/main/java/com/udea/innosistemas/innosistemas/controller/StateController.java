@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.udea.innosistemas.innosistemas.entity.State;
 import com.udea.innosistemas.innosistemas.service.StateService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +23,10 @@ public class StateController {
     // Servicio para manejar estados
     private StateService stateService;
 
+    @Operation(
+    summary = "Listar todos los estados"
+    )
     @GetMapping("/listAll")
-    // Endpoint para listar todos los estados
     public ResponseEntity<List<State>> allStates() {
         return ResponseEntity.ok(stateService.allStates());
     }

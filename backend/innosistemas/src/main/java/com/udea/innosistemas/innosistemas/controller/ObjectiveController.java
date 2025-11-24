@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.udea.innosistemas.innosistemas.entity.Objective;
 import com.udea.innosistemas.innosistemas.service.ObjectiveService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 
 @RestController
 @RequestMapping("/project/objective")
@@ -19,8 +21,11 @@ public class ObjectiveController {
     // Servicio para manejar objetivos
     private ObjectiveService objectiveService;
 
+
+    @Operation(
+    summary = "Guardar un objetivo"
+    )
     @PostMapping("/save")
-    // Endpoint para guardar un objetivo
     public ResponseEntity<Objective> saveObjective(@RequestBody Objective objective) {
         try {
             Objective saved = objectiveService.saveObjective(objective);

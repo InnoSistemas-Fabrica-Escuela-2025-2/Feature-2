@@ -30,7 +30,11 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.6.0</version>
+		</dependency>	
 		<dependency>
 			<groupId>net.n2oapp.framework.security</groupId>
 			<artifactId>security-userinfo-starter</artifactId>

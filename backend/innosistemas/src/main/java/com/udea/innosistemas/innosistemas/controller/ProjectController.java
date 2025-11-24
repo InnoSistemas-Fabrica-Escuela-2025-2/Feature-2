@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.udea.innosistemas.innosistemas.entity.Project;
 import com.udea.innosistemas.innosistemas.service.ProjectService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 
 
 @RestController
@@ -24,14 +26,18 @@ public class ProjectController {
     // Servicio para manejar proyectos
     private ProjectService projectService;
 
+    @Operation(
+    summary = "Mostrar mensaje de estado del servicio"
+    )
     @GetMapping("/message")
-    // Endpoint para mostrar un mensaje de estado del servicio
     public ResponseEntity<String> showMesagge() {
         return ResponseEntity.ok("servicio 2 funcionando");
     }
 
+    @Operation(
+    summary = "Guardar un proyecto"
+    )
     @PostMapping("/save")
-    // Endpoint para guardar un proyecto
     public ResponseEntity<Project> saveProject(@RequestBody Project project) {
        try {
             Project saved = projectService.saveProject(project);
@@ -41,14 +47,18 @@ public class ProjectController {
         } 
     }
 
+    @Operation(
+    summary = "Listar todos los proyectos"
+    )
     @GetMapping("/listAll")
-    // Endpoint para listar todos los proyectos
     public ResponseEntity<List<Project>> listAllProjects() {
         return ResponseEntity.ok(projectService.listAllProjects());
     }
 
+    @Operation(
+    summary = "Listar todos los proyectos de un estudiante por su id"
+    )
     @GetMapping("/listAllById/{id}")
-    // Endpoint para listar todos los proyectos de un estudiante por su id
     public ResponseEntity<List<Project>> listAllProjectsById(@PathVariable Long id) {
         return ResponseEntity.ok(projectService.listAllById(id));
     }
