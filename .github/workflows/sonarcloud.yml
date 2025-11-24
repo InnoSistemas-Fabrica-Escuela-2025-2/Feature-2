@@ -61,6 +61,14 @@ jobs:
           rm -rf qa/reports/backend
           mkdir -p qa/reports/backend/{authenticator,gateway,innosistemas, notifications}
 
+      - name: Make mvnw executable for backend modules
+        run: |
+          for f in backend/*/mvnw; do
+            if [ -f "$f" ]; then
+              chmod +x "$f"
+            fi
+          done
+
       # Backend Coverage - Test each service with coverage
       - name: Backend Tests with Coverage - Authenticator
         working-directory: backend/authenticator
