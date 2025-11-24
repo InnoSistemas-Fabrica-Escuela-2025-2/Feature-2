@@ -38,7 +38,10 @@ public class JwtAuthFilter implements WebFilter{
     public @NonNull Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
-        if (path.startsWith("/actuator")) {
+        // Skip JWT validation for public endpoints
+        if (path.startsWith("/actuator") || 
+            path.equals("/authenticator/person/authenticate") || 
+            path.equals("/authenticator/person/message")) {
             return chain.filter(exchange); 
         }
 
