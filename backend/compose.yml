@@ -12,7 +12,7 @@ services:
       - PROJECT_URL=${PROJECT_URL}
       - PROJECT_USERNAME=${PROJECT_USERNAME}
       - PROJECT_PASSWORD=${PROJECT_PASSWORD}
-      - spring.kafka.bootstrap-servers=kafka:9092  
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092  
     networks:
       - monitoring
     
@@ -28,7 +28,7 @@ services:
       - kafka
     environment:
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
-      - spring.kafka.bootstrap-servers=kafka:9092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     networks:
       - monitoring
 
