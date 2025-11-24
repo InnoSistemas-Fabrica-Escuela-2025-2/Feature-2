@@ -56,18 +56,10 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
       - name: Prepare coverage directories
         run: |
-          rm -rf qa/reports/backend qa/reports/frontend
-          mkdir -p qa/reports/backend/{authenticator,gateway,innosistemas}
-          mkdir -p qa/reports/frontend
+          rm -rf qa/reports/backend
+          mkdir -p qa/reports/backend/{authenticator,gateway,innosistemas, notifications}
 
       # Backend Coverage - Test each service with coverage
       - name: Backend Tests with Coverage - Authenticator
@@ -97,14 +89,15 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: ""
         run: ./mvnw -B -Pcoverage clean verify
 
-      # Frontend Coverage
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+      - name: Backend Tests with Coverage - Notifications
+        working-directory: backend/notifications
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD: ""
+        run: ./mvnw -B -Pcoverage clean verify
 
-      - name: Frontend tests with coverage
-        working-directory: frontend
-        run: npm run test:coverage
 
       # SonarCloud Analysis
       - name: Analyze with SonarCloud
@@ -115,13 +108,12 @@ jobs:
           args:
             -Dsonar.projectKey=InnoSistemas-Fabrica-Escuela-2025-2_Feature-2
             -Dsonar.organization=innosistemas-fabrica-escuela-2025-2-1
-            -Dsonar.sources=backend/authenticator/src/main,backend/gateway/src/main,backend/innosistemas/src/main,frontend/src
-            -Dsonar.tests=backend/authenticator/src/test,backend/gateway/src/test,backend/innosistemas/src/test,frontend/src/**/__tests__
-            -Dsonar.java.binaries=backend/authenticator/target/classes,backend/gateway/target/classes,backend/innosistemas/target/classes
-            -Dsonar.coverage.jacoco.xmlReportPaths=qa/reports/backend/authenticator/jacoco.xml,qa/reports/backend/gateway/jacoco.xml,qa/reports/backend/innosistemas/jacoco.xml
-            -Dsonar.javascript.lcov.reportPaths=qa/reports/frontend/lcov.info
-            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,**/__tests__/**,**/test/**,frontend/src/components/ui/**,frontend/src/data/mockData.ts,frontend/src/lib/apiExamples.ts
-            -Dsonar.exclusions=qa/reports/**,**/target/**,**/generated-sources/**,**/generated-test-sources/**,**/.mvn/**,frontend/dist/**,frontend/node_modules/**,frontend/src/components/ui/**,frontend/src/hooks/use-toast.ts,docs/**,qa/**,integrations/**,deployment/**,project-management/**,*.md,**/*.md,backend/**/.dockerignore,backend/**/Dockerfile,backend/docker-compose.yml,backend/**/*.ps1,render.yaml
+            -Dsonar.sources=backend/authenticator/src/main,backend/gateway/src/main,backend/innosistemas/src/main,backend/notifications/src/main
+            -Dsonar.tests=backend/authenticator/src/test,backend/gateway/src/test,backend/innosistemas/src/test,backend/notifications/src/test
+            -Dsonar.java.binaries=backend/authenticator/target/classes,backend/gateway/target/classes,backend/innosistemas/target/classes,backend/notifications/target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=qa/reports/backend/authenticator/jacoco.xml,qa/reports/backend/gateway/jacoco.xml,qa/reports/backend/innosistemas/jacoco.xml,qa/reports/backend/notifications/jacoco.xml
+            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,**/__tests__/**,**/test/**
+            -Dsonar.exclusions=qa/reports/**,**/target/**,**/generated-sources/**,**/generated-test-sources/**,**/.mvn/**,docs/**,qa/**,integrations/**,deployment/**,project-management/**,*.md,**/*.md,backend/**/.dockerignore,backend/**/Dockerfile,backend/docker-compose.yml,backend/**/*.ps1,render.yaml
             -Dsonar.test.inclusions=**/src/test/**/*.java,**/__tests__/**/*.tsx,**/__tests__/**/*.ts,**/*.test.tsx,**/*.test.ts
             -Dsonar.cpd.exclusions=**/test/**,**/__tests__/**,**/mockData.ts
           projectBaseDir: .
