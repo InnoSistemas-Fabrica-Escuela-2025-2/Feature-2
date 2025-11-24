@@ -25,15 +25,10 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
             .authorizeHttpRequests(authz -> authz
-                    .requestMatchers("/project/project/**").hasRole(role)
-                    .requestMatchers("/project/project/listAll").hasRole("PROFESOR")
-                    .requestMatchers("project/objective/**").hasRole(role)
-                    .requestMatchers("project/task/**").hasRole(role)
-                    .requestMatchers("project/state/**").hasRole(role)
-                    .requestMatchers("authenticator/person/authenticate").permitAll()
-                    .requestMatchers("authenticator/person/message").permitAll()
+                    .requestMatchers("/person/authenticate", "/person/message").permitAll()
                     .requestMatchers("/actuator/prometheus").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
+                    .anyRequest().authenticated()
                     )
             // Agregar el filtro de autenticación JWT antes del filtro de nombre de usuario y contraseña
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
