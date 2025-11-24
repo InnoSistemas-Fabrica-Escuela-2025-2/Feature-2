@@ -1,4 +1,4 @@
-package com.innosistemas.notifications.service.Impl;
+package com.innosistemas.notifications.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;

@@ -1,4 +1,4 @@
-package com.innosistemas.notifications.service.Impl;
+package com.innosistemas.notifications.service.impl;
 
 import java.util.List;
 import java.util.Optional;

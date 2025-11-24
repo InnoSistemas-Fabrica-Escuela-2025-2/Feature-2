@@ -1,4 +1,4 @@
-package com.innosistemas.notifications.service.Impl;
+package com.innosistemas.notifications.service.impl;
 
 import java.io.IOException;
 
