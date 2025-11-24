@@ -3,6 +3,7 @@ package com.innosistemas.authenticator.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,8 +24,11 @@ public class SecurityConfig {
     // Configuración de la cadena de filtros de seguridad
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .formLogin(formLogin -> formLogin.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
             .authorizeHttpRequests(authz -> authz
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Allow CORS preflight
                     .requestMatchers("/person/authenticate", "/person/message").permitAll()
                     .requestMatchers("/actuator/prometheus").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
