@@ -17,6 +17,10 @@ spring:
               uri: ${INNOSISTEMAS_URL:http://localhost:8082}
               predicates:
               - Path=/project/**
+            - id: notifications
+              uri: ${NOTIFICATIONS_URL:http://localhost:8083}
+              predicates:
+              - Path=/notifications/**
             globalcors:
                 add-to-simple-url-handler-mapping: true
                 corsConfigurations:
