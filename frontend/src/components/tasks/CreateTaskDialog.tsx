@@ -1,8 +1,8 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { Task } from '@/types';
-import { tasksApi } from '@/lib/api';
+import { tasksApi, teamsApi } from '@/lib/api';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,19 +29,43 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
   const [responsableId, setResponsableId] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<string[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
   // Show all projects for now (no filtering)
   const userProjects = projects;
 
   // Get project members based on selected project
   const selectedProject = projects.find(p => p.id.toString() === proyectoId);
-  const projectMembers = selectedProject?.miembros || [];
+
+  // Load team members when project is selected
+  useEffect(() => {
+    const loadTeamMembers = async () => {
+      if (!selectedProject?.team?.id) {
+        setTeamMembers([]);
+        return;
+      }
+      
+      try {
+        setLoadingMembers(true);
+        const response = await teamsApi.getStudentsEmails(selectedProject.team.id);
+        setTeamMembers(response.data || []);
+      } catch (error) {
+        console.error('Error loading team members:', error);
+        setTeamMembers([]);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+    
+    loadTeamMembers();
+  }, [selectedProject?.team?.id]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!titulo.trim() || !descripcion.trim() || !fechaEntrega || !proyectoId) {
+    if (!titulo.trim() || !descripcion.trim() || !fechaEntrega || !proyectoId || !responsableId.trim()) {
       setError('Todos los campos son obligatorios');
       return;
     }
@@ -63,7 +87,7 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
         title: titulo.trim(),
         description: descripcion.trim(),
         deadline: selectedDate.toISOString(),
-        responsible: responsableId || user?.correo || user?.nombre || 'Sin asignar',
+        responsible_email: responsableId.trim(),
         project: { id: Number.parseInt(proyectoId) }
       };
 
@@ -162,20 +186,28 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="responsable">Responsable(s)</Label>
-            <Select value={responsableId} onValueChange={setResponsableId} disabled={!proyectoId}>
+            <Label htmlFor="responsable">
+              Responsable
+              <span className="text-destructive ml-1" aria-label="campo obligatorio">*</span>
+            </Label>
+            <Select value={responsableId} onValueChange={setResponsableId} disabled={!proyectoId || loadingMembers}>
               <SelectTrigger id="responsable">
-                <SelectValue placeholder={proyectoId ? "Selecciona un responsable" : "Primero selecciona un proyecto"} />
+                <SelectValue placeholder={
+                  !proyectoId ? "Primero selecciona un proyecto" :
+                  loadingMembers ? "Cargando miembros..." :
+                  teamMembers.length === 0 ? "No hay miembros disponibles" :
+                  "Selecciona un responsable"
+                } />
               </SelectTrigger>
               <SelectContent>
-                {projectMembers.length === 0 ? (
+                {teamMembers.length === 0 ? (
                   <SelectItem value="sin-miembros" disabled>
-                    No hay miembros en el proyecto
+                    No hay miembros en el equipo
                   </SelectItem>
                 ) : (
-                  projectMembers.map((miembroId: string) => (
-                    <SelectItem key={miembroId} value={miembroId}>
-                      {miembroId}
+                  teamMembers.map((email: string) => (
+                    <SelectItem key={email} value={email}>
+                      {email}
                     </SelectItem>
                   ))
                 )}

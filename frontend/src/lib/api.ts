@@ -241,6 +241,13 @@ export const teamsApi = {
    */
   getStudentsNames: (teamId: number) => 
     apiGateway.get(`/project/team/getStudentsName/${teamId}`),
+  
+  /**
+   * Obtener correos de estudiantes por ID de equipo
+   * GET /project/team/getStudentsEmail/{id}
+   */
+  getStudentsEmails: (teamId: number) => 
+    apiGateway.get(`/project/team/getStudentsEmail/${teamId}`),
 };
 
 // ==================== API DE ESTADOS ====================
