@@ -15,7 +15,7 @@ import com.innosistemas.authenticator.service.AuthenticatorService;
 
 
 @RestController
-@RequestMapping("/authenticator/person")
+@RequestMapping("/person")
 public class AuthenticatorController {
     
     @Autowired
