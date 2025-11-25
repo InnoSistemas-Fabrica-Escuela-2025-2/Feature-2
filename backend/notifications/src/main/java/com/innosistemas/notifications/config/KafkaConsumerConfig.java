@@ -22,6 +22,15 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
     
+    @Value("${spring.kafka.properties.security.protocol:SASL_SSL}")
+    private String securityProtocol;
+    
+    @Value("${spring.kafka.properties.sasl.mechanism:PLAIN}")
+    private String saslMechanism;
+    
+    @Value("${spring.kafka.properties.sasl.jaas.config}")
+    private String saslJaasConfig;
+    
     @Bean
     //Crear la fábrica de consumidores de Kafka
     public ConsumerFactory<String, EmailEvent> consumerFactory() {
@@ -32,6 +41,12 @@ public class KafkaConsumerConfig {
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-group");
+        
+        // Configuración de seguridad para Confluent Cloud
+        config.put("security.protocol", securityProtocol);
+        config.put("sasl.mechanism", saslMechanism);
+        config.put("sasl.jaas.config", saslJaasConfig);
+        
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), 
         new JsonDeserializer<>(EmailEvent.class));
     }
