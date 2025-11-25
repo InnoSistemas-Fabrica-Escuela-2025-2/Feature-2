@@ -27,17 +27,8 @@ public class SecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .authorizeExchange(exchanges -> exchanges
-                .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Allow CORS preflight
-                .pathMatchers("/authenticator/**").permitAll()  // Allow all authenticator endpoints
-                .pathMatchers("/actuator/**").permitAll()
-                .pathMatchers("/project/project/listAll").hasAuthority("profesor")
-                .pathMatchers("/project/project/**").hasAuthority(role)
-                .pathMatchers("/project/objective/**").hasAuthority(role)
-                .pathMatchers("/project/task/**").hasAuthority(role)
-                .pathMatchers("/project/state/**").hasAuthority(role)
-                .anyExchange().permitAll()  // Allow everything else temporarily for debugging
+                .anyExchange().permitAll()  // Permit everything for debugging
             )
-            .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 }
