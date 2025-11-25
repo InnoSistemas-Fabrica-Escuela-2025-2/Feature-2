@@ -14,7 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String role = "STUDENT";
+    private static final String ROLE = "STUDENT";
 
     @Autowired
     // Filtro de autenticación JWT
