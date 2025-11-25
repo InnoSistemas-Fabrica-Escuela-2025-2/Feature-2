@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { projectsApi, tasksApi } from '@/lib/api';
+import { notificationsApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { Button } from '@/components/ui/button';
@@ -231,6 +232,18 @@ export default function ProjectDetail() {
       await refreshData();
       setEditingTask(null);
       toast({ title: 'Tarea actualizada exitosamente' });
+
+      // Enviar notificación al responsable sobre la actualización (no bloquear)
+      try {
+        const emailEvent = {
+          to: payload.responsible_email || payload.responsible || '',
+          subject: `Tarea actualizada: ${payload.title}`,
+          body: `La tarea "${payload.title}" fue actualizada. Fecha límite: ${new Date(payload.deadline).toLocaleDateString()}`
+        };
+        notificationsApi.send(emailEvent).catch((err) => console.error('Error enviando notificación de actualización:', err));
+      } catch (notifyErr) {
+        console.error('No se pudo iniciar el envío de notificación:', notifyErr);
+      }
     } catch (error) {
       console.error('Error updating task:', error);
       toast({ 

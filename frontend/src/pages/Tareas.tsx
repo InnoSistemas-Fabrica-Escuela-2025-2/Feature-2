@@ -9,7 +9,7 @@ import TaskCard from "@/components/tasks/TaskCard";
 import CreateTaskDialog from "@/components/tasks/CreateTaskDialog";
 import EditTaskDialog from "@/components/tasks/EditTaskDialog";
 import { TaskKanban } from "@/components/tasks/TaskKanban";
-import { tasksApi } from "@/lib/api";
+import { tasksApi, notificationsApi } from "@/lib/api";
 
 const Tareas = () => {
   const { tasks, projects, refreshData, states } = useData();
@@ -135,6 +135,17 @@ const Tareas = () => {
     try {
       await tasksApi.update(payload);
       await refreshData();
+      // Enviar notificación al responsable sobre la actualización (no bloquear)
+      try {
+        const emailEvent = {
+          to: payload.responsible_email,
+          subject: `Tarea actualizada: ${payload.title}`,
+          body: `La tarea \"${payload.title}\" del proyecto fue actualizada. Fecha límite: ${new Date(payload.deadline).toLocaleDateString()}`
+        };
+        notificationsApi.send(emailEvent).catch((err) => console.error('Error enviando notificación de actualización:', err));
+      } catch (notifyErr) {
+        console.error('No se pudo iniciar el envío de notificación:', notifyErr);
+      }
     } catch (error: any) {
       console.error("Error actualizando la tarea:", error);
       const message =
