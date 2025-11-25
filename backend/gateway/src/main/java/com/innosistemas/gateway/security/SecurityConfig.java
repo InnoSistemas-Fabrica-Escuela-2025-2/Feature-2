@@ -14,7 +14,7 @@ import org.springframework.security.web.server.authentication.HttpStatusServerEn
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    private static final String role = "estudiante";
+    private static final String ROLE = "estudiante";
     private final JwtAuthFilter jwtAuthFilter;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter){
@@ -36,10 +36,10 @@ public class SecurityConfig {
                 .pathMatchers("/authenticator/**").permitAll()  // Allow all authenticator endpoints
                 .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/project/project/listAll").hasAuthority("profesor")
-                .pathMatchers("/project/project/**").hasAuthority(role)
-                .pathMatchers("/project/objective/**").hasAuthority(role)
-                .pathMatchers("/project/task/**").hasAuthority(role)
-                .pathMatchers("/project/state/**").hasAuthority(role)
+                .pathMatchers("/project/project/**").hasAuthority(ROLE)
+                .pathMatchers("/project/objective/**").hasAuthority(ROLE)
+                .pathMatchers("/project/task/**").hasAuthority(ROLE)
+                .pathMatchers("/project/state/**").hasAuthority(ROLE)
                 .anyExchange().authenticated()
             )
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)

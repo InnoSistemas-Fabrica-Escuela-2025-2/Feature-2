@@ -1,15 +1,16 @@
 package com.udea.innosistemas.innosistemas.service.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-
 import com.udea.innosistemas.innosistemas.entity.EmailEvent;
 import com.udea.innosistemas.innosistemas.service.NotificationProducer;
 
 @Service 
 public class NotificationProducerImpl implements NotificationProducer {
-
+    Logger LOGGER = LoggerFactory.getLogger(NotificationProducerImpl.class);
     @Autowired
     // Plantilla de Kafka para enviar mensajes, acepta clave de tipo String (topic) y valor de tipo EmailEvent
     private KafkaTemplate<String, EmailEvent> kafkaTemplate;
@@ -22,8 +23,7 @@ public class NotificationProducerImpl implements NotificationProducer {
             kafkaTemplate.send("notifications-topic", email);
             System.out.println("El correo se envió con éxito" + email);
         } catch (Exception e){
-            e.printStackTrace();
-            throw new UnsupportedOperationException("No es posible:" + e);
+            LOGGER.warn("No es posible:", e);
         }
     }
     
