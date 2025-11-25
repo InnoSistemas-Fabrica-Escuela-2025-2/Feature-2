@@ -12,6 +12,7 @@ import RecuperarCuenta from "./pages/RecuperarCuenta";
 import Dashboard from "./pages/Dashboard";
 import Proyectos from "./pages/Proyectos";
 import ProjectDetail from "./pages/ProjectDetail";
+import Tareas from "./pages/Tareas";
 import Notificaciones from "./pages/Notificaciones";
 import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
@@ -58,6 +59,16 @@ const App = () => (
                 <ProtectedRoute>
                   <AppLayout>
                     <ProjectDetail />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tareas"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Tareas />
                   </AppLayout>
                 </ProtectedRoute>
               }
