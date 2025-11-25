@@ -17,5 +17,8 @@ public interface TeamRepository extends JpaRepository<Team,Long>{
     
     @Query(value = "SELECT * FROM public.getstudentsnamebyid(:teamName)", nativeQuery=true)
     List<String> getStudentsNameById(@Param("teamName") String teamName);
+    
+    @Query(value = "SELECT * FROM public.getstudentsemailbyid(:teamId)", nativeQuery=true)
+    List<String> getStudentsEmailById(@Param("teamId") Long teamId);
 }
     

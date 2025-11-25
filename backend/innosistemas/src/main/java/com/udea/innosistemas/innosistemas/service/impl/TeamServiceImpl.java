@@ -39,6 +39,16 @@ public class TeamServiceImpl implements TeamService{
     }
 
     @Override
+    //Obtener los correos de los estudiantes de un equipo por el id del equipo
+    public List<String> getStudentsEmailById(Long teamId) {
+        try{
+            return teamRepository.getStudentsEmailById(teamId);
+        }catch(Exception e){
+            throw new UnsupportedOperationException("Error obteniendo correos de estudiantes: " + e.getMessage());
+        }
+    }
+
+    @Override
     public List<Team> listAllTeams() {
         return teamRepository.findAll();
     }

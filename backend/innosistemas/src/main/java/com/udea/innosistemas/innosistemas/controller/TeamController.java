@@ -25,4 +25,10 @@ public class TeamController {
     public ResponseEntity<List<String>> getStudentsNameById(@PathVariable Long id) {
         return ResponseEntity.ok(teamService.getStudentsNameById(id));
     }
+    
+    @GetMapping("/getStudentsEmail/{id}")
+    // Endpoint para obtener los correos de los estudiantes por id de equipo
+    public ResponseEntity<List<String>> getStudentsEmailById(@PathVariable Long id) {
+        return ResponseEntity.ok(teamService.getStudentsEmailById(id));
+    }
 }
