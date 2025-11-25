@@ -8,10 +8,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-@Configuration
+// CORS is handled by the Gateway - this is disabled
+// @Configuration
 public class CorsConfig {
 
-    @Bean
+    // @Bean
     // Configuración CORS personalizada
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();  // Fuente de configuración CORS
