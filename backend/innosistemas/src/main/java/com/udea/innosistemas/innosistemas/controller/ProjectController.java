@@ -47,6 +47,17 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.listAllProjects());
     }
 
+    @GetMapping("/{id}")
+    // Endpoint para obtener un proyecto específico por su id
+    public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
+        try {
+            Project project = projectService.getProjectById(id);
+            return ResponseEntity.ok(project);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/listAllById/{id}")
     // Endpoint para listar todos los proyectos de un estudiante por su id
     public ResponseEntity<List<Project>> listAllProjectsById(@PathVariable Long id) {

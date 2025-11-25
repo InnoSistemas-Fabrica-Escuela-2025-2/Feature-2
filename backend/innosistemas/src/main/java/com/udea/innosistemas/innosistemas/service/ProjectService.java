@@ -8,6 +8,7 @@ public interface ProjectService {
     
     public Project saveProject(Project project);
     public List<Project> listAllProjects();
+    public Project getProjectById(Long projectId);
     public List<Long> getProjectsById(Long studentId);
     public List<Project> listAllById(Long studentId);
     public List<Project> listAllByTeamId(Long teamId);

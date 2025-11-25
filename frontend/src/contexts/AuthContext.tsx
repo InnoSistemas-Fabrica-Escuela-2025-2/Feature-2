@@ -107,6 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let friendlyMessage = backendMessage;
       if (status === 423 || friendlyMessage?.toLowerCase().includes('bloqueado')) {
         friendlyMessage = 'Tu cuenta está bloqueada por intentos fallidos. Contacta a soporte para desbloquearla.';
+      } else if (status === 500 && friendlyMessage?.toLowerCase().includes('sesión activa')) {
+        friendlyMessage = 'Ya tienes una sesión activa. Espera 15 minutos o cierra la sesión anterior.';
       } else if (!friendlyMessage) {
         if (!error.response) {
           friendlyMessage = 'No se pudo contactar al servicio de autenticación. Verifica tu conexión.';

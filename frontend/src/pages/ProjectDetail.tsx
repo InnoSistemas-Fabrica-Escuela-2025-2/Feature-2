@@ -63,14 +63,21 @@ export default function ProjectDetail() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await projectsApi.getAll();
-      const projects = response.data || [];
-      const foundProject = projects.find((p: any) => p.id === Number.parseInt(id || '0'));
       
-      if (foundProject) {
-        setProject(foundProject);
+      // Primero intenta buscar en los proyectos ya cargados en el contexto
+      const projectId = Number.parseInt(id || '0');
+      const foundInContext = projects.find((p: any) => p.id === projectId);
+      
+      if (foundInContext) {
+        setProject(foundInContext);
       } else {
-        setError('Proyecto no encontrado');
+        // Si no está en el contexto, hacer petición directa al backend
+        const response = await projectsApi.getById(projectId);
+        if (response.data) {
+          setProject(response.data);
+        } else {
+          setError('Proyecto no encontrado');
+        }
       }
     } catch (error) {
       console.error('Error loading project:', error);

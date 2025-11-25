@@ -29,6 +29,13 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     @Override
+    //Obtener un proyecto específico por su id
+    public Project getProjectById(Long projectId) {
+        return projectRepository.findById(projectId)
+            .orElseThrow(() -> new RuntimeException("Proyecto no encontrado con id: " + projectId));
+    }
+
+    @Override
     //Obtener los ids de los proyectos de un estudiante por su id
     public List<Long> getProjectsById(Long student_id) {
         try{

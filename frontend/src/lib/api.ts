@@ -163,6 +163,13 @@ export const projectsApi = {
     apiGateway.get('/project/project/listAll'),
   
   /**
+   * Obtener un proyecto específico por ID
+   * GET /project/project/{id}
+   */
+  getById: (projectId: number) => 
+    apiGateway.get(`/project/project/${projectId}`),
+  
+  /**
    * Obtener proyectos asociados a un estudiante específico
    * GET /project/project/listAllById/{id}
    */
