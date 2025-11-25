@@ -29,9 +29,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
             .authorizeHttpRequests(authz -> authz
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Allow CORS preflight
-                    .requestMatchers("/person/authenticate", "/person/message").permitAll()  // Direct access (via gateway with StripPrefix)
-                    .requestMatchers("/authenticator/person/authenticate", "/authenticator/person/message").permitAll()  // Direct access (without gateway)
-                    .requestMatchers("/actuator/prometheus").permitAll()
+                    .requestMatchers("/person/**").permitAll()  // Authenticator endpoints (after StripPrefix)
                     .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated()
                     )

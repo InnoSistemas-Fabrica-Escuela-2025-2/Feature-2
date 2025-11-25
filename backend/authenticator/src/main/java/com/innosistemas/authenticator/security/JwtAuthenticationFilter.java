@@ -33,12 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Skip JWT validation for public endpoints
-        if (path.startsWith("/actuator") || 
-            path.equals("/person/authenticate") || 
-            path.equals("/person/message") ||
-            path.equals("/authenticator/person/authenticate") || 
-            path.equals("/authenticator/person/message")) {
+        // Skip JWT validation for actuator endpoints
+        if (path.startsWith("/actuator")) {
             chain.doFilter(request, response);
             return;
         }
