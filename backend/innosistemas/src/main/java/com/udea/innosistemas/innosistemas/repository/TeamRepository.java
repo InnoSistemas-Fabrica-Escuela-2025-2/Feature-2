@@ -20,8 +20,8 @@ public interface TeamRepository extends JpaRepository<Team,Long>{
     
     @Query(value = "SELECT u.email FROM project.student s " +
                    "JOIN authentication.users u ON s.student_id = u.id " +
-                   "WHERE s.team_name = (SELECT t.name FROM project.teams t WHERE t.id = :teamId)", 
+                   "WHERE s.team_name = :teamName", 
            nativeQuery=true)
-    List<String> getStudentsEmailById(@Param("teamId") Long teamId);
+    List<String> getStudentsEmailByTeamName(@Param("teamName") String teamName);
 }
     

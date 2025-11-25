@@ -42,7 +42,11 @@ public class TeamServiceImpl implements TeamService{
     //Obtener los correos de los estudiantes de un equipo por el id del equipo
     public List<String> getStudentsEmailById(Long teamId) {
         try{
-            return teamRepository.getStudentsEmailById(teamId);
+            // Obtener el equipo por ID
+            Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Equipo no encontrado con ID: " + teamId));
+            // Obtener emails usando el nombre del equipo
+            return teamRepository.getStudentsEmailByTeamName(team.getName());
         }catch(Exception e){
             throw new UnsupportedOperationException("Error obteniendo correos de estudiantes: " + e.getMessage());
         }
