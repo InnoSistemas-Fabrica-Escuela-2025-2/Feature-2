@@ -1,6 +1,7 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { Task, TaskStatus } from '@/types';
 import { useData } from '@/contexts/DataContext';
+import { teamsApi } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,10 +39,37 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<TaskStatus | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<string[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
-  // Get project members
+  // Get current project
   const currentProject = projects.find(p => p.id === task.proyectoId);
-  const projectMembers = currentProject?.miembros || [];
+
+  // Load team members when dialog opens
+  useEffect(() => {
+    const loadTeamMembers = async () => {
+      if (!currentProject?.team?.id) {
+        setTeamMembers([]);
+        return;
+      }
+
+      try {
+        setLoadingMembers(true);
+        const response = await teamsApi.getStudentsEmails(currentProject.team.id);
+        setTeamMembers(response.data || []);
+      } catch (error) {
+        console.error('Error loading team members:', error);
+        setTeamMembers([]);
+        toast.error('Error al cargar los miembros del equipo');
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    if (open) {
+      loadTeamMembers();
+    }
+  }, [open, currentProject?.team?.id]);
 
   const handleStatusChange = (newStatus: TaskStatus) => {
     if (newStatus !== estado) {
@@ -189,17 +217,21 @@ const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated }: EditTaskDia
               <Label htmlFor="edit-responsable">Responsable(s)</Label>
               <Select value={responsableId} onValueChange={setResponsableId}>
                 <SelectTrigger id="edit-responsable">
-                  <SelectValue placeholder="Selecciona un responsable" />
+                  <SelectValue placeholder={loadingMembers ? "Cargando miembros..." : "Selecciona un responsable"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {projectMembers.length === 0 ? (
+                  {loadingMembers ? (
+                    <SelectItem value="loading" disabled>
+                      Cargando miembros...
+                    </SelectItem>
+                  ) : teamMembers.length === 0 ? (
                     <SelectItem value="sin-miembros" disabled>
-                      No hay miembros en el proyecto
+                      No hay miembros en el equipo
                     </SelectItem>
                   ) : (
-                    projectMembers.map((miembroId: string) => (
-                      <SelectItem key={miembroId} value={miembroId}>
-                        {miembroId}
+                    teamMembers.map((email: string) => (
+                      <SelectItem key={email} value={email}>
+                        {email}
                       </SelectItem>
                     ))
                   )}
