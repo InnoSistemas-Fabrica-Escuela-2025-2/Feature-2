@@ -28,8 +28,7 @@ public class SecurityConfig {
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Allow CORS preflight
-                .pathMatchers("/authenticator/person/authenticate", "/authenticator/person/message").permitAll()
-                .pathMatchers("/actuator/prometheus").permitAll()
+                .pathMatchers("/authenticator/**").permitAll()  // Allow all authenticator endpoints
                 .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/project/project/listAll").hasAuthority("profesor")
                 .pathMatchers("/project/project/**").hasAuthority(role)
