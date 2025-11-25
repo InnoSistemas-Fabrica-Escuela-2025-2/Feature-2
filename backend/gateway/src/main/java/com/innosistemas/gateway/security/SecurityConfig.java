@@ -26,19 +26,19 @@ public class SecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-            .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Allow CORS preflight
                 .pathMatchers("/authenticator/person/authenticate", "/authenticator/person/message").permitAll()
+                .pathMatchers("/actuator/prometheus").permitAll()
+                .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/project/project/listAll").hasAuthority("profesor")
                 .pathMatchers("/project/project/**").hasAuthority(role)
                 .pathMatchers("/project/objective/**").hasAuthority(role)
                 .pathMatchers("/project/task/**").hasAuthority(role)
                 .pathMatchers("/project/state/**").hasAuthority(role)
-                .pathMatchers("/actuator/prometheus").permitAll()
-                .pathMatchers("/actuator/**").permitAll()
                 .anyExchange().authenticated()
             )
+            .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 }
