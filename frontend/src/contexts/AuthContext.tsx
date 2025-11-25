@@ -93,6 +93,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(loggedInUser);
       // Guardar en localStorage para persistencia
       localStorage.setItem('user', JSON.stringify(loggedInUser));
+      // Guardar el token JWT en localStorage
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
       setIsLoading(false);
       toast.success(`Bienvenido, ${loggedInUser.nombre}`);
       return { success: true as const };
@@ -122,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Limpiar sesión localmente (backend usa JWT stateless)
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     toast.info('Sesión cerrada correctamente');
   };
 

@@ -53,6 +53,12 @@ const innosistemasClient = axios.create({
  * Interceptor de Request - Logging y trazabilidad
  */
 const requestInterceptor = (config: any) => {
+  // Adjuntar token JWT si existe en localStorage
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
   // Log para debugging (solo en desarrollo)
   if (import.meta.env.DEV) {
     console.log(`🔵 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.data || '');
@@ -86,8 +92,9 @@ const errorInterceptor = async (error: AxiosError) => {
     const currentPath = globalThis.location?.pathname;
     if (currentPath !== '/login' && currentPath !== '/') {
       console.log('⚠️ Token inválido o expirado, redirigiendo a login...');
-      // Limpiar token y redirigir a login
+      // Limpiar token y usuario, luego redirigir a login
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
       globalThis.location.href = '/login';
     }
     throw error;
