@@ -11,8 +11,6 @@ spring:
               uri: ${AUTHENTICATOR_URL:http://localhost:8081}
               predicates:
               - Path=/authenticator/**
-              filters:
-              - StripPrefix=1
             - id: innosistemas
               uri: ${INNOSISTEMAS_URL:http://localhost:8082}
               predicates:
