@@ -29,7 +29,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
             .authorizeHttpRequests(authz -> authz
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Allow CORS preflight
-                    .requestMatchers("/person/authenticate", "/person/message").permitAll()
+                    .requestMatchers("/authenticator/person/authenticate", "/authenticator/person/message").permitAll()
                     .requestMatchers("/actuator/prometheus").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated()
