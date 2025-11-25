@@ -59,7 +59,7 @@ jobs:
       - name: Prepare coverage directories
         run: |
           rm -rf qa/reports/backend
-          mkdir -p qa/reports/backend/{authenticator,gateway,innosistemas, notifications}
+          mkdir -p qa/reports/backend/{authenticator,gateway,innosistemas,notifications}
 
       - name: Make mvnw executable for backend modules
         run: |
