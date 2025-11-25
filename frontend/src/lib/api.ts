@@ -279,6 +279,13 @@ export const notificationsApi = {
    */
   delete: (notificationId: number) => 
     apiGateway.put(`/notifications/delete/${notificationId}`),
+
+  /**
+   * Enviar una notificación por email (microservicio InnoSistemas via Gateway)
+   * POST /project/notification/send
+   */
+  send: (emailEvent: { to: string; subject: string; body: string }) =>
+    apiGateway.post('/project/notification/send', emailEvent),
 };
 
 // ==================== FUNCIONES DE UTILIDAD ====================

@@ -2,7 +2,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { Task } from '@/types';
-import { tasksApi, teamsApi } from '@/lib/api';
+import { tasksApi, teamsApi, notificationsApi } from '@/lib/api';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,6 +103,18 @@ const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated }: CreateTaskDialo
       onTaskCreated(response.data);
       onOpenChange(false);
       
+      // Enviar notificación por email al responsable (no bloquear flujo si falla)
+      try {
+        const emailEvent = {
+          to: taskData.responsible_email,
+          subject: `Nueva tarea asignada: ${taskData.title}`,
+          body: `Se te asignó la tarea \"${taskData.title}\" para el proyecto. Fecha límite: ${new Date(taskData.deadline).toLocaleDateString()}`
+        };
+        notificationsApi.send(emailEvent).catch(err => console.error('Error enviando notificación:', err));
+      } catch (notifyErr) {
+        console.error('No se pudo iniciar el envío de notificación:', notifyErr);
+      }
+
       // Reset form
       setTitulo('');
       setDescripcion('');
