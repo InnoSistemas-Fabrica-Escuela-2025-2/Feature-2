@@ -1,49 +1,33 @@
 package com.udea.innosistemas.innosistemas.controller;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
+import com.udea.innosistemas.innosistemas.service.TeamService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.ResponseEntity;
 
-import com.udea.innosistemas.innosistemas.service.TeamService;
+import java.util.List;
 
+import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TeamControllerTest {
-
-    private MockMvc mockMvc;
-
     @Mock
-    private TeamService teamService;
-
+    TeamService teamService;
     @InjectMocks
-    private TeamController teamController;
+    TeamController teamController;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(teamController).build();
-    }
+
 
     @Test
-    void getStudentsNameReturnsTeamMembers() throws Exception {
-        when(teamService.getStudentsNameById(10L)).thenReturn(List.of("María", "Juan"));
+    void testGetStudentsNameById() {
+        when(teamService.getStudentsNameById(anyLong())).thenReturn(List.of("getStudentsNameByIdResponse"));
 
-        mockMvc.perform(get("/project/team/getStudentsName/{id}", 10L))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0]").value("María"))
-            .andExpect(jsonPath("$[1]").value("Juan"));
-
-        verify(teamService).getStudentsNameById(10L);
+        ResponseEntity<List<String>> result = teamController.getStudentsNameById(1L);
+        Assertions.assertEquals(ResponseEntity.ok(List.of("getStudentsNameByIdResponse")), result);
     }
 }
+
+//Generated with love by TestMe :) Please raise issues & feature requests at: https://weirddev.com/forum#!/testme

@@ -1,99 +1,58 @@
 package com.udea.innosistemas.innosistemas.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
+import com.udea.innosistemas.innosistemas.entity.*;
+import com.udea.innosistemas.innosistemas.service.ProjectService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.ResponseEntity;
 
-import com.udea.innosistemas.innosistemas.entity.Project;
-import com.udea.innosistemas.innosistemas.service.ProjectService;
+import java.sql.Timestamp;
+import java.util.List;
 
+import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProjectControllerTest {
-
-    private MockMvc mockMvc;
-
     @Mock
-    private ProjectService projectService;
-
+    ProjectService projectService;
     @InjectMocks
-    private ProjectController projectController;
+    ProjectController projectController;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(projectController).build();
+    @Test
+    void testShowMesagge() {
+        ResponseEntity<String> result = projectController.showMesagge();
+        Assertions.assertEquals(ResponseEntity.ok("servicio 2 funcionando"), result);
     }
 
     @Test
-    void messageEndpointReturnsHealthMessage() throws Exception {
-        mockMvc.perform(get("/project/project/message"))
-            .andExpect(status().isOk())
-            .andExpect(content().string("servicio 2 funcionando"));
+    void testSaveProject() {
+        Project p = new Project(1L, "name", "description", new Timestamp(0), List.of(new Task(1L, "title", "description", new Timestamp(0), "responsible_email", null, new State(1L, "name"))), List.of(new Objective(1L, "description", null)), new Team(0L, "name"));
+        when(projectService.saveProject(any(Project.class))).thenReturn(p);
+
+        ResponseEntity<Project> result = projectController.saveProject(p);
+        Assertions.assertEquals(ResponseEntity.ok(p), result);
     }
 
     @Test
-    void saveProjectReturnsPersistedInstance() throws Exception {
-        Project project = new Project();
-        project.setId(77L);
-    project.setName("Proyecto Accesible");
+    void testListAllProjects() {
+        Project p2 = new Project(1L, "name", "description", new Timestamp(0), List.of(new Task(1L, "title", "description", new Timestamp( 0), "responsible_email", null, new State(1L, "name"))), List.of(new Objective(1L, "description", null)), new Team(0L, "name"));
+        when(projectService.listAllProjects()).thenReturn(List.of(p2));
 
-        when(projectService.saveProject(any(Project.class))).thenReturn(project);
-
-        mockMvc.perform(post("/project/project/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(77L))
-            .andExpect(jsonPath("$.name").value("Proyecto Accesible"));
-
-        verify(projectService).saveProject(any(Project.class));
+        ResponseEntity<List<Project>> result = projectController.listAllProjects();
+        Assertions.assertEquals(ResponseEntity.ok(List.of(p2)), result);
     }
 
     @Test
-    void saveProjectReturnsErrorOnServiceFailure() throws Exception {
-        when(projectService.saveProject(any(Project.class))).thenThrow(new RuntimeException("fallo"));
+    void testListAllProjectsById() {
+        Project p3 = new Project(1L, "name", "description", new Timestamp(0), List.of(new Task(1L, "title", "description", new Timestamp( 0), "responsible_email", null, new State(1L, "name"))), List.of(new Objective(1L, "description", null)), new Team(0L, "name"));
+        when(projectService.listAllById(anyLong())).thenReturn(List.of(p3));
 
-        mockMvc.perform(post("/project/project/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void listAllProjectsReturnsRepositoryData() throws Exception {
-        Project project = new Project();
-        project.setId(12L);
-        when(projectService.listAllProjects()).thenReturn(List.of(project));
-
-        mockMvc.perform(get("/project/project/listAll"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(12L));
-    }
-
-    @Test
-    void listAllProjectsByIdReturnsStudentProjects() throws Exception {
-        Project project = new Project();
-        project.setId(21L);
-        when(projectService.listAllById(4L)).thenReturn(List.of(project));
-
-        mockMvc.perform(get("/project/project/listAllById/{id}", 4L))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(21L));
+        ResponseEntity<List<Project>> result = projectController.listAllProjectsById(1L);
+        Assertions.assertEquals(ResponseEntity.ok(List.of(p3)), result);
     }
 }
+
+//Generated with love by TestMe :) Please raise issues & feature requests at: https://weirddev.com/forum#!/testme

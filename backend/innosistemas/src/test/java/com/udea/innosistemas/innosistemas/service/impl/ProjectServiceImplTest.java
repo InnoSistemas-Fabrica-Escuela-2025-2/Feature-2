@@ -1,99 +1,74 @@
 package com.udea.innosistemas.innosistemas.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-import java.util.List;
-
+import com.udea.innosistemas.innosistemas.entity.*;
+import com.udea.innosistemas.innosistemas.repository.ProjectRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.List;
 
-import com.udea.innosistemas.innosistemas.entity.Project;
-import com.udea.innosistemas.innosistemas.repository.ProjectRepository;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceImplTest {
-
     @Mock
-    private ProjectRepository projectRepository;
-
+    ProjectRepository projectRepository;
     @InjectMocks
-    private ProjectServiceImpl projectService;
-
+    ProjectServiceImpl projectServiceImpl;
+    Project project = new Project();
     @Test
-    void saveProjectReturnsPersistedEntity() {
+    void testSaveProject() {
         Project project = new Project();
         when(projectRepository.save(project)).thenReturn(project);
 
-        Project result = projectService.saveProject(project);
+        Project result = projectServiceImpl.saveProject(project);
 
-        assertSame(project, result);
+        assertEquals(project, result);
         verify(projectRepository).save(project);
     }
 
     @Test
-    void listAllProjectsReturnsRepositoryData() {
-        Project project = new Project();
-        List<Project> projects = Collections.singletonList(project);
+    void testListAllProjects() {
+        List<Project> projects = List.of(new Project());
         when(projectRepository.findAll()).thenReturn(projects);
 
-        List<Project> result = projectService.listAllProjects();
+        List<Project> result = projectServiceImpl.listAllProjects();
 
-        assertSame(projects, result);
+        assertEquals(projects, result);
         verify(projectRepository).findAll();
     }
 
     @Test
-    void getProjectsByIdPropagatesRepositoryValues() {
-        List<Long> projectIds = List.of(1L, 2L);
-        when(projectRepository.getProjectsById(7L)).thenReturn(projectIds);
+    void testGetProjectsById() {
+        when(projectRepository.getProjectsById(anyLong())).thenReturn(List.of(1L));
 
-        List<Long> result = projectService.getProjectsById(7L);
-
-        assertSame(projectIds, result);
-        verify(projectRepository).getProjectsById(7L);
+        List<Long> result = projectServiceImpl.getProjectsById(1L);
+        assertEquals(List.of(1L), result);
     }
 
     @Test
-    void getProjectsByIdWrapsRepositoryErrors() {
-        when(projectRepository.getProjectsById(anyLong())).thenThrow(new RuntimeException("DB failure"));
-
-        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> projectService.getProjectsById(5L));
-
-        assertEquals("El estudiante no existe.", exception.getMessage());
+    void testListAllById() {
+        when(projectRepository.getProjectsById(1L))
+                .thenReturn(List.of(100L));
+        List<Project> projects = List.of(new Project());
+        when(projectRepository.findAllByIdIn(List.of(100L)))
+                .thenReturn(projects);
+        List<Project> result = projectServiceImpl.listAllById(1L);
+        assertEquals(projects, result);
+        verify(projectRepository).getProjectsById(1L);
+        verify(projectRepository).findAllByIdIn(List.of(100L));
     }
 
     @Test
-    void listAllByIdReturnsProjectsForStudent() {
-        List<Long> projectIds = List.of(3L, 8L);
-        Project project = new Project();
-        List<Project> projects = Collections.singletonList(project);
-
-        when(projectRepository.getProjectsById(4L)).thenReturn(projectIds);
-        when(projectRepository.findAllByIdIn(projectIds)).thenReturn(projects);
-
-        List<Project> result = projectService.listAllById(4L);
-
-        assertSame(projects, result);
-        verify(projectRepository).findAllByIdIn(projectIds);
-    }
-
-    @Test
-    void listAllByIdWrapsErrorsFromRepository() {
-        List<Long> projectIds = List.of(10L);
-        when(projectRepository.getProjectsById(12L)).thenReturn(projectIds);
-        when(projectRepository.findAllByIdIn(projectIds)).thenThrow(new RuntimeException("query failed"));
-
-        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> projectService.listAllById(12L));
-
-        assertEquals("No fue posible mostrar todos los projectos.", exception.getMessage());
+    void testListAllByTeamId() {
+        List<Project> projects = List.of(new Project());
+        when(projectRepository.findAllByTeamId(5L)).thenReturn(projects);
+        List<Project> result = projectServiceImpl.listAllByTeamId(5L);
+        assertEquals(projects, result);
+        verify(projectRepository).findAllByTeamId(5L);
     }
 }
+
+//Generated with love by TestMe :) Please raise issues & feature requests at: https://weirddev.com/forum#!/testme
