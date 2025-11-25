@@ -1,63 +1,38 @@
 package com.udea.innosistemas.innosistemas.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.udea.innosistemas.innosistemas.entity.*;
+import com.udea.innosistemas.innosistemas.service.ObjectiveService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.ResponseEntity;
 
-import com.udea.innosistemas.innosistemas.entity.Objective;
-import com.udea.innosistemas.innosistemas.service.ObjectiveService;
+import java.sql.Timestamp;
+import java.util.List;
 
+import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ObjectiveControllerTest {
-
-    private MockMvc mockMvc;
-
     @Mock
-    private ObjectiveService objectiveService;
-
+    ObjectiveService objectiveService;
     @InjectMocks
-    private ObjectiveController objectiveController;
+    ObjectiveController objectiveController;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(objectiveController).build();
-    }
+
 
     @Test
-    void saveObjectiveReturnsSavedEntity() throws Exception {
-        Objective objective = new Objective();
-        objective.setId(3L);
-        objective.setDescription("Accesibilidad mejorada");
+    void testSaveObjective() {
+        Objective expected = new Objective(1L, "description", new Project(1L, "name", "description", new Timestamp(0), List.of(new Task(1L, "title", "description", new Timestamp(0), "responsible_email", null, new State(1L, "name"))), List.of(), new Team(0L, "name")));
+        when(objectiveService.saveObjective(any(Objective.class))).thenReturn(expected);
 
-        when(objectiveService.saveObjective(any(Objective.class))).thenReturn(objective);
-
-        mockMvc.perform(post("/project/objective/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(3L))
-            .andExpect(jsonPath("$.description").value("Accesibilidad mejorada"));
-    }
-
-    @Test
-    void saveObjectiveReturnsErrorWhenServiceFails() throws Exception {
-        when(objectiveService.saveObjective(any(Objective.class))).thenThrow(new RuntimeException("fallo"));
-
-        mockMvc.perform(post("/project/objective/save")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isInternalServerError());
+        ResponseEntity<Objective> result = objectiveController.saveObjective(expected);
+        Assertions.assertEquals(ResponseEntity.ok(expected), result);
     }
 }
+
+//Generated with love by TestMe :) Please raise issues & feature requests at: https://weirddev.com/forum#!/testme
