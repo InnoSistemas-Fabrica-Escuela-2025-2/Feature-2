@@ -24,7 +24,7 @@ public class EmailNotificationsImpl implements EmailNotifications{
     @Override
     //Enviar un correo electrónico usando SendGrid
     public void sendEmail(String email, String subject, String content){
-        Email from = new Email("emmanuel.narvaez@udea.edu.co"); //Correo remitente
+        Email from = new Email("newtron000@gmail.com"); //Correo remitente
         Email to = new Email(email); //Correo destinatario
         Content newContent = new Content("text/plain", content); //Contenido del correo
         Mail mail = new Mail(from, subject, to, newContent);  //Crear el objeto Mail con los detalles del correo
