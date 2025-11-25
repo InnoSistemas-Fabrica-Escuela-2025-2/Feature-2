@@ -126,7 +126,7 @@ const Tareas = () => {
       title: updatedTask.titulo,
       description: updatedTask.descripcion,
       deadline: deadlineDate.toISOString(),
-      responsible:
+      responsible_email:
         updatedTask.responsable || updatedTask.responsableId || "Sin asignar",
       project: { id: projectId },
       state: { id: stateId },

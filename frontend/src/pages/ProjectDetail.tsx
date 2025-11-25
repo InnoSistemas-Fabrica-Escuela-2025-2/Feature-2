@@ -212,13 +212,18 @@ export default function ProjectDetail() {
         'finalizado': 3
       };
 
+      const deadline = updatedTask.fechaEntrega instanceof Date
+        ? updatedTask.fechaEntrega
+        : new Date(updatedTask.fechaEntrega);
+
       const payload = {
         id: updatedTask.id,
-        titulo: updatedTask.titulo,
-        descripcion: updatedTask.descripcion,
-        fechaEntrega: updatedTask.fechaEntrega,
-        responsableId: updatedTask.responsableId,
-        estadoId: stateIdMap[updatedTask.estado] || 1,
+        title: updatedTask.titulo || updatedTask.title,
+        description: updatedTask.descripcion || updatedTask.description,
+        deadline: deadline instanceof Date ? deadline.toISOString() : String(deadline),
+        responsible_email: updatedTask.responsable || updatedTask.responsableId || '',
+        project: { id: updatedTask.proyectoId },
+        state: { id: stateIdMap[updatedTask.estado] || 1 },
         prioridad: updatedTask.prioridad,
       };
 
