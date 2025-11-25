@@ -21,12 +21,27 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
     
+    @Value("${spring.kafka.properties.security.protocol:SASL_SSL}")
+    private String securityProtocol;
+    
+    @Value("${spring.kafka.properties.sasl.mechanism:PLAIN}")
+    private String saslMechanism;
+    
+    @Value("${spring.kafka.properties.sasl.jaas.config}")
+    private String saslJaasConfig;
+    
     @Bean
     //Crear la fábrica de productores de Kafka
     public ProducerFactory<String, EmailEvent> producerFactory() {
         Map<String, Object> config = new HashMap<>(); // Configuraciones del productor de Kafka
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers); // Dirección del port de Kafka
         config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        
+        // Configuración de seguridad para Confluent Cloud
+        config.put("security.protocol", securityProtocol);
+        config.put("sasl.mechanism", saslMechanism);
+        config.put("sasl.jaas.config", saslJaasConfig);
+        
         return new DefaultKafkaProducerFactory<>(
             config,     // Se retorna el map
             () -> new StringSerializer(),       // Serializador de la clave
