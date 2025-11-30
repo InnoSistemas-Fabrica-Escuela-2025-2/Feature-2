@@ -13,6 +13,7 @@ import co.edu.udea.certificacion.innoSistemas.models.Project;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
 import co.edu.udea.certificacion.innoSistemas.interactions.FillInputField;
 import co.edu.udea.certificacion.innoSistemas.interactions.ClickOnElement;
+import co.edu.udea.certificacion.innoSistemas.interactions.SelectFromDropdown;
 
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.*;
@@ -56,8 +57,9 @@ public class ProjectCreationSteps {
         student.attemptsTo(
                 FillInputField.in(ProjectsPage.PROJECT_NAME_INPUT, currentProject.getName()),
                 FillInputField.in(ProjectsPage.PROJECT_DESCRIPTION_INPUT, currentProject.getDescription()),
-                FillInputField.in(ProjectsPage.START_DATE_INPUT, currentProject.getStartDate()),
-                FillInputField.in(ProjectsPage.END_DATE_INPUT, currentProject.getEndDate()));
+                FillInputField.in(ProjectsPage.PROJECT_OBJECTIVES_INPUT, currentProject.getObjectives()),
+                FillInputField.in(ProjectsPage.DELIVERY_DATE_INPUT, currentProject.getDeliveryDate()),
+                SelectFromDropdown.option(currentProject.getTeam(), ProjectsPage.TEAM_DROPDOWN));
     }
 
     @When("the user submits the project form")
@@ -68,15 +70,15 @@ public class ProjectCreationSteps {
 
     @When("the user fills the project name with {string}")
     public void userFillsProjectName(String projectName) {
-        currentProject = new Project(projectName, null, null, null);
+        currentProject = new Project(projectName, null, null, null, null);
         student.attemptsTo(
                 FillInputField.in(ProjectsPage.PROJECT_NAME_INPUT, projectName));
     }
 
-    @When("the user fills the start date with {string}")
-    public void userFillsStartDate(String startDate) {
+    @When("the user fills the delivery date with {string}")
+    public void userFillsDeliveryDate(String deliveryDate) {
         student.attemptsTo(
-                FillInputField.in(ProjectsPage.START_DATE_INPUT, startDate));
+                FillInputField.in(ProjectsPage.DELIVERY_DATE_INPUT, deliveryDate));
     }
 
     @Then("the project should appear in the projects list")

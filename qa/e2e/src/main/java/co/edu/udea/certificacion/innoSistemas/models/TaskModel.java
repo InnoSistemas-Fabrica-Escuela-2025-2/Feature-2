@@ -7,16 +7,22 @@ public class TaskModel {
 
     private String name;
     private String description;
-    private String status;
-    private String priority;
+    private String project;
+    private String responsible;
     private String dueDate;
+    private String status; // Keeping status and priority as they might be used in verification or other
+                           // scenarios
+    private String priority;
 
-    public TaskModel(String name, String description, String status, String priority, String dueDate) {
+    public TaskModel(String name, String description, String project, String responsible, String dueDate, String status,
+            String priority) {
         this.name = name;
         this.description = description;
+        this.project = project;
+        this.responsible = responsible;
+        this.dueDate = dueDate;
         this.status = status;
         this.priority = priority;
-        this.dueDate = dueDate;
     }
 
     public static TaskModel fromDataTable(DataTable dataTable) {
@@ -24,9 +30,11 @@ public class TaskModel {
         return new TaskModel(
                 data.get("name"),
                 data.get("description"),
+                data.get("project"),
+                data.get("responsible"),
+                data.get("due_date"),
                 data.get("status"),
-                data.get("priority"),
-                data.get("due_date"));
+                data.get("priority"));
     }
 
     public String getName() {
@@ -37,15 +45,23 @@ public class TaskModel {
         return description;
     }
 
+    public String getProject() {
+        return project;
+    }
+
+    public String getResponsible() {
+        return responsible;
+    }
+
+    public String getDueDate() {
+        return dueDate;
+    }
+
     public String getStatus() {
         return status;
     }
 
     public String getPriority() {
         return priority;
-    }
-
-    public String getDueDate() {
-        return dueDate;
     }
 }

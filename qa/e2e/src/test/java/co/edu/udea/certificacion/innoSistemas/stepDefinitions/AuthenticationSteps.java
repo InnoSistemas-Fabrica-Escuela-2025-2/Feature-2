@@ -38,7 +38,7 @@ public class AuthenticationSteps {
     @When("the user enters username {string}")
     public void userEntersUsername(String username) {
         student.attemptsTo(
-                FillInputField.in(LoginPage.USERNAME_INPUT, username));
+                FillInputField.in(LoginPage.EMAIL_INPUT, username));
     }
 
     @When("the user enters password {string}")
@@ -80,7 +80,7 @@ public class AuthenticationSteps {
     @Then("a validation message for username should appear")
     public void validationMessageForUsernameShouldAppear() {
         student.should(
-                seeThat(TheElementVisibility.of(LoginPage.USERNAME_VALIDATION), is(true)));
+                seeThat(TheElementVisibility.of(LoginPage.EMAIL_VALIDATION), is(true)));
     }
 
     @Then("the login button should be disabled")

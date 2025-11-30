@@ -23,7 +23,7 @@ public class Login implements Task {
     @Override
     public <T extends Actor> void performAs(T actor) {
         actor.attemptsTo(
-                FillInputField.in(LoginPage.USERNAME_INPUT, username),
+                FillInputField.in(LoginPage.EMAIL_INPUT, username),
                 FillInputField.in(LoginPage.PASSWORD_INPUT, password),
                 ClickOnElement.on(LoginPage.LOGIN_BUTTON));
     }

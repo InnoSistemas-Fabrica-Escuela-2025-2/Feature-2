@@ -26,8 +26,8 @@ public class CreateTask implements Task {
                 ClickOnElement.on(TasksPage.ADD_TASK_BUTTON),
                 FillInputField.in(TasksPage.TASK_NAME_INPUT, task.getName()),
                 FillInputField.in(TasksPage.TASK_DESCRIPTION_INPUT, task.getDescription()),
-                SelectFromDropdown.option(task.getStatus(), TasksPage.TASK_STATUS_DROPDOWN),
-                SelectFromDropdown.option(task.getPriority(), TasksPage.TASK_PRIORITY_DROPDOWN),
+                SelectFromDropdown.option(task.getProject(), TasksPage.PROJECT_DROPDOWN),
+                SelectFromDropdown.option(task.getResponsible(), TasksPage.RESPONSIBLE_DROPDOWN),
                 FillInputField.in(TasksPage.DUE_DATE_INPUT, task.getDueDate()),
                 ClickOnElement.on(TasksPage.SAVE_TASK_BUTTON));
     }

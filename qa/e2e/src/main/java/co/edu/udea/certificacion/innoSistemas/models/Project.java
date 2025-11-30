@@ -7,14 +7,16 @@ public class Project {
 
     private String name;
     private String description;
-    private String startDate;
-    private String endDate;
+    private String objectives;
+    private String deliveryDate;
+    private String team;
 
-    public Project(String name, String description, String startDate, String endDate) {
+    public Project(String name, String description, String objectives, String deliveryDate, String team) {
         this.name = name;
         this.description = description;
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this.objectives = objectives;
+        this.deliveryDate = deliveryDate;
+        this.team = team;
     }
 
     public static Project fromDataTable(DataTable dataTable) {
@@ -22,8 +24,9 @@ public class Project {
         return new Project(
                 data.get("name"),
                 data.get("description"),
-                data.get("start_date"),
-                data.get("end_date"));
+                data.get("objectives"),
+                data.get("delivery_date"),
+                data.get("team"));
     }
 
     public String getName() {
@@ -34,11 +37,15 @@ public class Project {
         return description;
     }
 
-    public String getStartDate() {
-        return startDate;
+    public String getObjectives() {
+        return objectives;
     }
 
-    public String getEndDate() {
-        return endDate;
+    public String getDeliveryDate() {
+        return deliveryDate;
+    }
+
+    public String getTeam() {
+        return team;
     }
 }

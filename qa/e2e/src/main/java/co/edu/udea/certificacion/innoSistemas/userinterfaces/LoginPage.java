@@ -5,18 +5,18 @@ import org.openqa.selenium.By;
 
 public class LoginPage {
 
-    public static final Target USERNAME_INPUT = Target.the("username input field")
-            .located(By.id("username"));
+        public static final Target EMAIL_INPUT = Target.the("email input field")
+                        .located(By.xpath("//*[@id=\"email\"]"));
 
-    public static final Target PASSWORD_INPUT = Target.the("password input field")
-            .located(By.id("password"));
+        public static final Target PASSWORD_INPUT = Target.the("password input field")
+                        .located(By.xpath("//*[@id=\"password\"]"));
 
-    public static final Target LOGIN_BUTTON = Target.the("login button")
-            .located(By.cssSelector("button[type='submit']"));
+        public static final Target LOGIN_BUTTON = Target.the("login button")
+                        .located(By.xpath("//*[@id=\"main-content\"]/div[2]/form/button"));
 
-    public static final Target ERROR_MESSAGE = Target.the("error message")
-            .located(By.className("error-message"));
+        public static final Target ERROR_MESSAGE = Target.the("error message")
+                        .located(By.className("error-message"));
 
-    public static final Target USERNAME_VALIDATION = Target.the("username validation message")
-            .located(By.id("username-error"));
+        public static final Target EMAIL_VALIDATION = Target.the("email validation message")
+                        .located(By.id("email-error"));
 }

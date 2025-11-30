@@ -7,15 +7,15 @@ Feature: User Authentication
         Given the user is on the login page
 
     Scenario: Successful login with valid credentials
-        When the user enters username "juan.perez"
-        And the user enters password "Test123!"
+        When the user enters username "geraldin@udea.edu.co"
+        And the user enters password "geraldin"
         And the user clicks the login button
         Then the user should be redirected to the dashboard
         And the welcome message should be displayed
 
     Scenario: Failed login with invalid password
-        When the user enters username "juan.perez"
-        And the user enters password "wrongpassword"
+        When the user enters username "geraldin@udea.edu.co"
+        And the user enters password "5encalidad"
         And the user clicks the login button
         Then an error message should be displayed
         And the user should remain on the login page
