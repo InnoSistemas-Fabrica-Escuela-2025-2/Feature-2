@@ -25,12 +25,8 @@ public class AuthenticatorController {
     @PostMapping("/authenticate")
     // Endpoint para autenticar usuarios
     public ResponseEntity<AuthenticatorResponse> login(@RequestBody AuthenticatorRequest request) {
-        try {
-            AuthenticatorResponse response = authenticatorService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        AuthenticatorResponse response = authenticatorService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/message")

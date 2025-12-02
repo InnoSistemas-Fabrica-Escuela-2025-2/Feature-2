@@ -4,6 +4,7 @@
 $services = @(
     "https://innosistemas-core.onrender.com/actuator/health",
     "https://innosistemas-notifications.onrender.com/actuator/health",
+    "https://innosistemas-authenticator.onrender.com/actuator/health",
     "https://innosistemas-gateway.onrender.com/actuator/health"
 )
 
@@ -16,11 +17,13 @@ while ($true) {
     Write-Host "[$timestamp] Ping a servicios..." -ForegroundColor Cyan
     
     foreach ($service in $services) {
+        $name = $service -replace "https://", "" -replace ".onrender.com.*", ""
         try {
-            $response = Invoke-RestMethod -Uri $service -Method GET -TimeoutSec 10 -ErrorAction Stop
-            Write-Host "  ✓ $service - OK" -ForegroundColor Green
+            $ProgressPreference = 'SilentlyContinue'
+            $null = Invoke-WebRequest -Uri $service -Method GET -TimeoutSec 10 -ErrorAction Stop
+            Write-Host "  OK - $name" -ForegroundColor Green
         } catch {
-            Write-Host "  ✗ $service - Error: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "  ERROR - $name" -ForegroundColor Red
         }
     }
     

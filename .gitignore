@@ -46,3 +46,7 @@ qa/reports/
 .DS_Store
 Thumbs.db
 *.log
+
+# Mantener vivo los servicios
+keep-alive.ps1
+
