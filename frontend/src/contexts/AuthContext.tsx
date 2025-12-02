@@ -114,10 +114,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           friendlyMessage = 'No se pudo contactar al servicio de autenticación. Verifica tu conexión.';
         } else if (status === 401) {
           friendlyMessage = 'Correo o contraseña incorrectos.';
-        } else if (status === 500 || status === 404) {
-          friendlyMessage = 'No encontramos una cuenta registrada con ese correo.';
+        } else if (status === 404) {
+          friendlyMessage = 'Servicio de autenticación no disponible (404).';
+        } else if (status === 500) {
+          friendlyMessage = 'Error interno del servidor (500). Intenta más tarde.';
         } else {
-          friendlyMessage = error.message || 'Credenciales incorrectas';
+          friendlyMessage = error.message || 'Error de autenticación';
         }
       }
       return { success: false as const, error: friendlyMessage };

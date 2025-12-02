@@ -47,24 +47,6 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
                 System.out.println("Usuario bloqueado por múltiples intentos fallidos: " + person.getEmail());
                 throw new RuntimeException("Usuario bloqueado por múltiples intentos fallidos");
             }
-
-            // Verificar si ya existe una sesión activa para el usuario
-            Optional<ActiveSession> session = activeSessionRepository.findByPerson(person);
-            if (session.isPresent()) {
-                ActiveSession existingSession = session.get();
-                System.out.println("Verificando sesión activa para: " + person.getEmail());
-                
-                // Validar el token de la sesión existente
-                if (jwtUtil.validateToken(existingSession.getToken())) {
-                    System.out.println("El usuario ya tiene una sesión activa y válida: " + person.getEmail());
-                    throw new RuntimeException("El usuario ya tiene una sesión activa.");
-                } else {
-                    System.out.println("Token expirado, se eliminará la sesión anterior: " + person.getEmail());
-                    activeSessionService.invalidateSession(existingSession);
-                    activeSessionRepository.flush();  // Asegurar que la sesión se elimine antes de continuar
-                }
-            }
-
             // Validar la contraseña proporcionada con la almacenada
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             boolean isPasswordValid = encoder.matches(request.getPassword(), person.getPassword());
@@ -77,19 +59,44 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
             // Registro de un inicio de sesión exitoso
             loginAttemptService.loginSucceeded(person);
 
-            String token = jwtUtil.generateToken(person.getId(), 
-            person.getEmail(), 
-            person.getRole());
+            // Verificar si ya existe una sesión activa para el usuario (después de validar contraseña)
+            Optional<ActiveSession> session = activeSessionRepository.findByPerson(person);
+            if (session.isPresent()) {
+                ActiveSession existingSession = session.get();
+                System.out.println("Verificando sesión activa para: " + person.getEmail());
 
-            // Registrar la nueva sesión activa
+                // Si el token existente es válido, reutilizarlo (no crear uno nuevo)
+                if (jwtUtil.validateToken(existingSession.getToken())) {
+                    System.out.println("El usuario ya tiene una sesión activa y válida. Se reutiliza el token existente: " + person.getEmail());
+                    return new AuthenticatorResponse(
+                        person.getId(),
+                        existingSession.getToken(),
+                        person.getEmail(),
+                        person.getRole()
+                    );
+                }
+
+                // Si el token expiró, invalidar la sesión anterior y continuar para emitir un nuevo token
+                System.out.println("Token expirado, se eliminará la sesión anterior: " + person.getEmail());
+                activeSessionService.invalidateSession(existingSession);
+                activeSessionRepository.flush();
+            }
+
+            // Generar nuevo token y registrar sesión activa
+            String token = jwtUtil.generateToken(
+                person.getId(),
+                person.getEmail(),
+                person.getRole()
+            );
+
             activeSessionService.registerSession(person, token);
 
-            AuthenticatorResponse response = new AuthenticatorResponse(person.getId(),
-            token, 
-            person.getEmail(),
-            person.getRole());
-
-            return response;
+            return new AuthenticatorResponse(
+                person.getId(),
+                token,
+                person.getEmail(),
+                person.getRole()
+            );
         } else {
             throw new UnsupportedOperationException ("Correo no encontrado");
         }
