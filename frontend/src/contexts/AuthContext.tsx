@@ -103,24 +103,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       setIsLoading(false);
       const status = error.response?.status;
-      const backendMessage = error.response?.data?.message;
-      let friendlyMessage = backendMessage;
-      if (status === 423 || friendlyMessage?.toLowerCase().includes('bloqueado')) {
-        friendlyMessage = 'Tu cuenta está bloqueada por intentos fallidos. Contacta a soporte para desbloquearla.';
-      } else if (status === 500 && friendlyMessage?.toLowerCase().includes('sesión activa')) {
-        friendlyMessage = 'Ya tienes una sesión activa. Espera 15 minutos o cierra la sesión anterior.';
-      } else if (!friendlyMessage) {
-        if (!error.response) {
-          friendlyMessage = 'No se pudo contactar al servicio de autenticación. Verifica tu conexión.';
-        } else if (status === 401) {
-          friendlyMessage = 'Correo o contraseña incorrectos.';
-        } else if (status === 404) {
-          friendlyMessage = 'Servicio de autenticación no disponible (404).';
-        } else if (status === 500) {
-          friendlyMessage = 'Error interno del servidor (500). Intenta más tarde.';
+      const data = error.response?.data || {};
+      const backendMessage: string | undefined = data?.message;
+      const code: string | undefined = data?.code;
+      const remainingAttempts: number | undefined = data?.remainingAttempts;
+      const remainingMillis: number | undefined = data?.remainingMillis;
+      const permanent: boolean | undefined = data?.permanent;
+
+      const formatRemaining = (ms: number) => {
+        const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const mm = String(minutes);
+        const ss = String(seconds).padStart(2, '0');
+        return `${mm} min ${ss} s`;
+      };
+
+      let friendlyMessage: string | undefined = undefined;
+
+      // Priorizar mensajes del contrato del backend
+      if (status === 401) {
+        if (typeof remainingAttempts === 'number') {
+          friendlyMessage = `Correo o contraseña incorrectos. Te restan ${remainingAttempts} intento${remainingAttempts === 1 ? '' : 's'} antes del bloqueo de 15 minutos.`;
         } else {
-          friendlyMessage = error.message || 'Error de autenticación';
+          friendlyMessage = backendMessage || 'Correo o contraseña incorrectos.';
         }
+      } else if (status === 423) {
+        const isPermanent = Boolean(permanent) || code === 'AUTH_BLOCKED_PERMANENT';
+        if (isPermanent) {
+          friendlyMessage = backendMessage || 'Tu cuenta ha sido bloqueada permanentemente.';
+        } else if (typeof remainingMillis === 'number') {
+          friendlyMessage = `Tu cuenta está bloqueada temporalmente. Intenta de nuevo en ${formatRemaining(remainingMillis)}.`;
+        } else {
+          friendlyMessage = backendMessage || 'Tu cuenta está bloqueada temporalmente.';
+        }
+      } else if (!error.response) {
+        friendlyMessage = 'No se pudo contactar al servicio de autenticación. Verifica tu conexión.';
+      } else if (status === 404) {
+        friendlyMessage = 'Servicio de autenticación no disponible (404).';
+      } else if (status === 500) {
+        friendlyMessage = backendMessage || 'Error interno del servidor (500). Intenta más tarde.';
+      } else if (backendMessage) {
+        friendlyMessage = backendMessage;
+      } else {
+        friendlyMessage = error.message || 'Error de autenticación';
       }
       return { success: false as const, error: friendlyMessage };
     }

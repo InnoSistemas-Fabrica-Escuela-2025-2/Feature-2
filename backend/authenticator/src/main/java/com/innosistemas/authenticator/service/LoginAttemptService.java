@@ -8,4 +8,10 @@ public interface LoginAttemptService {
     void loginFailed(Person person);
 
     boolean isBlocked(Person person);
+
+    /**
+     * Verifica si el usuario está bloqueado y, de estarlo, lanza una excepción con detalles.
+     * No hace nada si no está bloqueado.
+     */
+    void checkBlocked(Person person);
 }

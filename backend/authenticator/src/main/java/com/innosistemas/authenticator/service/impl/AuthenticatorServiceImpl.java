@@ -42,18 +42,17 @@ public class AuthenticatorServiceImpl implements AuthenticatorService {
         if (present.isPresent()){
             Person person = present.get();
 
-            // Verificar si el usuario está bloqueado por múltiples intentos fallidos
-            if (loginAttemptService.isBlocked(person)){
-                System.out.println("Usuario bloqueado por múltiples intentos fallidos: " + person.getEmail());
-                throw new RuntimeException("Usuario bloqueado por múltiples intentos fallidos");
-            }
+            // Verificar si el usuario está bloqueado por múltiples intentos fallidos (lanza excepción con detalles si aplica)
+            loginAttemptService.checkBlocked(person);
             // Validar la contraseña proporcionada con la almacenada
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             boolean isPasswordValid = encoder.matches(request.getPassword(), person.getPassword());
             
             if (!isPasswordValid) {
+                // Este método lanzará InvalidCredentialsException con remainingAttempts o AccountBlockedException
                 loginAttemptService.loginFailed(person);
-                throw new RuntimeException("Contraseña incorrecta");
+                // Si por alguna razón no lanzó, como fallback genérico
+                throw new RuntimeException("Credenciales inválidas");
             }
 
             // Registro de un inicio de sesión exitoso
