@@ -1,6 +1,7 @@
 package co.edu.udea.certificacion.innoSistemas.stepDefinitions;
 
 import io.cucumber.java.Before;
+import io.cucumber.java.PendingException;
 import io.cucumber.java.en.*;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.abilities.BrowseTheWeb;
@@ -29,42 +30,6 @@ public class AuthenticationSteps {
         student.can(BrowseTheWeb.with(driver));
     }
 
-    @Given("the user is on the login page")
-    public void userIsOnLoginPage() {
-        student.attemptsTo(
-                NavigateTo.theLoginPage());
-    }
-
-    @When("the user enters username {string}")
-    public void userEntersUsername(String username) {
-        student.attemptsTo(
-                FillInputField.in(LoginPage.EMAIL_INPUT, username));
-    }
-
-    @When("the user enters password {string}")
-    public void userEntersPassword(String password) {
-        student.attemptsTo(
-                FillInputField.in(LoginPage.PASSWORD_INPUT, password));
-    }
-
-    @When("the user clicks the login button")
-    public void userClicksLoginButton() {
-        student.attemptsTo(
-                ClickOnElement.on(LoginPage.LOGIN_BUTTON));
-    }
-
-    @Then("the user should be redirected to the dashboard")
-    public void userShouldBeRedirectedToDashboard() {
-        student.should(
-                seeThat(TheCurrentUrl.value(), containsString("/dashboard")));
-    }
-
-    @Then("the welcome message should be displayed")
-    public void welcomeMessageShouldBeDisplayed() {
-        student.should(
-                seeThat(TheElementVisibility.of(DashboardPage.WELCOME_MESSAGE), is(true)));
-    }
-
     @Then("an error message should be displayed")
     public void errorMessageShouldBeDisplayed() {
         student.should(
@@ -77,15 +42,111 @@ public class AuthenticationSteps {
                 seeThat(TheCurrentUrl.value(), containsString("/login")));
     }
 
-    @Then("a validation message for username should appear")
-    public void validationMessageForUsernameShouldAppear() {
-        student.should(
-                seeThat(TheElementVisibility.of(LoginPage.EMAIL_VALIDATION), is(true)));
-    }
-
     @Then("the login button should be disabled")
     public void loginButtonShouldBeDisabled() {
         student.should(
                 seeThat(TheElementState.isEnabled(LoginPage.LOGIN_BUTTON), is(false)));
+    }
+
+    @When("I enter valid credentials")
+    public void iEnterValidCredentials() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @Given("I am on the login page")
+    public void iAmOnTheLoginPage() {
+        student.attemptsTo(NavigateTo.theLoginPage());
+        throw new PendingException();
+    }
+
+    @Then("I should be redirected to the dashboard")
+    public void iShouldBeRedirectedToTheDashboard() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @When("I enter invalid credentials")
+    public void iEnterInvalidCredentials() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @Then("I should see an error message indicating invalid login")
+    public void iShouldSeeAnErrorMessageIndicatingInvalidLogin() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @When("and my account is not blocked")
+    public void andMyAccountIsNotBlocked() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @And("I send invalid credentials three times")
+    public void iSendInvalidCredentialsThreeTimes() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @And("I log in with valid credentials")
+    public void iLogInWithValidCredentials() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @And("I log out")
+    public void iLogOut() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @Then("the attempt counter should be reseted")
+    public void theAttemptCounterShouldBeReseted() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @When("I enter the email {string} and the password {string}")
+    public void iEnterTheEmailAndThePassword(String arg0, String arg1) {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @And("I send the credentials")
+    public void iSendTheCredentials() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @Then("the message {string} should be displayed")
+    public void theMessageShouldBeDisplayed(String arg0) {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @And("my account is not blocked")
+    public void myAccountIsNotBlocked() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @When("I send invalid credentials four more times")
+    public void iSendInvalidCredentialsFourMoreTimes() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @Then("my account should be blocked")
+    public void myAccountShouldBeBlocked() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @And("I should see a message indicating my account is locked")
+    public void iShouldSeeAMessageIndicatingMyAccountIsLocked() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
     }
 }

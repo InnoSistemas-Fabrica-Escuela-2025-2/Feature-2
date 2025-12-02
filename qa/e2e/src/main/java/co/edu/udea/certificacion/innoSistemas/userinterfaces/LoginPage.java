@@ -15,8 +15,8 @@ public class LoginPage {
                         .located(By.xpath("//*[@id=\"main-content\"]/div[2]/form/button"));
 
         public static final Target ERROR_MESSAGE = Target.the("error message")
-                        .located(By.className("error-message"));
+                        .located(By.xpath("//*[@id=\"login-error\"]"));
 
-        public static final Target EMAIL_VALIDATION = Target.the("email validation message")
-                        .located(By.id("email-error"));
+        public static final Target LOGIN_PAGE = Target.the("login page")
+                        .located(By.xpath("//*[@id=\"main-content\"]/div[1]/h3"));
 }
