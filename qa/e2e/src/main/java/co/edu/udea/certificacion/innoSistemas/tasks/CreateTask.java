@@ -24,11 +24,11 @@ public class CreateTask implements Task {
     public <T extends Actor> void performAs(T actor) {
         actor.attemptsTo(
                 ClickOnElement.on(TasksPage.ADD_TASK_BUTTON),
-                FillInputField.in(TasksPage.TASK_NAME_INPUT, task.getName()),
+                FillInputField.in(TasksPage.TASK_TITLE_INPUT, task.getName()),
                 FillInputField.in(TasksPage.TASK_DESCRIPTION_INPUT, task.getDescription()),
                 SelectFromDropdown.option(task.getProject(), TasksPage.PROJECT_DROPDOWN),
                 SelectFromDropdown.option(task.getResponsible(), TasksPage.RESPONSIBLE_DROPDOWN),
                 FillInputField.in(TasksPage.DUE_DATE_INPUT, task.getDueDate()),
-                ClickOnElement.on(TasksPage.SAVE_TASK_BUTTON));
+                ClickOnElement.on(TasksPage.SUBMIT_TASK_BUTTON));
     }
 }

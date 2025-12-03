@@ -9,6 +9,7 @@ plugins {
 	id 'java'
     id 'eclipse'
     id 'idea'
+    id("net.serenity-bdd.serenity-gradle-plugin") version "4.3.2"
 }
 
 group 'co.edu.udea.certificacion'

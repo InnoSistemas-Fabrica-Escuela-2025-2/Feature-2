@@ -5,6 +5,9 @@ import org.openqa.selenium.By;
 
 public class ProjectsPage {
 
+        public static final Target PROJECTS_LINK = Target.the("projects navigation link")
+                        .located(By.xpath("//*[@id=\"root\"]/div[2]/div/aside/nav/ul/li[2]/a"));
+
         public static final Target CREATE_PROJECT_BUTTON = Target.the("create project button")
                         .located(By.xpath("//*[@id=\"main-content\"]/div/div[1]/button"));
 
@@ -23,17 +26,22 @@ public class ProjectsPage {
         public static final Target TEAM_DROPDOWN = Target.the("team dropdown")
                         .located(By.xpath("//*[@id=\"equipo\"]"));
 
-        public static final Target SUBMIT_PROJECT_BUTTON = Target.the("submit project button")
-                        .located(By.xpath("//*[@id=\"radix-:r4:\"]/form/div[6]/button[2]"));
+    public static final Target SUBMIT_PROJECT_BUTTON = Target.the("submit project button")
+                    .located(By.xpath("//button[contains(text(), 'Crear Proyecto')]"));
 
-        public static final Target SUCCESS_MESSAGE = Target.the("success message")
-                        .located(By.className("success-message"));
+    public static final Target CANCEL_PROJECT_BUTTON = Target.the("cancel project button")
+                    .located(By.xpath("//*[@id=\"radix-:r4:\"]/form/div[7]/button[1]"));
 
-        public static final Target VALIDATION_ERRORS = Target.the("validation errors")
-                        .located(By.className("validation-error"));
+    public static final Target CONFIRM_CANCEL_BUTTON = Target.the("confirm cancel button")
+                    .located(By.xpath("//*[@id=\"radix-:r7:\"]/div[2]/button[2]"));
 
-        public static final Target PROJECT_CARD = Target.the("project card with name {0}")
-                        .locatedBy("//div[contains(@class,'project-card')]//h3[text()='{0}']");
+    public static final Target SUCCESS_MESSAGE = Target.the("success message")
+                    .located(By.className("success-message"));
+
+    public static final Target VALIDATION_ERROR = Target.the("validation error message")
+                    .located(By.xpath("//*[@id=\"radix-:r4:\"]/form/div[1]/div"));    public static final Target VALIDATION_ERRORS = Target.the("validation errors")
+                    .located(By.className("validation-error"));        public static final Target PROJECT_CARD = Target.the("project card with name {0}")
+                        .locatedBy("//*[contains(text(),'{0}')]");
 
         public static final Target PROJECT_MODAL = Target.the("project creation modal")
                         .located(By.className("project-modal"));

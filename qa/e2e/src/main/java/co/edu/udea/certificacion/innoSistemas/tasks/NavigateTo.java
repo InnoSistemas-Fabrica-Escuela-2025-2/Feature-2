@@ -20,11 +20,15 @@ public class NavigateTo implements Task {
     }
 
     public static NavigateTo theProjectsPage() {
-        return new NavigateTo("/projects");
+        return new NavigateTo("/proyectos");
     }
 
     public static NavigateTo theDashboard() {
         return new NavigateTo("/dashboard");
+    }
+
+    public static NavigateTo theTasksPage() {
+        return new NavigateTo("/tareas");
     }
 
     @Override

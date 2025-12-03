@@ -28,7 +28,7 @@ public class TaskModel {
     public static TaskModel fromDataTable(DataTable dataTable) {
         Map<String, String> data = dataTable.asMap(String.class, String.class);
         return new TaskModel(
-                data.get("name"),
+                data.containsKey("title") ? data.get("title") : data.get("name"),
                 data.get("description"),
                 data.get("project"),
                 data.get("responsible"),

@@ -6,19 +6,25 @@ Write-Host "=== Iniciando todos los servicios ===" -ForegroundColor Green
 Write-Host ""
 
 $targets = @(
-    @{ Name = 'Gateway';       Dir = Join-Path $root 'backend\gateway';       Cmd = '.\mvnw spring-boot:run' },
-    @{ Name = 'Authenticator'; Dir = Join-Path $root 'backend\authenticator'; Cmd = '.\mvnw spring-boot:run' },
-    @{ Name = 'InnoSistemas';  Dir = Join-Path $root 'backend\innosistemas';  Cmd = '.\mvnw spring-boot:run' },
-    @{ Name = 'Frontend';      Dir = Join-Path $root 'frontend';              Cmd = 'npm run dev' }
+    @{ Name = 'Gateway';       Dir = Join-Path $root 'backend\gateway';       Cmd = '.\mvnw'; Args = 'spring-boot:run', '-Dspring-boot.run.arguments=--spring.profiles.active=local' },
+    @{ Name = 'Authenticator'; Dir = Join-Path $root 'backend\authenticator'; Cmd = '.\mvnw'; Args = 'spring-boot:run', '-Dspring-boot.run.arguments=--spring.profiles.active=local' },
+    @{ Name = 'InnoSistemas';  Dir = Join-Path $root 'backend\innosistemas';  Cmd = '.\mvnw'; Args = 'spring-boot:run', '-Dspring-boot.run.arguments=--spring.profiles.active=local' },
+    @{ Name = 'Frontend';      Dir = Join-Path $root 'frontend';              Cmd = 'npm'; Args = 'run', 'dev' }
 )
 
 foreach ($t in $targets) {
     Write-Host "Abriendo $($t.Name) en nueva ventana..." -ForegroundColor Cyan
     Write-Host "  Directorio: $($t.Dir)" -ForegroundColor Gray
-    Write-Host "  Comando: $($t.Cmd)" -ForegroundColor Gray
+    Write-Host "  Comando: $($t.Cmd) $($t.Args -join ' ')" -ForegroundColor Gray
     Write-Host ""
     
-    Start-Process -FilePath 'powershell.exe' -ArgumentList '-NoExit','-Command',$t.Cmd -WorkingDirectory $t.Dir
+    if ($t.Args) {
+        $cmdString = "cd '$($t.Dir)'; & '$($t.Cmd)' $($t.Args -join ' ')"
+    } else {
+        $cmdString = "cd '$($t.Dir)'; & '$($t.Cmd)'"
+    }
+    
+    Start-Process -FilePath 'powershell.exe' -ArgumentList '-NoExit', '-Command', $cmdString
     Start-Sleep -Seconds 2
 }
 

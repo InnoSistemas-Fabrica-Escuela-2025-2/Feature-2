@@ -3,8 +3,8 @@ package co.edu.udea.certificacion.innoSistemas.tasks;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.actions.Scroll;
-import net.serenitybdd.screenplay.actions.Click;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
+import co.edu.udea.certificacion.innoSistemas.interactions.ClickOnElement;
 
 public class NavigateToProject implements Task {
 
@@ -22,6 +22,6 @@ public class NavigateToProject implements Task {
     public <T extends Actor> void performAs(T actor) {
         actor.attemptsTo(
                 Scroll.to(ProjectsPage.PROJECT_CARD.of(projectName)),
-                Click.on(ProjectsPage.PROJECT_CARD.of(projectName)));
+                ClickOnElement.on(ProjectsPage.PROJECT_CARD.of(projectName)));
     }
 }

@@ -17,6 +17,9 @@ public class LoginPage {
         public static final Target ERROR_MESSAGE = Target.the("error message")
                         .located(By.xpath("//*[@id=\"login-error\"]"));
 
+        public static final Target USER_NAME = Target.the("user name displayed after login")
+                        .located(By.xpath("//*[@id=\"root\"]/div[2]/header/nav/div[2]/span"));
+
         public static final Target LOGIN_PAGE = Target.the("login page")
                         .located(By.xpath("//*[@id=\"main-content\"]/div[1]/h3"));
 }

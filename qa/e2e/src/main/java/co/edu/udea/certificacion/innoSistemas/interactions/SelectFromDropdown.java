@@ -3,7 +3,7 @@ package co.edu.udea.certificacion.innoSistemas.interactions;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Interaction;
 import net.serenitybdd.screenplay.targets.Target;
-import net.serenitybdd.screenplay.actions.SelectFromOptions;
+import org.openqa.selenium.By;
 
 public class SelectFromDropdown implements Interaction {
 
@@ -21,7 +21,9 @@ public class SelectFromDropdown implements Interaction {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        Target optionTarget = Target.the("dropdown option " + option)
+                .located(By.xpath("//div[@role='option']//span[text()='" + option + "']"));
         actor.attemptsTo(
-                SelectFromOptions.byVisibleText(option).from(dropdown));
+                ClickOnElement.on(optionTarget));
     }
 }
