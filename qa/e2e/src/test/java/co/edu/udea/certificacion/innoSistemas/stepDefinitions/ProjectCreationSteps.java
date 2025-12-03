@@ -9,7 +9,7 @@ import net.serenitybdd.screenplay.waits.WaitUntil;
 import net.serenitybdd.annotations.Managed;
 import org.openqa.selenium.WebDriver;
 import co.edu.udea.certificacion.innoSistemas.tasks.*;
-import co.edu.udea.certificacion.innoSistemas.questions.*;
+import co.edu.udea.certificacion.innoSistemas.questions.TheElementVisibility;
 import co.edu.udea.certificacion.innoSistemas.models.Project;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.LoginPage;

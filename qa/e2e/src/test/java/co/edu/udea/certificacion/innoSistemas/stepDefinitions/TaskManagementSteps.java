@@ -7,12 +7,10 @@ import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.abilities.BrowseTheWeb;
 import net.serenitybdd.annotations.Managed;
 import org.openqa.selenium.WebDriver;
-import net.serenitybdd.screenplay.actions.Scroll;
 import co.edu.udea.certificacion.innoSistemas.models.TaskModel;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.TasksPage;
-import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
 import co.edu.udea.certificacion.innoSistemas.questions.TheElementVisibility;
-import net.serenitybdd.screenplay.targets.Target;
+import co.edu.udea.certificacion.innoSistemas.questions.TheElementText;
 import co.edu.udea.certificacion.innoSistemas.tasks.*;
 
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
@@ -67,7 +65,8 @@ public class TaskManagementSteps {
     public void taskShouldAppearInList() {
         waitFor(3000);
         student.should(
-                seeThat(TheElementVisibility.of(TasksPage.SUCCESS_TOAST), is(true)));
+                seeThat(TheElementVisibility.of(TasksPage.SUCCESS_TOAST), is(true)),
+                seeThat(TheElementText.of(TasksPage.SUCCESS_TOAST), containsString("Tarea creada exitosamente")));
     }
     
     private void waitFor(int milliseconds) {
