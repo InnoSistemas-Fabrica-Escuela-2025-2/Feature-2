@@ -27,13 +27,13 @@ public class TasksPage {
                         .located(By.id("fecha"));
 
         public static final Target SUBMIT_TASK_BUTTON = Target.the("submit task button")
-                        .located(By.xpath("//*[@id=\"radix-:r22:\"]/form/div[6]/button[2]"));
+                        .located(By.xpath("//button[contains(text(), 'Crear Tarea')]"));
 
-        public static final Target CONFIRMATION_MESSAGE = Target.the("confirmation message")
-                        .located(By.className("confirmation-message"));
+        public static final Target SUCCESS_TOAST = Target.the("success toast message")
+                        .located(By.xpath("//*[contains(text(), 'Tarea creada exitosamente')]"));
 
         public static final Target TASK_ITEM = Target.the("task item with name {0}")
-                        .locatedBy("//div[contains(@class,'task-item')]//span[text()='{0}']");
+                        .locatedBy("//*[@id='radix-:rd:-content-all']//div[contains(text(), '{0}')]");
 
         public static final Target TASK_MODAL = Target.the("task creation modal")
                         .located(By.className("task-modal"));
