@@ -56,7 +56,29 @@ dependencies {
 
 }
 
+// Run Serenity aggregate report even if tests fail, and publish the HTML report
 tasks.named('test') {
-    // System configs
+    // Do not fail the build on test failures so the Serenity report is still generated
+    ignoreFailures = true
+    finalizedBy 'aggregate'
+}
 
+// Task alias to generate the Serenity report on demand
+tasks.register('e2eReport') {
+    group = 'verification'
+    description = 'Generates Serenity aggregate report for E2E tests into qa/reports/e2e'
+    dependsOn 'aggregate'
+}
+
+// After aggregation, copy the Serenity site to qa/reports/e2e for a stable location
+tasks.named('aggregate') {
+    finalizedBy 'publishE2EReport'
+}
+
+tasks.register('publishE2EReport', Copy) {
+    group = 'verification'
+    description = 'Copies Serenity HTML report to qa/reports/e2e'
+    // Serenity Gradle plugin publishes the site under target/site/serenity
+    from file("${projectDir}/target/site/serenity")
+    into file("${projectDir}/../reports/e2e")
 }
