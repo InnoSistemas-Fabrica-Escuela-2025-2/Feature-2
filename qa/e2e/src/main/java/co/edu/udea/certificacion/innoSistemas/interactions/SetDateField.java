@@ -27,7 +27,6 @@ public class SetDateField implements Interaction {
         WebElement element = target.resolveFor(actor);
         JavascriptExecutor js = (JavascriptExecutor) BrowseTheWeb.as(actor).getDriver();
         
-        // Use React's native value setter to trigger proper state update
         js.executeScript(
             "var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;" +
             "nativeInputValueSetter.call(arguments[0], arguments[1]);" +
@@ -42,7 +41,6 @@ public class SetDateField implements Interaction {
             e.printStackTrace();
         }
         
-        // Trigger change event
         js.executeScript(
             "var event = new Event('change', { bubbles: true });" +
             "arguments[0].dispatchEvent(event);",

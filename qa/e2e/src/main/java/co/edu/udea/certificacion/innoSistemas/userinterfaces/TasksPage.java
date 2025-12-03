@@ -31,13 +31,4 @@ public class TasksPage {
 
         public static final Target SUCCESS_TOAST = Target.the("success toast message")
                         .located(By.xpath("//*[contains(text(), 'Tarea creada exitosamente')]"));
-
-        public static final Target TASK_ITEM = Target.the("task item with name {0}")
-                        .locatedBy("//*[@id='radix-:rd:-content-all']//div[contains(text(), '{0}')]");
-
-        public static final Target TASK_MODAL = Target.the("task creation modal")
-                        .located(By.className("task-modal"));
-
-        public static final Target VALIDATION_ERRORS = Target.the("validation errors")
-                        .located(By.className("validation-error"));
 }

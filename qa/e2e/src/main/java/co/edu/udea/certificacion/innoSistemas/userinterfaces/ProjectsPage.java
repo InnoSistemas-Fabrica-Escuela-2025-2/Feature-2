@@ -12,37 +12,29 @@ public class ProjectsPage {
                         .located(By.xpath("//*[@id=\"main-content\"]/div/div[1]/button"));
 
         public static final Target PROJECT_NAME_INPUT = Target.the("project name input")
-                        .located(By.xpath("//*[@id=\"nombre\"]"));
+                        .located(By.id("nombre"));
 
         public static final Target PROJECT_DESCRIPTION_INPUT = Target.the("project description input")
-                        .located(By.xpath("//*[@id=\"descripcion\"]"));
+                        .located(By.id("descripcion"));
 
         public static final Target PROJECT_OBJECTIVES_INPUT = Target.the("project objectives input")
-                        .located(By.xpath("//*[@id=\"objetivos\"]"));
+                        .located(By.id("objetivos"));
 
         public static final Target DELIVERY_DATE_INPUT = Target.the("delivery date input")
-                        .located(By.xpath("//*[@id=\"fechaEntrega\"]"));
+                        .located(By.id("fechaEntrega"));
 
         public static final Target TEAM_DROPDOWN = Target.the("team dropdown")
-                        .located(By.xpath("//*[@id=\"equipo\"]"));
+                        .located(By.id("equipo"));
 
-    public static final Target SUBMIT_PROJECT_BUTTON = Target.the("submit project button")
-                    .located(By.xpath("//button[contains(text(), 'Crear Proyecto')]"));
+        public static final Target SUBMIT_PROJECT_BUTTON = Target.the("submit project button")
+                        .located(By.xpath("//button[contains(text(), 'Crear Proyecto')]"));
 
-    public static final Target CANCEL_PROJECT_BUTTON = Target.the("cancel project button")
-                    .located(By.xpath("//*[@id=\"radix-:r4:\"]/form/div[7]/button[1]"));
+        public static final Target CANCEL_PROJECT_BUTTON = Target.the("cancel project button")
+                        .located(By.xpath("//*[@id=\"radix-:r4:\"]/form/div[7]/button[1]"));
 
-    public static final Target CONFIRM_CANCEL_BUTTON = Target.the("confirm cancel button")
-                    .located(By.xpath("//*[@id=\"radix-:r7:\"]/div[2]/button[2]"));
+        public static final Target CONFIRM_CANCEL_BUTTON = Target.the("confirm cancel button")
+                        .located(By.xpath("//*[@id=\"radix-:r7:\"]/div[2]/button[2]"));
 
-    public static final Target SUCCESS_MESSAGE = Target.the("success message")
-                    .located(By.className("success-message"));
-
-    public static final Target VALIDATION_ERROR = Target.the("validation error message")
-                    .located(By.xpath("//*[@id=\"radix-:r4:\"]/form/div[1]/div"));    public static final Target VALIDATION_ERRORS = Target.the("validation errors")
-                    .located(By.className("validation-error"));        public static final Target PROJECT_CARD = Target.the("project card with name {0}")
-                        .locatedBy("//*[contains(text(),'{0}')]");
-
-        public static final Target PROJECT_MODAL = Target.the("project creation modal")
-                        .located(By.className("project-modal"));
+        public static final Target VALIDATION_ERROR = Target.the("validation error message")
+                        .located(By.xpath("//*[@id=\"radix-:r4:\"]/form/div[1]/div"));
 }

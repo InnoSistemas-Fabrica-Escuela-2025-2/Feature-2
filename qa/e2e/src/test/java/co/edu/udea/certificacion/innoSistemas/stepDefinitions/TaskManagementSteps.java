@@ -47,7 +47,6 @@ public class TaskManagementSteps {
         student.attemptsTo(Scroll.to(projectCard));
         waitFor(2000);
         
-        // Use JavaScript click to avoid navbar interception
         WebElement element = projectCard.resolveFor(student);
         JavascriptExecutor js = (JavascriptExecutor) BrowseTheWeb.as(student).getDriver();
         js.executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
@@ -58,7 +57,11 @@ public class TaskManagementSteps {
 
     @When("the user clicks on new task button")
     public void userClicksNewTaskButton() {
-        student.attemptsTo(ClickOnElement.on(TasksPage.ADD_TASK_BUTTON));
+        WebElement addTaskBtn = TasksPage.ADD_TASK_BUTTON.resolveFor(student);
+        JavascriptExecutor js = (JavascriptExecutor) BrowseTheWeb.as(student).getDriver();
+        js.executeScript("arguments[0].scrollIntoView({block: 'center'});", addTaskBtn);
+        waitFor(500);
+        js.executeScript("arguments[0].click();", addTaskBtn);
         waitFor(5000);
     }
 

@@ -10,8 +10,7 @@ public class TaskModel {
     private String project;
     private String responsible;
     private String dueDate;
-    private String status; // Keeping status and priority as they might be used in verification or other
-                           // scenarios
+    private String status;
     private String priority;
 
     public TaskModel(String name, String description, String project, String responsible, String dueDate, String status,
