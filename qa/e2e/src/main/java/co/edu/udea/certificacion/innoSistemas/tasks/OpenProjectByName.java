@@ -10,6 +10,7 @@ import org.openqa.selenium.WebElement;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.TasksPage;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
 import co.edu.udea.certificacion.innoSistemas.interactions.ClickOnElement;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 public class OpenProjectByName implements Task {
 
@@ -25,22 +26,19 @@ public class OpenProjectByName implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(ClickOnElement.on(ProjectsPage.PROJECTS_LINK));
-        sleep(3000);
+        WaitTime.putWaitTimeOf(1200);
 
         Target projectCard = TasksPage.PROJECT_CARD_LINK.of(projectName);
         actor.attemptsTo(Scroll.to(projectCard));
-        sleep(2000);
+        WaitTime.putWaitTimeOf(1200);
 
         WebElement element = projectCard.resolveFor(actor);
         JavascriptExecutor js = (JavascriptExecutor) BrowseTheWeb.as(actor).getDriver();
         js.executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-        sleep(500);
+        WaitTime.putWaitTimeOf(1200);
         js.executeScript("arguments[0].click();", element);
-        sleep(5000);
-    }
-
-    private void sleep(int millis) {
-        try { Thread.sleep(millis); } catch (InterruptedException e) { e.printStackTrace(); }
+        WaitTime.putWaitTimeOf(1200);
     }
 }

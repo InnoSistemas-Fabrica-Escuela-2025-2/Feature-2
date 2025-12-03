@@ -7,6 +7,7 @@ import co.edu.udea.certificacion.innoSistemas.interactions.ClickOnElement;
 import co.edu.udea.certificacion.innoSistemas.interactions.SelectFromDropdown;
 import co.edu.udea.certificacion.innoSistemas.models.TaskModel;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.TasksPage;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 public class FillTaskForm implements Task {
 
@@ -22,19 +23,16 @@ public class FillTaskForm implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(
                 FillInputField.in(TasksPage.TASK_TITLE_INPUT, task.getName()),
                 FillInputField.in(TasksPage.TASK_DESCRIPTION_INPUT, task.getDescription())
         );
-        sleep(3000);
-
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(ClickOnElement.on(TasksPage.PROJECT_DROPDOWN));
-        sleep(3000);
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(SelectFromDropdown.option(task.getProject(), TasksPage.PROJECT_DROPDOWN));
-        sleep(3000);
+        WaitTime.putWaitTimeOf(1200);
     }
 
-    private void sleep(int millis) {
-        try { Thread.sleep(millis); } catch (InterruptedException e) { e.printStackTrace(); }
-    }
 }

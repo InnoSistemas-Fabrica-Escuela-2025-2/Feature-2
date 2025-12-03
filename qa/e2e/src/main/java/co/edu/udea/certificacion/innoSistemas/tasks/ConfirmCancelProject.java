@@ -4,6 +4,7 @@ import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
 import co.edu.udea.certificacion.innoSistemas.interactions.ClickOnElement;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 public class ConfirmCancelProject implements Task {
 
@@ -13,15 +14,8 @@ public class ConfirmCancelProject implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(ClickOnElement.on(ProjectsPage.CONFIRM_CANCEL_BUTTON));
-        sleep(5000);
-    }
-
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        WaitTime.putWaitTimeOf(1200);
     }
 }

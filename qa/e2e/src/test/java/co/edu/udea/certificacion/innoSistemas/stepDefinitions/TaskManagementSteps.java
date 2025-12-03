@@ -14,6 +14,7 @@ import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
 import co.edu.udea.certificacion.innoSistemas.questions.TheElementVisibility;
 import net.serenitybdd.screenplay.targets.Target;
 import co.edu.udea.certificacion.innoSistemas.tasks.*;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.*;
@@ -22,6 +23,8 @@ public class TaskManagementSteps {
 
     @Managed
     WebDriver driver;
+
+    private static final int STEP_WAIT_MS = 1200;
 
     private Actor student;
     private TaskModel currentTask;
@@ -65,16 +68,8 @@ public class TaskManagementSteps {
 
     @Then("the task should appear in the task list")
     public void taskShouldAppearInList() {
-        waitFor(3000);
+        WaitTime.putWaitTimeOf(STEP_WAIT_MS);
         student.should(
                 seeThat(TheElementVisibility.of(TasksPage.SUCCESS_TOAST), is(true)));
-    }
-    
-    private void waitFor(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }
