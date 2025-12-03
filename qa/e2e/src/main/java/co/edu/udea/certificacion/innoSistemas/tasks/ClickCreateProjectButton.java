@@ -5,6 +5,7 @@ import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.waits.WaitUntil;
 import co.edu.udea.certificacion.innoSistemas.interactions.ClickOnElement;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisible;
 
@@ -16,9 +17,11 @@ public class ClickCreateProjectButton implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(
                 ClickOnElement.on(ProjectsPage.CREATE_PROJECT_BUTTON),
                 WaitUntil.the(ProjectsPage.PROJECT_NAME_INPUT, isVisible()).forNoMoreThan(15).seconds()
         );
+        WaitTime.putWaitTimeOf(1200);
     }
 }

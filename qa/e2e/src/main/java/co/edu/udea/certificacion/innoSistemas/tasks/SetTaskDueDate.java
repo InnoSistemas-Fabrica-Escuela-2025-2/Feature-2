@@ -4,6 +4,7 @@ import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
 import co.edu.udea.certificacion.innoSistemas.interactions.SetDateField;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.TasksPage;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 public class SetTaskDueDate implements Task {
 
@@ -19,11 +20,8 @@ public class SetTaskDueDate implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(SetDateField.to(TasksPage.DUE_DATE_INPUT, dueDate));
-        sleep(3000);
-    }
-
-    private void sleep(int millis) {
-        try { Thread.sleep(millis); } catch (InterruptedException e) { e.printStackTrace(); }
+        WaitTime.putWaitTimeOf(1200);
     }
 }

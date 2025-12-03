@@ -5,6 +5,7 @@ import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.waits.WaitUntil;
 import co.edu.udea.certificacion.innoSistemas.interactions.FillInputField;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.LoginPage;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisible;
 
@@ -24,10 +25,12 @@ public class EnterEmailAndPassword implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(
                 WaitUntil.the(LoginPage.EMAIL_INPUT, isVisible()).forNoMoreThan(10).seconds(),
                 FillInputField.in(LoginPage.EMAIL_INPUT, email),
                 FillInputField.in(LoginPage.PASSWORD_INPUT, password)
         );
+        WaitTime.putWaitTimeOf(1200);
     }
 }

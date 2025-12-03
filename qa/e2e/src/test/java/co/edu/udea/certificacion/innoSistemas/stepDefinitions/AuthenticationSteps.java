@@ -10,6 +10,7 @@ import co.edu.udea.certificacion.innoSistemas.tasks.*;
 import co.edu.udea.certificacion.innoSistemas.questions.*;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.LoginPage;
 import net.serenitybdd.screenplay.waits.WaitUntil;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisible;
@@ -19,6 +20,8 @@ public class AuthenticationSteps {
 
     @Managed
     WebDriver driver;
+
+    private static final int STEP_WAIT_MS = 1200;
 
     private Actor user;
 

@@ -6,6 +6,7 @@ import net.serenitybdd.screenplay.actions.Open;
 import net.serenitybdd.model.environment.EnvironmentSpecificConfiguration;
 import net.thucydides.model.util.EnvironmentVariables;
 import net.thucydides.model.environment.SystemEnvironmentVariables;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 public class NavigateTo implements Task {
 
@@ -33,10 +34,12 @@ public class NavigateTo implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         EnvironmentVariables environmentVariables = SystemEnvironmentVariables.createEnvironmentVariables();
         String baseUrl = EnvironmentSpecificConfiguration.from(environmentVariables)
                 .getProperty("webdriver.base.url");
         actor.attemptsTo(
                 Open.url(baseUrl + path));
+        WaitTime.putWaitTimeOf(1200);
     }
 }

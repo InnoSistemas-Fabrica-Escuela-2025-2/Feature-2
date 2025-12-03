@@ -14,6 +14,7 @@ import co.edu.udea.certificacion.innoSistemas.models.Project;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.LoginPage;
 // Using Tasks instead of direct Interactions
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.*;
@@ -23,6 +24,8 @@ public class ProjectCreationSteps {
 
     @Managed
     WebDriver driver;
+
+    private static final int STEP_WAIT_MS = 1200;
 
     private Actor student;
     private Project currentProject;
@@ -41,7 +44,7 @@ public class ProjectCreationSteps {
         student.attemptsTo(
                 WaitUntil.the(LoginPage.USER_NAME, isVisible()).forNoMoreThan(20).seconds()
         );
-        waitFor(5000);
+        WaitTime.putWaitTimeOf(STEP_WAIT_MS);
     }
 
     @Given("the user is on the projects page")
@@ -50,7 +53,7 @@ public class ProjectCreationSteps {
         student.attemptsTo(
                 WaitUntil.the(ProjectsPage.CREATE_PROJECT_BUTTON, isVisible()).forNoMoreThan(20).seconds()
         );
-        waitFor(5000);
+        WaitTime.putWaitTimeOf(STEP_WAIT_MS);
     }
 
     @When("the user clicks on create project button")
@@ -72,7 +75,7 @@ public class ProjectCreationSteps {
 
     @Then("a validation error should be displayed with message {string}")
     public void validationErrorShouldBeDisplayedWithMessage(String expectedMessage) {
-        waitFor(5000);
+        WaitTime.putWaitTimeOf(STEP_WAIT_MS);
         student.should(seeThat(TheElementVisibility.of(ProjectsPage.VALIDATION_ERROR), is(true)));
     }
 
@@ -93,14 +96,6 @@ public class ProjectCreationSteps {
 
     @Then("the project should appear in the projects list")
     public void projectShouldAppearInList() {
-        waitFor(5000);
-    }
-    
-    private void waitFor(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        WaitTime.putWaitTimeOf(STEP_WAIT_MS);
     }
 }

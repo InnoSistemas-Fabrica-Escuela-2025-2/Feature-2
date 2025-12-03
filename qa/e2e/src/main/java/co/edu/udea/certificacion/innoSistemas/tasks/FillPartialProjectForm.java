@@ -5,6 +5,7 @@ import net.serenitybdd.screenplay.Task;
 import co.edu.udea.certificacion.innoSistemas.interactions.FillInputField;
 import co.edu.udea.certificacion.innoSistemas.models.Project;
 import co.edu.udea.certificacion.innoSistemas.userinterfaces.ProjectsPage;
+import co.edu.udea.certificacion.innoSistemas.utils.WaitTime;
 
 public class FillPartialProjectForm implements Task {
 
@@ -20,18 +21,11 @@ public class FillPartialProjectForm implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
+        WaitTime.putWaitTimeOf(1200);
         actor.attemptsTo(
                 FillInputField.in(ProjectsPage.PROJECT_NAME_INPUT, project.getName()),
                 FillInputField.in(ProjectsPage.PROJECT_OBJECTIVES_INPUT, project.getObjectives())
         );
-        sleep(5000);
-    }
-
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        WaitTime.putWaitTimeOf(1200);
     }
 }
